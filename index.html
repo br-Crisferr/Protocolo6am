@@ -474,6 +474,51 @@
     .admin-user-chip.chip-blue{border-color:rgba(10,132,255,.3);color:var(--blue);}
     .admin-user-chip.chip-gold{border-color:rgba(255,214,10,.3);color:var(--gold);}
 
+
+    /* ══ PERFIL PÚBLICO — MODAL ══ */
+    .pub-prof-tabs{display:flex;background:var(--bg-elevated);border-radius:12px;padding:4px;margin-bottom:20px;}
+    .pub-prof-tab{flex:1;padding:9px;text-align:center;font-size:11px;font-weight:700;border-radius:9px;cursor:pointer;transition:all .2s;color:var(--text-3);text-transform:uppercase;letter-spacing:.5px;}
+    .pub-prof-tab.active{background:var(--red);color:#fff;}
+    .pub-hero-stats{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:20px;}
+    .pub-stat{background:var(--bg-card);border:1px solid var(--border);border-radius:12px;padding:14px 8px;text-align:center;}
+    .pub-stat-val{font-family:var(--fm);font-size:22px;font-weight:700;margin-bottom:3px;}
+    .pub-stat-lbl{font-size:9px;color:var(--text-3);text-transform:uppercase;letter-spacing:.5px;}
+    .pub-meta-row{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:20px;}
+    .pub-meta-chip{font-family:var(--fm);font-size:10px;padding:4px 10px;border-radius:20px;border:1px solid var(--border);color:var(--text-3);}
+    .pub-meta-chip.chip-streak{border-color:rgba(255,159,10,.4);color:var(--orange);}
+    .pub-meta-chip.chip-focus{border-color:rgba(10,132,255,.4);color:var(--blue);}
+    .pub-meta-chip.chip-member{border-color:rgba(48,209,88,.3);color:var(--green);}
+    .pub-meta-chip.chip-posts{border-color:rgba(191,90,242,.3);color:var(--purple);}
+    .pub-badge-list{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:20px;}
+    .pub-badge-chip{display:flex;align-items:center;gap:5px;padding:5px 10px;background:rgba(255,214,10,.07);border:1px solid rgba(255,214,10,.25);border-radius:20px;font-size:11px;font-weight:600;color:var(--gold);}
+    .pub-badge-chip-ico{font-size:14px;}
+    .pub-no-badges{font-size:12px;color:var(--text-3);padding:8px 0;}
+
+    /* ══ RESPOSTAS / REPLIES ══ */
+    .btn-reply{background:none;border:1px solid var(--border);color:var(--text-3);padding:5px 12px;border-radius:20px;font-size:11px;cursor:pointer;transition:all .2s;display:flex;align-items:center;gap:4px;}
+    .btn-reply:hover{border-color:var(--blue);color:var(--blue);}
+    .replies-thread{margin-top:12px;padding-top:12px;border-top:1px solid var(--border);}
+    .reply-compose{display:flex;gap:8px;align-items:flex-start;margin-bottom:10px;}
+    .reply-compose-avatar{width:28px;height:28px;border-radius:50%;background:linear-gradient(135deg,var(--red),var(--purple));display:flex;align-items:center;justify-content:center;font-size:14px;flex-shrink:0;}
+    .reply-input{flex:1;background:var(--bg-elevated);border:1px solid var(--border);color:var(--text);padding:8px 12px;border-radius:10px;font-size:13px;outline:none;resize:none;line-height:1.4;min-height:40px;}
+    .reply-input:focus{border-color:var(--blue);}
+    .reply-input::placeholder{color:var(--text-3);}
+    .btn-send-reply{padding:8px 14px;background:var(--blue);color:#fff;border:none;border-radius:10px;font-size:11px;font-weight:700;cursor:pointer;white-space:nowrap;transition:opacity .2s;}
+    .btn-send-reply:disabled{opacity:.4;cursor:not-allowed;}
+    .reply-card{display:flex;gap:10px;padding:10px 0;border-bottom:1px solid var(--border);}
+    .reply-card:last-child{border-bottom:none;}
+    .reply-avatar{width:28px;height:28px;border-radius:50%;background:linear-gradient(135deg,var(--blue),var(--purple));display:flex;align-items:center;justify-content:center;font-size:13px;flex-shrink:0;cursor:pointer;}
+    .reply-body{flex:1;}
+    .reply-name{font-size:12px;font-weight:700;cursor:pointer;display:flex;align-items:center;gap:5px;}
+    .reply-name:hover{color:var(--red);}
+    .reply-time{font-size:10px;color:var(--text-3);margin-bottom:4px;}
+    .reply-text{font-size:13px;line-height:1.5;color:var(--text);}
+    .reply-footer{display:flex;align-items:center;gap:8px;margin-top:6px;}
+    .btn-reply-like{background:none;border:none;color:var(--text-3);font-size:11px;cursor:pointer;padding:0;transition:color .2s;}
+    .btn-reply-like.liked{color:var(--red);}
+    .replies-load-more{width:100%;padding:8px;background:none;border:1px solid var(--border);color:var(--text-3);border-radius:10px;font-size:11px;font-weight:700;cursor:pointer;margin-top:6px;transition:all .2s;}
+    .replies-load-more:hover{border-color:var(--blue);color:var(--blue);}
+
     /* ══ MISC ══ */
     .btn-notif{background:none;border:1px solid var(--border);color:var(--text-2);padding:8px 12px;border-radius:10px;font-size:12px;cursor:pointer;transition:all .2s;}
     .btn-notif.active{border-color:var(--gold);color:var(--gold);}
@@ -619,7 +664,14 @@
       <div id="profGrid" class="prof-grid"></div>
       <div class="sec-title">🏅 Insígnias</div>
       <div id="badgesGrid" class="badges-grid"></div>
-      <div class="sec-title">📅 Calendário</div>
+      <div class="sec-title" style="display:flex;align-items:center;justify-content:space-between;">
+        <span>📅 Próximos 35 dias</span>
+        <span style="font-size:9px;color:var(--text-3);font-weight:400;display:flex;gap:8px;">
+          <span style="display:inline-flex;align-items:center;gap:3px;"><span style="width:8px;height:8px;border-radius:2px;background:var(--green);display:inline-block;"></span>Perfeito</span>
+          <span style="display:inline-flex;align-items:center;gap:3px;"><span style="width:8px;height:8px;border-radius:2px;background:var(--orange);display:inline-block;"></span>Parcial</span>
+          <span style="display:inline-flex;align-items:center;gap:3px;"><span style="width:8px;height:8px;border-radius:2px;background:var(--red);display:inline-block;"></span>Falha</span>
+        </span>
+      </div>
       <div id="profileCalendar" class="cal-grid"></div>
       <div class="sec-title">📋 Últimas Ações</div>
       <div id="profHist"></div>
@@ -740,6 +792,24 @@
       <span style="font-size:15px;font-weight:700;" id="pubProfHeaderName">Perfil</span>
     </div>
     <div id="pubProfContent" style="padding:20px;"></div>
+  </div>
+</div>
+
+<!-- ══ REPLY MODAL ══ -->
+<div id="replyModal" style="position:fixed;inset:0;z-index:9991;display:none;align-items:flex-end;background:rgba(0,0,0,.6);backdrop-filter:blur(6px);" onclick="if(event.target===this)closeReplyModal()">
+  <div style="width:100%;max-width:600px;margin:0 auto;background:var(--bg-card);border-radius:20px 20px 0 0;padding:20px;border:1px solid var(--border);">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;">
+      <span style="font-size:13px;font-weight:700;">Responder</span>
+      <button onclick="closeReplyModal()" style="background:none;border:none;color:var(--text-2);font-size:20px;cursor:pointer;">✕</button>
+    </div>
+    <div id="replyParentPreview" style="background:var(--bg-elevated);border-radius:10px;padding:10px 12px;margin-bottom:12px;font-size:12px;color:var(--text-2);line-height:1.4;border-left:3px solid var(--red);"></div>
+    <div class="reply-compose">
+      <div class="reply-compose-avatar" id="replyMyAvatar">🪖</div>
+      <textarea class="reply-input" id="replyText" placeholder="Sua resposta..." rows="3" oninput="this.style.height='auto';this.style.height=this.scrollHeight+'px';document.getElementById('btnSendReply').disabled=!this.value.trim();"></textarea>
+    </div>
+    <div style="display:flex;justify-content:flex-end;margin-top:8px;">
+      <button class="btn-send-reply" id="btnSendReply" disabled onclick="sendReply()">Responder →</button>
+    </div>
   </div>
 </div>
 
@@ -883,7 +953,7 @@ function defData(name='Operador', uid='') {
     lastTs:Date.now(), clockTampered:false, taskCreatedDates:{}, taskEditDates:{},
     ligaCode:_genCode(), ligaId:null, notifEnabled:false, hiddenTasks:[],
     role:'operador', premium:false, focusHours:0, totalFocusMinutes:0,
-    totalTrainMinutes:0, perfilPublico:true
+    totalTrainMinutes:0, perfilPublico:true, joinDate:td(), postCount:0
   };
 }
 
@@ -906,6 +976,9 @@ function loadLocal(){
     if(!d.role)d.role='operador';if(d.premium===undefined)d.premium=false;
     if(d.totalFocusMinutes===undefined)d.totalFocusMinutes=0;
     if(d.totalTrainMinutes===undefined)d.totalTrainMinutes=0;
+    if(!d.hiddenTasks)d.hiddenTasks=[];
+    if(!d.joinDate)d.joinDate=td();
+    if(d.postCount===undefined)d.postCount=0;
     return d;
   }catch{return null;}
 }
@@ -949,6 +1022,9 @@ function buildFirestorePayload(){
     totalTrainMinutes: D.totalTrainMinutes||0,
     badges: D.badges||[],
     clockTampered: D.clockTampered||false,
+    hiddenTasks: D.hiddenTasks||[],
+    joinDate: D.joinDate||td(),
+    postCount: D.postCount||0,
     uid: currentUser.uid,
     updatedAt: firebase.firestore.FieldValue.serverTimestamp()
   };
@@ -998,6 +1074,10 @@ async function mergeFirebaseData(fbData){
     D.adminBadges = fbData.adminBadges;
     // Ensure adminBadges are always in D.badges
     D.badges = [...new Set([...(D.badges||[]),...fbData.adminBadges])];
+  }
+  // hiddenTasks: Firebase wins (tasks removed on one device sync to all)
+  if(fbData.hiddenTasks && Array.isArray(fbData.hiddenTasks) && fbData.hiddenTasks.length>0){
+    D.hiddenTasks = [...new Set([...(D.hiddenTasks||[]),...fbData.hiddenTasks])];
   }
 }
 
@@ -1468,16 +1548,31 @@ function renderProf(){
 }
 
 function renderCalendar(){
+  // Calendário FUTURO: hoje + próximos 34 dias
   const el=document.getElementById('profileCalendar');if(!el)return;
-  const today=new Date();const todayStr=td();const cells=[];
+  const today=new Date();today.setHours(0,0,0,0);
+  const todayStr=td();const cells=[];
+  const all=getAll();
+  const doneNow=all.filter(t=>D.completedToday[t.id]).length;
+  const failNow=Object.keys(D.failedToday||{}).length;
   for(let i=0;i<35;i++){
-    const d=new Date(today);d.setDate(today.getDate()-i);
-    const dStr=d.toLocaleDateString('pt-BR');
-    const data=D.calendarData&&D.calendarData[dStr];const isToday=dStr===todayStr;
-    let cls='cal-day c-none';
-    if(isToday){const all=getAll();const doneNow=all.filter(t=>D.completedToday[t.id]).length;const failNow=Object.keys(D.failedToday).length;if(doneNow===all.length&&all.length>0)cls='cal-day c-perfect c-today';else if(failNow>0)cls='cal-day c-fail c-today';else if(doneNow>0)cls='cal-day c-partial c-today';else cls='cal-day c-none c-today';}
-    else if(data){if(data.fail===0&&data.done===data.total&&data.total>0)cls='cal-day c-perfect';else if(data.fail>0)cls='cal-day c-fail';else if(data.done>0||data.partial>0)cls='cal-day c-partial';else cls='cal-day c-none';}
-    cells.push(`<div class="${cls}" title="${dStr}${data?`: ${data.done||0}✅ ${data.fail||0}❌`:isToday?' (hoje)':''}" style="font-size:8px;color:rgba(255,255,255,.4);display:flex;align-items:flex-end;justify-content:flex-start;padding:2px;line-height:1;">${d.getDate()}</div>`);
+    const d=new Date(today);d.setDate(today.getDate()+i);
+    const day=d.getDate();
+    const isToday=(i===0);
+    let cls,title;
+    if(isToday){
+      // Status real de hoje
+      if(doneNow===all.length&&all.length>0){cls='cal-day c-perfect c-today';title='Hoje — Dia Perfeito ⭐';}
+      else if(failNow>0){cls='cal-day c-fail c-today';title='Hoje — com falhas';}
+      else if(doneNow>0){cls='cal-day c-partial c-today';title='Hoje — em progresso';}
+      else{cls='cal-day c-none c-today';title='Hoje';}
+    } else {
+      // Dia futuro — cinza
+      cls='cal-day c-future';
+      const monthNames=['Jan','Fev','Mar','Abr','Mai','Jun','Jul','Ago','Set','Out','Nov','Dez'];
+      title=`${day} ${monthNames[d.getMonth()]}`;
+    }
+    cells.push(`<div class="${cls}" title="${title}" style="font-size:8px;color:rgba(255,255,255,${isToday?'.9':'.25'});display:flex;align-items:flex-end;justify-content:flex-start;padding:2px;line-height:1;">${day}</div>`);
   }
   el.innerHTML=cells.join('');
 }
@@ -1666,6 +1761,7 @@ async function publishPost(){
     });
     if(document.getElementById('muralInput'))document.getElementById('muralInput').value='';
     if(btn)btn.disabled=true;
+    D.postCount=(D.postCount||0)+1;sv();
     toast('📋 Relatório publicado!','success');
   }catch(e){toast('Erro ao publicar','error');console.error(e);if(btn)btn.disabled=false;}
 }
@@ -2331,8 +2427,17 @@ async function adminGiveBadge(uid, badgeId, btn){
 }
 
 async function adminRevokeBadge(uid, badgeId, btn){
-  if(!confirm('Revogar esta insígnia?'))return;
-  if(btn){btn.disabled=true;btn.textContent='...';}
+  // Sem confirm() — confirm() é bloqueado silenciosamente em vários ambientes
+  // Proteção: primeiro clique pede confirmação visual no próprio botão
+  if(btn&&btn.dataset.confirming!=='1'){
+    btn.dataset.confirming='1';
+    const orig=btn.textContent;
+    btn.textContent='❓ Confirmar';
+    btn.style.background='var(--orange)';btn.style.color='#000';btn.style.borderColor='var(--orange)';
+    setTimeout(()=>{if(btn.dataset.confirming==='1'){btn.dataset.confirming='';btn.textContent=orig;btn.style.background='';btn.style.color='';btn.style.borderColor='';}},3000);
+    return;
+  }
+  if(btn){btn.disabled=true;btn.dataset.confirming='';btn.textContent='...';}
   try{
     const snap = await db.collection('users').doc(uid).get();
     if(!snap.exists){toast('Usuário não encontrado','error');if(btn){btn.disabled=false;btn.textContent='− Revogar';}return;}
@@ -2531,87 +2636,320 @@ async function adminDeleteReward(rewardId){
 }
 
 // ═══ PERFIL PÚBLICO ═══
+let _pubProfCurrentTab = 'posts';
+let _pubProfCurrentUid = null;
+
 async function openPubProf(uid){
   if(!FIREBASE_OK){toast('Firebase necessário','error');return;}
+  _pubProfCurrentUid = uid;
+  _pubProfCurrentTab = 'posts';
   const modal = document.getElementById('pubProfModal');
-  const content = document.getElementById('pubProfContent');
+  const contentEl = document.getElementById('pubProfContent');
   const headerName = document.getElementById('pubProfHeaderName');
   modal.style.display='flex';
-  content.innerHTML='<div class="empty"><div class="load-spinner" style="margin:40px auto;"></div></div>';
+  contentEl.innerHTML='<div class="empty"><div class="load-spinner" style="margin:60px auto;"></div></div>';
   try{
     const doc = await db.collection('users').doc(uid).get();
-    if(!doc.exists){content.innerHTML='<div class="empty"><div class="empty-ico">👤</div><div class="empty-txt">Perfil não encontrado</div></div>';return;}
+    if(!doc.exists){
+      contentEl.innerHTML='<div class="empty"><div class="empty-ico">👤</div><div class="empty-txt">Perfil não encontrado</div></div>';
+      return;
+    }
     const u = {id:doc.id,...doc.data()};
     headerName.textContent = u.nomeGuerra||'Operador';
     const rank = getRank(u.level||1);
     const role = u.role||'operador';
+    const xpInLv = (u.xp||0) % 100;
+    const focusH = Math.round((u.totalFocusMinutes||0)/60);
+    const trainH = Math.round((u.totalTrainMinutes||0)/60);
+
+    // Badges
     const allBadges = await getAllBadges();
     const userBadgeIds = u.badges||[];
     const earnedBadges = allBadges.filter(b=>userBadgeIds.includes(b.id));
-    // Load posts
-    let postsHTML = '';
-    try{
-      const postsSnap = await db.collection('posts').where('authorId','==',uid).orderBy('timestamp','desc').limit(10).get();
-      if(!postsSnap.empty){
-        const posts=[];postsSnap.forEach(d=>posts.push({id:d.id,...d.data()}));
-        postsHTML=posts.map(p=>{
-          const ts=p.timestamp?.toDate?p.timestamp.toDate().toLocaleDateString('pt-BR',{day:'2-digit',month:'2-digit',hour:'2-digit',minute:'2-digit'}):'—';
-          const tipo=p.tipo||p.type||'relato';
-          const tipoColors={'relato':'var(--blue)','conquista':'var(--gold)','treino':'var(--green)','reflexao':'var(--purple)','auto':'var(--text-3)'};
-          const cor=tipoColors[tipo]||'var(--text-2)';
-          return`<div style="background:var(--bg-card);border:1px solid var(--border);border-radius:14px;padding:14px;margin-bottom:10px;">
-            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;">
-              <span style="font-family:var(--fm);font-size:9px;color:${cor};text-transform:uppercase;letter-spacing:1px;">${tipo}</span>
-              <span style="font-size:10px;color:var(--text-3);">${ts}</span>
-            </div>
-            <div style="font-size:14px;color:var(--text);line-height:1.5;">${escapeHtml(p.texto||'')}</div>
-            <div style="margin-top:8px;font-size:11px;color:var(--text-3);">❤️ ${p.likes||0}</div>
-          </div>`;
-        }).join('');
-      } else {
-        postsHTML='<div class="empty" style="padding:20px 0;"><div class="empty-ico">🧾</div><div class="empty-txt">Sem publicações</div></div>';
-      }
-    }catch(e){postsHTML='<div class="empty-txt" style="color:var(--text-3);font-size:12px;padding:10px 0;">Não foi possível carregar publicações</div>';}
 
-    const xpInLv=(u.xp||0)%100;
-    content.innerHTML=`
-      <div class="profile-hero" style="position:relative;">
-        <div class="avatar-ring">${rank.icon}</div>
+    // Join date
+    let memberSince = '—';
+    if(u.joinDate){memberSince = u.joinDate;}
+    else if(u.createdAt?.toDate){
+      const d = u.createdAt.toDate();
+      memberSince = d.toLocaleDateString('pt-BR',{month:'short',year:'numeric'});
+    }
+
+    // Ranking position (approximate)
+    let rankPos = '';
+    try{
+      const countSnap = await db.collection('users').where('cumulativeXp','>',u.cumulativeXp||0).get();
+      rankPos = `#${countSnap.size+1}`;
+    }catch(e){}
+
+    contentEl.innerHTML = `
+      <!-- HERO -->
+      <div class="profile-hero" style="margin-bottom:16px;">
+        <div class="avatar-ring" style="box-shadow:0 0 40px rgba(255,59,48,.3);">${rank.icon}</div>
         <div class="profile-name">${escapeHtml(u.nomeGuerra||'Operador')}</div>
         <div class="profile-title">${rank.name}</div>
-        <div class="profile-role-display ${getRoleCls(role)}">${getRoleIco(role)}${getRoleLabel(role)}</div>
+        <div class="profile-role-display ${getRoleCls(role)}" style="margin-bottom:8px;">${getRoleIco(role)} ${getRoleLabel(role)}</div>
+        ${rankPos?`<div style="font-family:var(--fm);font-size:11px;color:var(--gold);margin-bottom:8px;">Ranking Global ${rankPos}</div>`:''}
         <div class="xp-bar-wrap">
-          <div class="xp-bar-lbl"><span>${(u.cumulativeXp||u.xp||0).toLocaleString('pt-BR')} XP acumulado</span><span>→ Nível ${(u.level||1)+1}</span></div>
+          <div class="xp-bar-lbl">
+            <span>${(u.cumulativeXp||u.xp||0).toLocaleString('pt-BR')} XP acumulado</span>
+            <span>→ Nível ${(u.level||1)+1}</span>
+          </div>
           <div class="xp-bar-track"><div class="xp-bar-fill" style="width:${xpInLv}%"></div></div>
         </div>
       </div>
 
-      <div class="prof-grid" style="margin-bottom:24px;">
-        <div class="prof-stat"><div class="prof-val" style="color:var(--gold)">${(u.cumulativeXp||u.xp||0).toLocaleString('pt-BR')}</div><div class="prof-lbl">XP Total</div></div>
-        <div class="prof-stat"><div class="prof-val" style="color:var(--blue)">${u.level||1}</div><div class="prof-lbl">Nível</div></div>
-        <div class="prof-stat"><div class="prof-val" style="color:var(--green)">${u.streak||0}</div><div class="prof-lbl">Streak</div></div>
-        <div class="prof-stat"><div class="prof-val" style="color:var(--text-2)">${u.perfectDays||0}</div><div class="prof-lbl">Dias Perfeitos</div></div>
+      <!-- META CHIPS -->
+      <div class="pub-meta-row">
+        <span class="pub-meta-chip chip-streak">🔥 ${u.streak||0} dias streak</span>
+        <span class="pub-meta-chip chip-focus">🎯 ${focusH}h foco</span>
+        ${trainH>0?`<span class="pub-meta-chip" style="border-color:rgba(48,209,88,.3);color:var(--green);">💪 ${trainH}h treino</span>`:''}
+        <span class="pub-meta-chip chip-posts">📋 ${u.postCount||0} posts</span>
+        <span class="pub-meta-chip chip-member">📅 Desde ${memberSince}</span>
       </div>
 
-      <div class="sec-title">🏅 Insígnias (${earnedBadges.length})</div>
-      <div class="badges-grid" style="margin-bottom:24px;">
+      <!-- STATS GRID -->
+      <div class="pub-hero-stats">
+        <div class="pub-stat"><div class="pub-stat-val" style="color:var(--gold)">${(u.cumulativeXp||u.xp||0).toLocaleString('pt-BR')}</div><div class="pub-stat-lbl">XP Total</div></div>
+        <div class="pub-stat"><div class="pub-stat-val" style="color:var(--blue)">${u.level||1}</div><div class="pub-stat-lbl">Nível</div></div>
+        <div class="pub-stat"><div class="pub-stat-val" style="color:var(--text-2)">${u.perfectDays||0}</div><div class="pub-stat-lbl">Dias Perfeitos</div></div>
+      </div>
+
+      <!-- INSÍGNIAS -->
+      <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:1.5px;color:var(--text-2);margin-bottom:10px;">🏅 Insígnias (${earnedBadges.length})</div>
+      <div class="pub-badge-list" style="margin-bottom:20px;">
         ${earnedBadges.length
-          ?earnedBadges.map(b=>`<div class="badge-card earned"><div class="badge-ico">${b.ico||'🏅'}</div><div class="badge-name">${escapeHtml(b.name)}</div><div class="badge-desc">${escapeHtml(b.desc||'')}</div></div>`).join('')
-          :'<div class="empty-txt" style="color:var(--text-3);font-size:12px;grid-column:1/-1;text-align:center;padding:16px 0;">Nenhuma insígnia conquistada ainda</div>'
+          ? earnedBadges.map(b=>`<div class="pub-badge-chip"><span class="pub-badge-chip-ico">${b.ico||'🏅'}</span><span>${escapeHtml(b.name)}</span></div>`).join('')
+          : '<span class="pub-no-badges">Nenhuma insígnia ainda</span>'
         }
       </div>
 
-      <div class="sec-title">🧾 Publicações</div>
-      ${postsHTML}
+      <!-- TABS -->
+      <div class="pub-prof-tabs" id="pubProfTabRow">
+        <div class="pub-prof-tab active" id="pubTab-posts" onclick="switchPubTab('posts')">📋 Publicações</div>
+        <div class="pub-prof-tab" id="pubTab-replies" onclick="switchPubTab('replies')">💬 Respostas</div>
+      </div>
+      <div id="pubProfTabContent"></div>
     `;
+
+    // Load posts tab by default
+    await loadPubProfTab('posts', uid);
+
   }catch(e){
-    content.innerHTML=`<div class="empty"><div class="empty-ico">⚠️</div><div class="empty-txt">Erro ao carregar perfil</div></div>`;
+    contentEl.innerHTML=`<div class="empty"><div class="empty-ico">⚠️</div><div class="empty-txt">Erro ao carregar perfil</div></div>`;
     console.error(e);
   }
 }
 
+async function switchPubTab(tab){
+  _pubProfCurrentTab = tab;
+  document.querySelectorAll('.pub-prof-tab').forEach(t=>t.classList.remove('active'));
+  const btn = document.getElementById('pubTab-'+tab);if(btn)btn.classList.add('active');
+  await loadPubProfTab(tab, _pubProfCurrentUid);
+}
+
+async function loadPubProfTab(tab, uid){
+  const el = document.getElementById('pubProfTabContent');if(!el)return;
+  el.innerHTML = '<div class="empty"><div class="load-spinner" style="margin:24px auto;"></div></div>';
+  try{
+    if(tab === 'posts'){
+      const snap = await db.collection('posts').where('authorId','==',uid).orderBy('timestamp','desc').limit(20).get();
+      if(snap.empty){
+        el.innerHTML='<div class="empty" style="padding:24px 0;"><div class="empty-ico">🧾</div><div class="empty-txt">Nenhuma publicação ainda</div></div>';
+        return;
+      }
+      const posts=[];snap.forEach(d=>posts.push({id:d.id,...d.data()}));
+      el.innerHTML = posts.map(p => buildPubProfPostCard(p)).join('');
+    } else if(tab === 'replies'){
+      const snap = await db.collection('replies').where('authorId','==',uid).orderBy('timestamp','desc').limit(20).get();
+      if(snap.empty){
+        el.innerHTML='<div class="empty" style="padding:24px 0;"><div class="empty-ico">💬</div><div class="empty-txt">Nenhuma resposta ainda</div></div>';
+        return;
+      }
+      const replies=[];snap.forEach(d=>replies.push({id:d.id,...d.data()}));
+      el.innerHTML = replies.map(r=>{
+        const ts = r.timestamp?.toDate ? r.timestamp.toDate().toLocaleString('pt-BR',{day:'2-digit',month:'2-digit',hour:'2-digit',minute:'2-digit'}) : '—';
+        return`<div style="background:var(--bg-card);border:1px solid var(--border);border-radius:14px;padding:14px;margin-bottom:10px;">
+          <div style="font-size:10px;color:var(--text-3);margin-bottom:6px;font-family:var(--fm);">
+            ↩ Respondendo a <span style="color:var(--blue);cursor:pointer;" onclick="openPubProf('${r.parentAuthorId||''}')">${escapeHtml(r.parentAuthorName||'?')}</span> · ${ts}
+          </div>
+          <div style="font-size:14px;line-height:1.5;">${escapeHtml(r.text||'')}</div>
+          <div style="margin-top:6px;font-size:11px;color:var(--text-3);">❤️ ${r.likes||0}</div>
+        </div>`;
+      }).join('');
+    }
+  }catch(e){
+    el.innerHTML='<div class="empty"><div class="empty-ico">⚠️</div><div class="empty-txt">Erro ao carregar</div></div>';
+    console.error(e);
+  }
+}
+
+function buildPubProfPostCard(p){
+  const tipo = p.tipo||'relato';
+  const tipoTagCls = `tipo-tag-${tipo}`;
+  const tipoTag = {relato:'📋 Relato',conquista:'🏆 Conquista',pergunta:'❓ Pergunta',auto:'⚡ Sistema'}[tipo]||'📋 Relato';
+  const ts = p.timestamp?.toDate ? p.timestamp.toDate().toLocaleString('pt-BR',{day:'2-digit',month:'2-digit',hour:'2-digit',minute:'2-digit'}) : '—';
+  return`<div class="post-card tipo-${tipo}" style="margin-bottom:10px;">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;">
+      <span class="post-tipo-tag ${tipoTagCls}">${tipoTag}</span>
+      <span style="font-size:10px;color:var(--text-3);">${ts}</span>
+    </div>
+    <div class="post-text">${escapeHtml(p.texto||'')}</div>
+    <div class="post-footer" style="margin-top:10px;">
+      <span class="post-xp-badge">+${p.xpDoDia||0} XP</span>
+      <span style="font-size:11px;color:var(--text-3);">❤️ ${p.likes||0} · 💬 ${p.replyCount||0}</span>
+    </div>
+  </div>`;
+}
+
 function closePubProf(){
   document.getElementById('pubProfModal').style.display='none';
+  _pubProfCurrentUid = null;
+}
+
+// ═══ SISTEMA DE RESPOSTAS ═══
+let _replyTargetPostId = null;
+let _replyTargetPostAuthorId = null;
+let _replyTargetPostAuthorName = null;
+let _loadedReplies = {}; // cache de replies carregadas
+
+async function toggleReplies(postId, btn){
+  const container = document.getElementById('replies-'+postId);
+  if(!container)return;
+  const isOpen = container.style.display !== 'none';
+  if(isOpen){
+    container.style.display='none';
+    return;
+  }
+  container.style.display='block';
+  if(container.dataset.loaded){return;}
+  container.dataset.loaded = '1';
+  await loadReplies(postId, container);
+}
+
+async function loadReplies(postId, container){
+  if(!container)container = document.getElementById('replies-'+postId);
+  if(!container)return;
+
+  const myRank = getRank(D.level).icon;
+  // Compose box always on top
+  container.innerHTML = `
+    <div class="reply-compose" style="margin-bottom:10px;">
+      <div class="reply-compose-avatar">${myRank}</div>
+      <textarea class="reply-input" placeholder="Escreva uma resposta..." rows="2"
+        oninput="this.style.height='auto';this.style.height=this.scrollHeight+'px';"
+        id="replyInput-${postId}"></textarea>
+      <button class="btn-send-reply" onclick="sendReplyInline('${postId}',this)">→</button>
+    </div>
+    <div id="replyList-${postId}"><div style="text-align:center;padding:10px;"><span style="font-size:12px;color:var(--text-3);">Carregando...</span></div></div>
+  `;
+
+  if(!FIREBASE_OK)return;
+  try{
+    const snap = await db.collection('posts').doc(postId).collection('replies').orderBy('timestamp','asc').limit(20).get();
+    const replies=[];snap.forEach(d=>replies.push({id:d.id,...d.data()}));
+    _loadedReplies[postId] = replies;
+    renderReplyList(postId, replies);
+  }catch(e){
+    const el=document.getElementById('replyList-'+postId);
+    if(el)el.innerHTML='<div style="font-size:11px;color:var(--text-3);padding:8px 0;">Não foi possível carregar respostas.</div>';
+  }
+}
+
+function renderReplyList(postId, replies){
+  const el=document.getElementById('replyList-'+postId);if(!el)return;
+  if(!replies.length){
+    el.innerHTML='<div style="font-size:11px;color:var(--text-3);padding:6px 0;">Seja o primeiro a responder.</div>';
+    return;
+  }
+  el.innerHTML = replies.map(r=>{
+    const ts = r.timestamp?.toDate ? r.timestamp.toDate().toLocaleString('pt-BR',{day:'2-digit',month:'2-digit',hour:'2-digit',minute:'2-digit'}) : '—';
+    const rank = getRank(r.nivel||1);
+    const canViewProf = r.authorId && FIREBASE_OK && currentUser && r.authorId!==currentUser.uid;
+    return`<div class="reply-card" id="reply-${r.id}">
+      <div class="reply-avatar" ${canViewProf?`onclick="openPubProf('${r.authorId}')"`:''} title="${canViewProf?'Ver perfil':''}">${rank.icon}</div>
+      <div class="reply-body">
+        <div class="reply-name" ${canViewProf?`onclick="openPubProf('${r.authorId}')"`:''}>
+          ${escapeHtml(r.nomeGuerra||'Operador')}
+          <span class="role-badge ${getRoleCls(r.role||'operador')}" style="font-size:7px;">${getRoleLabel(r.role||'operador')}</span>
+        </div>
+        <div class="reply-time">${ts}</div>
+        <div class="reply-text">${escapeHtml(r.text||'')}</div>
+        <div class="reply-footer">
+          <button class="btn-reply-like" onclick="likeReply('${postId}','${r.id}',this)">❤ ${r.likes||0}</button>
+        </div>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+async function sendReplyInline(postId, btn){
+  if(!FIREBASE_OK||!currentUser){toast('Faça login para responder','error');return;}
+  const input = document.getElementById('replyInput-'+postId);
+  const text = (input?.value||'').trim();
+  if(!text){toast('Escreva algo primeiro','error');return;}
+  if(btn)btn.disabled=true;
+  try{
+    const role = D.role||computeRole();
+    const replyData = {
+      authorId: currentUser.uid,
+      nomeGuerra: D.name,
+      text,
+      role,
+      nivel: D.level,
+      timestamp: firebase.firestore.FieldValue.serverTimestamp(),
+      likes: 0
+    };
+    // Save to subcollection
+    await db.collection('posts').doc(postId).collection('replies').add(replyData);
+    // Also save to top-level /replies collection for profile "Respostas" tab
+    // Get parent post info first
+    let parentAuthorId='', parentAuthorName='';
+    try{
+      const pSnap = await db.collection('posts').doc(postId).get();
+      if(pSnap.exists){parentAuthorId=pSnap.data().authorId||'';parentAuthorName=pSnap.data().nomeGuerra||'';}
+    }catch(e){}
+    await db.collection('replies').add({
+      ...replyData,
+      postId,
+      parentAuthorId,
+      parentAuthorName
+    });
+    // Increment replyCount on post
+    await db.collection('posts').doc(postId).update({
+      replyCount: firebase.firestore.FieldValue.increment(1)
+    });
+    // Update counter on DOM
+    const counterEl = document.querySelector('.reply-count-'+postId);
+    if(counterEl)counterEl.textContent = parseInt(counterEl.textContent||'0')+1;
+    input.value='';input.style.height='auto';
+    // Reload replies
+    const container = document.getElementById('replies-'+postId);
+    if(container){container.dataset.loaded='';await loadReplies(postId,container);}
+    toast('💬 Resposta publicada!','success');
+  }catch(e){
+    toast('Erro ao responder: '+e.message,'error');
+    if(btn)btn.disabled=false;
+  }
+}
+
+async function likeReply(postId, replyId, btn){
+  if(!FIREBASE_OK||!currentUser)return;
+  if(btn.dataset.liked){toast('Já curtiu','info');return;}
+  btn.dataset.liked='1';btn.classList.add('liked');
+  try{
+    await db.collection('posts').doc(postId).collection('replies').doc(replyId).update({
+      likes: firebase.firestore.FieldValue.increment(1)
+    });
+    const cur = parseInt(btn.textContent.replace(/[^0-9]/g,''))||0;
+    btn.textContent = '❤ '+(cur+1);
+  }catch(e){btn.dataset.liked='';btn.classList.remove('liked');}
+}
+
+// Modal reply (legacy — kept for compatibility)
+function closeReplyModal(){
+  document.getElementById('replyModal').style.display='none';
+  _replyTargetPostId=null;
 }
 
 </script>
