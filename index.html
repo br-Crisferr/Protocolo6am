@@ -276,12 +276,25 @@
     .badge-new-tag{position:absolute;top:-5px;right:-5px;background:var(--red);color:#fff;font-size:8px;font-weight:700;padding:2px 6px;border-radius:20px;text-transform:uppercase;animation:badgePop .5s ease both;}
 
     /* ══ CALENDAR ══ */
-    .cal-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:4px;margin-bottom:24px;}
-    .cal-day{aspect-ratio:1;border-radius:4px;background:var(--bg-elevated);cursor:default;position:relative;}
-    .cal-day.c-perfect{background:var(--green);}.cal-day.c-partial{background:var(--orange);}
-    .cal-day.c-fail{background:var(--red);}.cal-day.c-future{background:var(--bg);opacity:.3;}
+    .cal-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:5px;margin-bottom:24px;}
+    .cal-day{aspect-ratio:1;border-radius:8px;background:#1e1e1e;border:1px solid #2a2a2a;cursor:default;position:relative;display:flex;flex-direction:column;align-items:flex-end;justify-content:flex-end;padding:4px;box-sizing:border-box;}
+    .cal-day-num{font-size:11px;font-weight:700;line-height:1;color:rgba(255,255,255,.5);}
+    .cal-day.c-today .cal-day-num{color:var(--gold);}
+    .cal-day.c-perfect{background:rgba(48,209,88,.22);border-color:rgba(48,209,88,.4);}
+    .cal-day.c-perfect .cal-day-num{color:#30d158;}
+    .cal-day.c-partial{background:rgba(255,159,10,.18);border-color:rgba(255,159,10,.35);}
+    .cal-day.c-partial .cal-day-num{color:var(--orange);}
+    .cal-day.c-fail{background:rgba(255,59,48,.18);border-color:rgba(255,59,48,.35);}
+    .cal-day.c-fail .cal-day-num{color:var(--red);}
+    .cal-day.c-future{background:#181818;border-color:#222;opacity:.6;}
+    .cal-day.c-future .cal-day-num{color:rgba(255,255,255,.25);}
+    .cal-day.c-none{background:#1e1e1e;border-color:#282828;}
     .cal-day.c-today{outline:2px solid var(--gold);outline-offset:1px;}
-    .cal-day.c-none{background:var(--bg-elevated);}
+    .cal-hdr{display:flex;align-items:center;justify-content:space-between;margin-bottom:6px;}
+    .cal-hdr-title{font-family:var(--fm);font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:var(--text-2);}
+    .cal-legend{display:flex;gap:10px;margin-bottom:8px;flex-wrap:wrap;}
+    .cal-legend-item{display:flex;align-items:center;gap:4px;font-size:9px;color:var(--text-3);}
+    .cal-legend-dot{width:7px;height:7px;border-radius:2px;flex-shrink:0;}
 
     /* ══ MURAL DE OPERAÇÕES ══ */
     .mural-compose{background:var(--bg-card);border:1px solid var(--border);border-radius:16px;padding:16px;margin-bottom:16px;}
@@ -664,15 +677,7 @@
       <div id="profGrid" class="prof-grid"></div>
       <div class="sec-title">🏅 Insígnias</div>
       <div id="badgesGrid" class="badges-grid"></div>
-      <div class="sec-title" style="display:flex;align-items:center;justify-content:space-between;">
-        <span>📅 Próximos 35 dias</span>
-        <span style="font-size:9px;color:var(--text-3);font-weight:400;display:flex;gap:8px;">
-          <span style="display:inline-flex;align-items:center;gap:3px;"><span style="width:8px;height:8px;border-radius:2px;background:var(--green);display:inline-block;"></span>Perfeito</span>
-          <span style="display:inline-flex;align-items:center;gap:3px;"><span style="width:8px;height:8px;border-radius:2px;background:var(--orange);display:inline-block;"></span>Parcial</span>
-          <span style="display:inline-flex;align-items:center;gap:3px;"><span style="width:8px;height:8px;border-radius:2px;background:var(--red);display:inline-block;"></span>Falha</span>
-        </span>
-      </div>
-      <div id="profileCalendar" class="cal-grid"></div>
+      <div id="profileCalendar"></div>
       <div class="sec-title">📋 Últimas Ações</div>
       <div id="profHist"></div>
       <div class="danger-zone">
@@ -808,7 +813,7 @@
       <textarea class="reply-input" id="replyText" placeholder="Sua resposta..." rows="3" oninput="this.style.height='auto';this.style.height=this.scrollHeight+'px';document.getElementById('btnSendReply').disabled=!this.value.trim();"></textarea>
     </div>
     <div style="display:flex;justify-content:flex-end;margin-top:8px;">
-      <button class="btn-send-reply" id="btnSendReply" disabled onclick="sendReply()">Responder →</button>
+      <button class="btn-send-reply" id="btnSendReply" disabled onclick="closeReplyModal()">Fechar</button>
     </div>
   </div>
 </div>
@@ -923,8 +928,8 @@ const BADGES=[
   {id:'perfect-3',ico:'💫',name:'Trio Perfeito',desc:'3 dias perfeitos consecutivos',check:d=>(d.consecutivePerfect||0)>=3},
   {id:'level-5',ico:'🎖️',name:'Veterano',desc:'Alcance o nível 5',check:d=>d.level>=5},
   {id:'level-10',ico:'🦅',name:'Elite',desc:'Alcance o nível 10',check:d=>d.level>=10},
-  {id:'xp-500',ico:'💰',name:'Acumulador',desc:'Acumule 500 XP total',check:d=>d.xp>=500},
-  {id:'xp-1000',ico:'🏆',name:'Milhar de Ferro',desc:'Acumule 1000 XP total',check:d=>d.xp>=1000},
+  {id:'xp-500',ico:'💰',name:'Acumulador',desc:'Acumule 500 XP total',check:d=>(d.cumulativeXp||d.xp||0)>=500},
+  {id:'xp-1000',ico:'🏆',name:'Milhar de Ferro',desc:'Acumule 1000 XP total',check:d=>(d.cumulativeXp||d.xp||0)>=1000},
   {id:'tasks-50',ico:'⚔️',name:'Máquina',desc:'Conclua 50 tarefas no total',check:d=>(d.totalCompleted||0)>=50},
   {id:'extremo',ico:'🔴',name:'Extremista',desc:'Conclua uma tarefa no nível Extremo',check:d=>!!d.extremoCompleted},
   {id:'custom-task',ico:'🔧',name:'Construtor',desc:'Crie sua primeira tarefa personalizada',check:d=>(d.customTasks||[]).length>=1},
@@ -1025,6 +1030,8 @@ function buildFirestorePayload(){
     hiddenTasks: D.hiddenTasks||[],
     joinDate: D.joinDate||td(),
     postCount: D.postCount||0,
+    ligaId: D.ligaId||null,
+    ligaCode: D.ligaCode||'',
     uid: currentUser.uid,
     updatedAt: firebase.firestore.FieldValue.serverTimestamp()
   };
@@ -1063,17 +1070,12 @@ async function mergeFirebaseData(fbData){
   D.totalCompleted = fbData.totalCompleted||D.totalCompleted||0;
   D.perfilPublico = fbData.perfilPublico !== false;
   if(fbData.ligaId)D.ligaId = fbData.ligaId;
-  // Badges: Firebase always wins — admin grants are stored there
+  // Badges: Firestore é a fonte absoluta — evita re-adicionar badges revogadas
   if(fbData.badges && Array.isArray(fbData.badges)){
-    // Merge: keep local badges + any new ones from Firebase
-    const merged = [...new Set([...(D.badges||[]),...fbData.badges])];
-    D.badges = merged;
+    D.badges = [...fbData.badges]; // confia totalmente no Firestore
   }
-  // Always preserve admin-granted badges (can't be removed by local sync)
   if(fbData.adminBadges && Array.isArray(fbData.adminBadges)){
     D.adminBadges = fbData.adminBadges;
-    // Ensure adminBadges are always in D.badges
-    D.badges = [...new Set([...(D.badges||[]),...fbData.adminBadges])];
   }
   // hiddenTasks: Firebase wins (tasks removed on one device sync to all)
   if(fbData.hiddenTasks && Array.isArray(fbData.hiddenTasks) && fbData.hiddenTasks.length>0){
@@ -1157,6 +1159,7 @@ async function doRegister(){
       totalCompleted:0, wakeCount:0, perfectDays:0, role:'operador',
       premium:false, perfilPublico:true, totalFocusMinutes:0, totalTrainMinutes:0,
       badges:[], clockTampered:false, ligaCode:nd.ligaCode,
+      joinDate: td(), postCount:0,
       createdAt: firebase.firestore.FieldValue.serverTimestamp()
     });
     D = nd;
@@ -1184,7 +1187,15 @@ function authErrorMsg(code){
 }
 
 async function doSignOut(){
-  if(!confirm('Sair do protocolo?'))return;
+  // confirm() é bloqueado silenciosamente em PWA/mobile — usar botão de confirmação dupla
+  const btn = event?.target;
+  if(btn&&btn.dataset.confirmSignout!=='1'){
+    btn.dataset.confirmSignout='1';
+    btn.textContent='❓ Confirmar saída';
+    setTimeout(()=>{if(btn.dataset.confirmSignout==='1'){btn.dataset.confirmSignout='';btn.textContent='🚪 Sair';}},3000);
+    return;
+  }
+  if(btn)btn.dataset.confirmSignout='';
   if(muralUnsubscribe)muralUnsubscribe();
   if(rankingUnsubscribe)rankingUnsubscribe();
   if(_userDocUnsubscribe)_userDocUnsubscribe();
@@ -1298,9 +1309,23 @@ function chkDay(){
       const yd=new Date();yd.setDate(yd.getDate()-1);
       if(D.lastPerfectDay===yd.toLocaleDateString('pt-BR'))D.consecutivePerfect=(D.consecutivePerfect||0)+1;
       else D.consecutivePerfect=1;D.lastPerfectDay=D.today;
-    }else D.consecutivePerfect=0;
+    } else {
+      D.consecutivePerfect=0;
+      // BUG 3 FIX: Streak reseta quando dia não é completo
+      // BUG 6 FIX: StreakShield protege contra 1 miss
+      if(D.streak>0){
+        if(D.streakShield){
+          D.streakShield=false;
+          toast('🛡️ Escudo de Streak usado! Streak protegido.','gold');
+          autoPost(`🛡️ ${D.name} usou o Escudo de Streak e manteve ${D.streak} dias!`,'auto');
+        } else {
+          D.streak=0;
+        }
+      }
+    }
     D.today=td();D.completedToday={};D.failedToday={};D.partialToday={};
     D.stoppedToday={};D.timerData={};D.dayOffUsed=false;D._perfectMarkedToday=false;
+    D._postedPerfectToday=false; // BUG 7 FIX: resetar para próximo dia perfeito
     if(D.doubleXp&&D.doubleXpDate!==td())D.doubleXp=false;
     sv();
   }
@@ -1358,10 +1383,10 @@ function autoFail(){
       } else if(D.stoppedToday[id]&&!D.partialToday[id]){
         const acc=(D.timerData[id]?.accumulated||0)/1000;
         if(acc>30){D.partialToday[id]=true;const xp=Math.round(effXP(def)*0.5);addXP(xp);addHist(def.name,xp,'partial');sv();}
-        else{D.failedToday[id]=true;const pen=Math.round(effXP(def)*0.5);D.xp=Math.max(0,D.xp-pen);addHist(def.name,-pen,'failed');sv();}
+        else{D.failedToday[id]=true;const pen=Math.round(effXP(def)*0.5);D.xp=Math.max(0,D.xp-pen);D.level=getLv(D.cumulativeXp);addHist(def.name,-pen,'failed');sv();}
       } else if(!D.stoppedToday[id]){
         if(D.dayOffUsed&&!D.failedToday[id]){D.completedToday[id]=true;D.dayOffUsed=false;addHist(def.name,0,'success');sv();}
-        else{D.failedToday[id]=true;const pen=Math.round(effXP(def)*0.5);D.xp=Math.max(0,D.xp-pen);addHist(def.name,-pen,'failed');sv();}
+        else{D.failedToday[id]=true;const pen=Math.round(effXP(def)*0.5);D.xp=Math.max(0,D.xp-pen);D.level=getLv(D.cumulativeXp);addHist(def.name,-pen,'failed');sv();}
       }
     }
   }
@@ -1369,7 +1394,8 @@ function autoFail(){
 
 function addXP(amount){
   const prev=D.level;D.xp+=amount;D.cumulativeXp=(D.cumulativeXp||0)+amount;
-  D.level=getLv(D.xp);if(D.level>prev){showLvlUp(D.level);autoPost(`${getRank(D.level).icon} ${D.name} alcançou Nível ${D.level} — ${getRank(D.level).name}!`,'auto');}
+  D.level=getLv(D.cumulativeXp); // Nível baseado em XP acumulado, nunca decresce
+  if(D.level>prev){showLvlUp(D.level);autoPost(`${getRank(D.level).icon} ${D.name} alcançou Nível ${D.level} — ${getRank(D.level).name}!`,'auto');}
 }
 
 function addHist(task,xp,type){
@@ -1403,7 +1429,8 @@ function completeTask(id){
   if(id==='workout'&&D.timerData[id]){const mins=Math.round((D.timerData[id].accumulated||0)/60000);D.totalTrainMinutes=(D.totalTrainMinutes||0)+mins;}
   addXP(xp);addHist(def.name,xp,'success');
   // Check streak
-  const all=getAll();const allDone=all.every(t=>D.completedToday[t.id]);
+  const all=getAll();const allDone=all.every(t=>D.completedToday[t.id]); // streak exige 100% concluído
+  const allFinished=all.every(t=>D.completedToday[t.id]||D.partialToday[t.id]); // dia encerrado (com ou sem partial)
   if(allDone&&!D._perfectMarkedToday){
     D.streak=(D.streak||0)+1;D._perfectMarkedToday=true;
     if([3,7,14,30,60,100].includes(D.streak)){
@@ -1485,7 +1512,13 @@ function rdDayProg(){
 
 function deleteTask(id){
   if(id==='wake'){toast('⛔ A tarefa Acordar não pode ser removida','error');return;}
-  if(!confirm('Remover esta tarefa?'))return;
+  const btn=event?.target;
+  if(btn&&btn.dataset.confirmDel!=='1'){
+    btn.dataset.confirmDel='1';const orig=btn.textContent;btn.textContent='❓';
+    setTimeout(()=>{if(btn.dataset.confirmDel==='1'){btn.dataset.confirmDel='';btn.textContent=orig;}},3000);
+    return;
+  }
+  if(btn)btn.dataset.confirmDel='';
   const isCustom=D.customTasks.some(t=>t.id===id);
   if(isCustom){
     D.customTasks=D.customTasks.filter(t=>t.id!==id);
@@ -1513,7 +1546,8 @@ function claimR(id){
   else if(id==='day-off'){D.dayOffUsed=true;toast('🏖️ Dia de folga ativado!','gold');}
   else if(id==='reset-fail'){const f=Object.keys(D.failedToday);if(f.length>0){delete D.failedToday[f[0]];toast('🔄 Falha removida!','success');}else{D.xp+=r.cost;toast('Sem falhas para resetar','info');sv();return;}}
   else if(id==='streak-shield'){D.streakShield=true;toast('🛡️ Escudo ativo!','gold');}
-  D.level=getLv(D.xp);addHist(`Resgate: ${r.name}`,-r.cost,'resgate');sv();updateTop();renderRew();
+  D.level=getLv(D.cumulativeXp); // Nível não cai ao gastar XP
+  addHist(`Resgate: ${r.name}`,-r.cost,'resgate');sv();updateTop();renderRew();
 }
 
 // ═══ PROFILE ═══
@@ -1526,8 +1560,8 @@ function renderProf(){
   const roleCls=getRoleCls(role);const roleLabel=getRoleLabel(role);const roleIco=getRoleIco(role);
   const rd=document.getElementById('profRoleDisplay');
   rd.className=`profile-role-display ${roleCls}`;rd.textContent=roleIco+roleLabel;
-  const xpInLv=D.xp%100;
-  document.getElementById('profXpCur').textContent=`${D.cumulativeXp||D.xp} XP acumulado`;
+  const xpInLv=(D.cumulativeXp||D.xp)%100; // usa cumulativeXp — nível agora baseado nele
+  document.getElementById('profXpCur').textContent=`${(D.cumulativeXp||D.xp).toLocaleString('pt-BR')} XP acumulado`;
   document.getElementById('profXpNext').textContent=`→ Nível ${D.level+1}`;
   document.getElementById('profXpBar').style.width=`${xpInLv}%`;
   const all=getAll(),done=all.filter(d=>D.completedToday[d.id]).length,fail=Object.keys(D.failedToday).length;
@@ -1547,34 +1581,89 @@ function renderProf(){
   ph.innerHTML=D.history.slice(0,5).map(h=>{const c=h.xp>0?'pos':h.xp<0?'neg':'zero';const x=h.xp>0?`+${h.xp}`:h.xp===0?'0':`${h.xp}`;const dt=new Date(h.date).toLocaleString('pt-BR',{day:'2-digit',month:'2-digit',hour:'2-digit',minute:'2-digit'});return`<div class="hist-item ${h.type}"><div><div class="hist-name">${h.task}</div><div class="hist-date">${dt}</div></div><div class="hist-xp ${c}">${x} XP</div></div>`;}).join('');
 }
 
-function renderCalendar(){
-  // Calendário FUTURO: hoje + próximos 34 dias
+let _calViewYear = null;
+let _calViewMonth = null;
+
+function renderCalendar(yearOff=0, monthOff=0){
   const el=document.getElementById('profileCalendar');if(!el)return;
-  const today=new Date();today.setHours(0,0,0,0);
-  const todayStr=td();const cells=[];
+  const realToday=new Date();realToday.setHours(0,0,0,0);
+  const todayStr=td();
+
+  if(_calViewYear===null){ _calViewYear=realToday.getFullYear(); _calViewMonth=realToday.getMonth(); }
+  _calViewYear += yearOff;
+  _calViewMonth += monthOff;
+  // Wrap months
+  if(_calViewMonth>11){_calViewMonth=0;_calViewYear++;}
+  if(_calViewMonth<0){_calViewMonth=11;_calViewYear--;}
+
+  const y=_calViewYear, m=_calViewMonth;
+  const monthNames=['Janeiro','Fevereiro','Março','Abril','Maio','Junho','Julho','Agosto','Setembro','Outubro','Novembro','Dezembro'];
+  const wdNames=['Dom','Seg','Ter','Qua','Qui','Sex','Sáb'];
+
+  // First day of month and total days
+  const firstDay=new Date(y,m,1).getDay(); // 0=Sun
+  const daysInMonth=new Date(y,m+1,0).getDate();
+
+  // Build day status helper
   const all=getAll();
   const doneNow=all.filter(t=>D.completedToday[t.id]).length;
   const failNow=Object.keys(D.failedToday||{}).length;
-  for(let i=0;i<35;i++){
-    const d=new Date(today);d.setDate(today.getDate()+i);
-    const day=d.getDate();
-    const isToday=(i===0);
-    let cls,title;
-    if(isToday){
-      // Status real de hoje
-      if(doneNow===all.length&&all.length>0){cls='cal-day c-perfect c-today';title='Hoje — Dia Perfeito ⭐';}
-      else if(failNow>0){cls='cal-day c-fail c-today';title='Hoje — com falhas';}
-      else if(doneNow>0){cls='cal-day c-partial c-today';title='Hoje — em progresso';}
-      else{cls='cal-day c-none c-today';title='Hoje';}
-    } else {
-      // Dia futuro — cinza
-      cls='cal-day c-future';
-      const monthNames=['Jan','Fev','Mar','Abr','Mai','Jun','Jul','Ago','Set','Out','Nov','Dez'];
-      title=`${day} ${monthNames[d.getMonth()]}`;
+
+  function getCalDayStatus(dateObj){
+    dateObj.setHours(0,0,0,0);
+    const dStr=dateObj.toLocaleDateString('pt-BR');
+    if(dStr===todayStr){
+      // Today: real-time status
+      if(doneNow===all.length&&all.length>0) return 'c-perfect';
+      if(failNow>0) return 'c-fail';
+      if(doneNow>0) return 'c-partial';
+      return 'c-none';
     }
-    cells.push(`<div class="${cls}" title="${title}" style="font-size:8px;color:rgba(255,255,255,${isToday?'.9':'.25'});display:flex;align-items:flex-end;justify-content:flex-start;padding:2px;line-height:1;">${day}</div>`);
+    if(dateObj>realToday) return 'c-future';
+    // Past day: look in calendarData
+    const hist=D.calendarData&&D.calendarData[dStr];
+    if(!hist) return 'c-none'; // no data = user didn't use app
+    if(hist.done===hist.total&&hist.total>0) return 'c-perfect';
+    if(hist.fail>0) return 'c-fail';
+    if(hist.done>0||hist.partial>0) return 'c-partial';
+    return 'c-none';
   }
-  el.innerHTML=cells.join('');
+
+  // Weekday headers
+  const wdHTML=wdNames.map(w=>`<div class="cal-wd">${w}</div>`).join('');
+
+  // Empty slots for first week
+  let cells=[];
+  for(let e=0;e<firstDay;e++) cells.push(`<div class="cal-day c-empty"></div>`);
+
+  // Day cells
+  for(let d=1;d<=daysInMonth;d++){
+    const dateObj=new Date(y,m,d);
+    const isToday=(dateObj.getTime()===realToday.getTime());
+    const status=getCalDayStatus(new Date(y,m,d));
+    const isFuture=status==='c-future';
+    const title=`${d} ${monthNames[m]}${isToday?' — Hoje':''}`;
+    cells.push(`<div class="cal-day ${status}${isToday?' c-today':''}" title="${title}">${d}</div>`);
+  }
+
+  const isCurrentMonth=(y===realToday.getFullYear()&&m===realToday.getMonth());
+
+  el.innerHTML=`
+    <div class="cal-wrap">
+      <div class="cal-nav">
+        <button class="cal-nav-btn" onclick="renderCalendar(0,-1)">‹</button>
+        <span class="cal-month-label">${monthNames[m]} ${y}</span>
+        <button class="cal-nav-btn" onclick="renderCalendar(0,1)" ${isCurrentMonth?'style="opacity:.35;pointer-events:none;"':''}>›</button>
+      </div>
+      <div class="cal-weekdays">${wdHTML}</div>
+      <div class="cal-grid">${cells.join('')}</div>
+      <div class="cal-legend">
+        <div class="cal-legend-item"><div class="cal-legend-dot" style="background:var(--green)"></div>Perfeito</div>
+        <div class="cal-legend-item"><div class="cal-legend-dot" style="background:var(--orange)"></div>Parcial</div>
+        <div class="cal-legend-item"><div class="cal-legend-dot" style="background:var(--red)"></div>Falha</div>
+        <div class="cal-legend-item"><div class="cal-legend-dot" style="background:var(--bg-elevated);border:1px solid var(--border);"></div>Sem dados</div>
+      </div>
+    </div>`;
 }
 
 // ═══ TOP BAR ═══
@@ -1635,7 +1724,14 @@ function saveEdit(){
   const time=document.getElementById('eTime').value;const win=parseInt(document.getElementById('eWindow').value)||60;const dur=parseInt(document.getElementById('eDuration').value)||30;
   const dEl=document.querySelector('#editDiffSel .diff-opt[class*="sel-"]');const diff=dEl?dEl.dataset.d:'normal';
   const allT=getAll();const def=allT.find(t=>t.id===id);const taskName=def?def.name:'tarefa';
-  if(!confirm(`✏️ Confirmar edição de "${taskName}"?\n\nPróxima edição disponível em 3 dias.`))return;
+  // confirm() bloqueado em mobile — botão Save vira confirmação
+  const saveBtn=document.getElementById('editSaveBtn');
+  if(saveBtn&&saveBtn.dataset.confirmEdit!=='1'){
+    saveBtn.dataset.confirmEdit='1';saveBtn.textContent='❓ Confirmar edição';
+    setTimeout(()=>{if(saveBtn.dataset.confirmEdit==='1'){saveBtn.dataset.confirmEdit='';saveBtn.textContent='💾 Salvar';}},4000);
+    return;
+  }
+  if(saveBtn)saveBtn.dataset.confirmEdit='';
   const custom=D.customTasks.find(t=>t.id===id);
   if(custom){custom.time=time;custom.window=win;custom.duration=dur;custom.difficulty=diff;}
   else{D.taskOverrides[id]={time,window:win,duration:dur,difficulty:diff};}
@@ -1673,7 +1769,17 @@ function showBadgeFlash(b){document.getElementById('bfIco').textContent=b.ico;do
 function closeBadgeFlash(){document.getElementById('badgeFlash').classList.remove('show');}
 
 // ═══ RESET ═══
-function resetAll(){if(!confirm('⚠️ ATENÇÃO\n\nIsso apagará TODOS os dados locais.\n\nTem certeza?'))return;localStorage.removeItem(KEY);location.reload();}
+function resetAll(){
+  const btn=event?.target;
+  if(btn&&btn.dataset.confirmReset!=='1'){
+    btn.dataset.confirmReset='1';const orig=btn.textContent;
+    btn.textContent='❓ Tem certeza? Toque novamente';
+    btn.style.background='var(--orange)';
+    setTimeout(()=>{if(btn.dataset.confirmReset==='1'){btn.dataset.confirmReset='';btn.textContent=orig;btn.style.background='';}},4000);
+    return;
+  }
+  localStorage.removeItem(KEY);location.reload();
+}
 
 // ═══ LIGA CODE ═══
 function _genCode(){const chars='ABCDEFGHJKLMNPQRSTUVWXYZ23456789';let code='';for(let i=0;i<6;i++)code+=chars[Math.floor(Math.random()*chars.length)];return code;}
@@ -1759,8 +1865,10 @@ async function publishPost(){
       streak: D.streak,
       nivel: D.level
     });
-    if(document.getElementById('muralInput'))document.getElementById('muralInput').value='';
-    if(btn)btn.disabled=true;
+    const muralInput=document.getElementById('muralInput');
+    if(muralInput){muralInput.value='';muralInput.style.height='';}
+    if(btn)btn.disabled=true; // mantém desabilitado — será re-habilitado ao digitar
+    muralInputChange(); // re-avalia estado do botão após limpar
     D.postCount=(D.postCount||0)+1;sv();
     toast('📋 Relatório publicado!','success');
   }catch(e){toast('Erro ao publicar','error');console.error(e);if(btn)btn.disabled=false;}
@@ -1772,9 +1880,10 @@ function subscribeToMural(){
   muralUnsubscribe=db.collection('posts').orderBy('timestamp','desc').limit(30).onSnapshot(snap=>{
     const posts=[];snap.forEach(doc=>posts.push({id:doc.id,...doc.data()}));
     renderPostFeed(posts,'muralFeed');
-    // Update nav dot
-    const dot=document.getElementById('muralNavDot');if(dot)dot.classList.add('show');
-    setTimeout(()=>{if(dot)dot.classList.remove('show');},5000);
+    // Dot só aparece para posts de outros usuários
+    const hasNewFromOthers=posts.some(p=>p.authorId&&currentUser&&p.authorId!==currentUser.uid);
+    const dot=document.getElementById('muralNavDot');
+    if(dot&&hasNewFromOthers){dot.classList.add('show');setTimeout(()=>dot.classList.remove('show'),5000);}
   },e=>console.error('Mural error:',e));
 }
 
@@ -1802,7 +1911,7 @@ function buildPostCard(p){
   const ts=p.timestamp?.toDate?p.timestamp.toDate():new Date(p.timestamp||Date.now());
   const timeStr=ts.toLocaleString('pt-BR',{day:'2-digit',month:'2-digit',hour:'2-digit',minute:'2-digit'});
   const liked=_likedPosts[p.id];
-  const likes=(p.likes||0)+(liked?0:0);
+  const likes=(p.likes||0)+(liked?1:0); // mostra +1 otimista quando já curtiu localmente
   const myPost=currentUser&&p.authorId===currentUser.uid;
   const rankIcon=getRank(p.nivel||1).icon||'🪖';
   const canViewProf = p.authorId && !myPost && FIREBASE_OK;
@@ -1837,7 +1946,13 @@ async function toggleLike(postId, btn){
 
 async function deletePost(postId){
   if(!FIREBASE_OK||!currentUser)return;
-  if(!confirm('Remover este relatório?'))return;
+  const btn=event?.target;
+  if(btn&&btn.dataset.confirmDelete!=='1'){
+    btn.dataset.confirmDelete='1';btn.textContent='❓ Confirmar';
+    setTimeout(()=>{if(btn.dataset.confirmDelete==='1'){btn.dataset.confirmDelete='';btn.textContent='🗑';}},3000);
+    return;
+  }
+  if(btn)btn.dataset.confirmDelete='';
   try{await db.collection('posts').doc(postId).delete();toast('Relatório removido','info');}
   catch(e){toast('Erro ao remover','error');}
 }
@@ -2111,6 +2226,7 @@ async function handleGoogleNewUser(user){
       totalCompleted:0, wakeCount:0, perfectDays:0, role:'operador',
       premium:false, perfilPublico:true, totalFocusMinutes:0, totalTrainMinutes:0,
       badges:[], clockTampered:false, ligaCode:nd.ligaCode,
+      joinDate: td(), postCount:0,
       createdAt: firebase.firestore.FieldValue.serverTimestamp()
     });
     D = nd;D.uid = user.uid;
@@ -2216,14 +2332,17 @@ function renderAdminUsers(users){
         ${u.premium?'<span class="admin-user-chip chip-gold">⭐ Premium</span>':''}
         ${banned?'<span class="admin-user-chip" style="color:var(--red);border-color:var(--red);">🚫 Banido</span>':''}
       </div>
-      ${isMe?'':`<div class="admin-actions" style="margin-top:10px;">
+      <div class="admin-actions" style="margin-top:10px;">
+        <button class="btn-admin" onclick="openPubProf('${u.id}')" style="border-color:var(--blue);color:var(--blue);">👤 Ver Perfil</button>
+        ${isMe?'':`
         <button class="btn-admin btn-admin-promote" onclick="adminSetRole('${u.id}','executor')">↑ Executor</button>
         <button class="btn-admin btn-admin-promote" onclick="adminSetRole('${u.id}','mentor')">↑↑ Mentor</button>
         <button class="btn-admin btn-admin-promote" onclick="adminSetRole('${u.id}','elite')" style="border-color:var(--purple);color:var(--purple);">★ Elite</button>
         <button class="btn-admin btn-admin-demote" onclick="adminSetRole('${u.id}','operador')">↓ Operador</button>
         <button class="btn-admin btn-admin-premium" onclick="adminTogglePremium('${u.id}',${!u.premium})">${u.premium?'⛔ Premium':'⭐ Premium'}</button>
         <button class="btn-admin btn-admin-ban" onclick="adminToggleBan('${u.id}',${!banned})">${banned?'✅ Desbanir':'🚫 Banir'}</button>
-      </div>`}
+        `}
+      </div>
     </div>`;
   }).join('');
 }
@@ -2239,7 +2358,15 @@ function adminPermError(e){
 }
 
 async function adminSetRole(uid, role){
-  if(!confirm(`Alterar cargo para "${getRoleLabel(role)}"?`))return;
+  // confirm() bloqueado em mobile PWA — toast de confirmação
+  const btn=event?.target;
+  if(btn&&btn.dataset.confirmRole!==role){
+    btn.dataset.confirmRole=role;const orig=btn.textContent;
+    btn.textContent='❓';
+    setTimeout(()=>{if(btn.dataset.confirmRole===role){btn.dataset.confirmRole='';btn.textContent=orig;}},3000);
+    return;
+  }
+  if(btn)btn.dataset.confirmRole='';
   try{
     await db.collection('users').doc(uid).update({role});
     const u=_adminAllUsers.find(x=>x.id===uid);if(u)u.role=role;
@@ -2261,7 +2388,15 @@ async function adminTogglePremium(uid, value){
 }
 
 async function adminToggleBan(uid, value){
-  if(value&&!confirm('Banir este usuário? Isso revogará o acesso.'))return;
+  if(value){
+    const btn=event?.target;
+    if(btn&&btn.dataset.confirmBan!=='1'){
+      btn.dataset.confirmBan='1';const orig=btn.textContent;btn.textContent='❓ Confirmar ban';
+      setTimeout(()=>{if(btn.dataset.confirmBan==='1'){btn.dataset.confirmBan='';btn.textContent=orig;}},3000);
+      return;
+    }
+    if(btn)btn.dataset.confirmBan='';
+  }
   try{
     await db.collection('users').doc(uid).update({banned:value,premium:value?false:undefined});
     const u=_adminAllUsers.find(x=>x.id===uid);if(u){u.banned=value;if(value)u.premium=false;}
@@ -2291,7 +2426,13 @@ async function loadAdminPosts(){
 }
 
 async function adminDeletePost(postId){
-  if(!confirm('Remover este relatório?'))return;
+  const btn=event?.target;
+  if(btn&&btn.dataset.confirmAdminDel!=='1'){
+    btn.dataset.confirmAdminDel='1';const orig=btn.textContent;btn.textContent='❓ Confirmar';
+    setTimeout(()=>{if(btn.dataset.confirmAdminDel==='1'){btn.dataset.confirmAdminDel='';btn.textContent=orig;}},3000);
+    return;
+  }
+  if(btn)btn.dataset.confirmAdminDel='';
   try{
     await db.collection('posts').doc(postId).delete();
     toast('🗑 Relatório removido','success');
@@ -2492,7 +2633,13 @@ async function adminCreateBadge(){
 }
 
 async function adminDeleteBadge(badgeId){
-  if(!confirm('Excluir esta insígnia customizada permanentemente?'))return;
+  const btn=event?.target;
+  if(btn&&btn.dataset.confirmDel!=='1'){
+    btn.dataset.confirmDel='1';const orig=btn.textContent;btn.textContent='❓';
+    setTimeout(()=>{if(btn.dataset.confirmDel==='1'){btn.dataset.confirmDel='';btn.textContent=orig;}},3000);
+    return;
+  }
+  if(btn)btn.dataset.confirmDel='';
   try{
     await db.collection('badges').doc(badgeId).delete();
     toast('🗑 Insígnia excluída','warning');
@@ -2527,12 +2674,11 @@ function startUserDocListener(uid){
 
     if(data.badges !== undefined){
       const fbBadges = data.badges||[];
-      // Preserva conquistas locais que ainda nao subiram pro Firestore
-      const adminBadges = D.adminBadges||[];
-      const localEarned = (D.badges||[]).filter(b=>!adminBadges.includes(b));
-      const final = [...new Set([...fbBadges, ...localEarned])];
-      if(JSON.stringify([...final].sort()) !== JSON.stringify([...(D.badges||[])].sort())){
-        D.badges = final;
+      // FIX: Firestore é a fonte absoluta da verdade para badges.
+      // NÃO mesclamos badges locais de volta — isso re-adicionaria badges revogadas.
+      // chkBadges() vai re-adicionar qualquer badge estática que o usuário ainda mereça.
+      if(JSON.stringify([...fbBadges].sort()) !== JSON.stringify([...(D.badges||[])].sort())){
+        D.badges = [...fbBadges];
         changed = true;
       }
     }
@@ -2626,7 +2772,13 @@ async function adminCreateReward(){
 }
 
 async function adminDeleteReward(rewardId){
-  if(!confirm('Remover este item de resgate?'))return;
+  const btn=event?.target;
+  if(btn&&btn.dataset.confirmDelR!=='1'){
+    btn.dataset.confirmDelR='1';const orig=btn.textContent;btn.textContent='❓ Confirmar';
+    setTimeout(()=>{if(btn.dataset.confirmDelR==='1'){btn.dataset.confirmDelR='';btn.textContent=orig;}},3000);
+    return;
+  }
+  if(btn)btn.dataset.confirmDelR='';
   try{
     await db.collection('rewards').doc(rewardId).delete();
     toast('🗑 Item removido','warning');
@@ -2658,7 +2810,7 @@ async function openPubProf(uid){
     headerName.textContent = u.nomeGuerra||'Operador';
     const rank = getRank(u.level||1);
     const role = u.role||'operador';
-    const xpInLv = (u.xp||0) % 100;
+    const xpInLv = (u.cumulativeXp||u.xp||0) % 100; // usa cumulativeXp
     const focusH = Math.round((u.totalFocusMinutes||0)/60);
     const trainH = Math.round((u.totalTrainMinutes||0)/60);
 
