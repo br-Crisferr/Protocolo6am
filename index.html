@@ -761,6 +761,26 @@ select.admin-inp option{background:var(--bg3)}
 .broadcast-item-hdr{display:flex;justify-content:space-between;align-items:center;margin-bottom:6px}
 .broadcast-type{font-family:var(--fm);font-size:9px;text-transform:uppercase;letter-spacing:1px;color:var(--red)}
 .broadcast-text{font-size:13px;line-height:1.5}
+
+/* ═══ PWA INSTALL BANNER ═══ */
+#installBanner.show{transform:translateX(-50%) translateY(0);opacity:1;pointer-events:all}
+
+/* ═══ NOTIF BUTTON ═══ */
+.notif-toggle{
+  display:inline-flex;align-items:center;gap:5px;
+  padding:6px 11px;border-radius:9px;
+  border:1px solid var(--bdr3);background:transparent;
+  color:var(--txt3);font-size:10px;font-weight:700;
+  cursor:pointer;transition:all .2s;font-family:var(--f);flex-shrink:0;
+}
+.notif-toggle.active{border-color:rgba(48,209,88,.4);color:var(--green);background:rgba(48,209,88,.08)}
+.notif-dot{width:6px;height:6px;border-radius:50%;background:var(--txt3);display:inline-block}
+.notif-toggle.active .notif-dot{background:var(--green);box-shadow:0 0 5px var(--green)}
+.task-notif-btn{
+  font-size:14px;background:none;border:none;cursor:pointer;
+  opacity:.4;transition:opacity .2s;padding:2px;line-height:1;flex-shrink:0;
+}
+.task-notif-btn.on{opacity:1;filter:drop-shadow(0 0 4px rgba(255,214,10,.6))}
 </style>
 </head>
 <body>
@@ -809,7 +829,12 @@ select.admin-inp option{background:var(--bg3)}
 
       <div class="sec-hdr">
         <div class="sec-ttl">⚡ Tarefas de Hoje</div>
-        <div class="sec-badge" id="taskCountBadge">0 / 0</div>
+        <div style="display:flex;align-items:center;gap:8px">
+          <button id="notifToggleBtn" class="notif-toggle" onclick="enableNotifications()" title="Ativar alertas para tarefas">
+            <span class="notif-dot"></span> Alertas
+          </button>
+          <div class="sec-badge" id="taskCountBadge">0 / 0</div>
+        </div>
       </div>
       <div id="taskList"></div>
       <button class="btn-add-dash" onclick="openModal('tarefa')">＋ Nova Tarefa</button>
@@ -1176,6 +1201,50 @@ select.admin-inp option{background:var(--bg3)}
   </div>
 </div>
 
+<!-- ADMIN PROFILE OVERLAY -->
+<div class="modal-overlay" id="adminProfileOverlay" onclick="if(event.target===this)closePubAdmin()">
+  <div class="modal" style="max-height:92vh">
+    <div class="modal-hdr">
+      <div>
+        <div class="modal-ttl">👤 Perfil do Operador</div>
+        <div style="font-family:var(--fm);font-size:9px;color:var(--red);text-transform:uppercase;letter-spacing:1px;margin-top:2px">VISÃO ADMIN</div>
+      </div>
+      <button class="modal-close" onclick="closePubAdmin()">✕</button>
+    </div>
+    <div class="modal-body" id="adminProfileContent" style="padding-top:0"></div>
+  </div>
+</div>
+
+<!-- PWA INSTALL BANNER -->
+<div id="installBanner" style="
+  position:fixed;bottom:80px;left:50%;transform:translateX(-50%) translateY(120px);
+  width:calc(100% - 32px);max-width:560px;
+  background:linear-gradient(135deg,var(--bg3) 0%,rgba(255,59,48,.08) 100%);
+  border:1px solid rgba(255,59,48,.3);border-radius:16px;
+  padding:14px 16px;z-index:8000;
+  display:flex;align-items:center;gap:12px;
+  box-shadow:0 8px 32px rgba(0,0,0,.6);
+  transition:transform .4s cubic-bezier(.34,1.56,.64,1),opacity .3s;
+  opacity:0;pointer-events:none;
+">
+  <div style="font-size:30px;flex-shrink:0">📲</div>
+  <div style="flex:1;min-width:0">
+    <div style="font-size:13px;font-weight:700;margin-bottom:2px">Instalar Protocolo 6AM</div>
+    <div style="font-size:11px;color:var(--txt3)">Adicione à tela inicial para acesso rápido sem barra de URL</div>
+  </div>
+  <div style="display:flex;flex-direction:column;gap:6px;flex-shrink:0">
+    <button onclick="triggerInstall()" style="
+      background:var(--red);color:#fff;border:none;
+      padding:8px 14px;border-radius:9px;font-size:11px;font-weight:700;cursor:pointer;
+      white-space:nowrap;
+    ">Instalar</button>
+    <button onclick="hideInstallBanner()" style="
+      background:transparent;color:var(--txt3);border:none;
+      font-size:10px;cursor:pointer;text-align:center;
+    ">Agora não</button>
+  </div>
+</div>
+
 </div><!-- /app-wrap -->
 
 <!-- AUTH SCREEN -->
@@ -1264,6 +1333,34 @@ const LEVEL_THRESHOLDS = [0,200,500,1000,2000,3500,5500,8000,11500,16000,22000];
 const RANK_NAMES = ['Recruta','Soldado','Cabo','Sargento','Tenente','Capitão','Major','Coronel','General','Comandante','Lendário'];
 const RANK_ICONS = ['🪖','⚔️','🛡️','🎖️','⭐','🌟','💫','👑','🔱','🦅','🔥'];
 
+// ─── BADGES MASTER LIST (fonte da verdade) ───
+// Sempre usar IDs consistentes entre local e Firestore
+const BADGES_DEF = [
+  {id:'b_madrugador', ico:'🌅', name:'Madrugador',    desc:'Acordou às 6am por 7 dias'},
+  {id:'b_chamas',     ico:'🔥', name:'Em Chamas',      desc:'10 dias consecutivos de streak'},
+  {id:'b_executor',   ico:'⚡', name:'Executor',        desc:'50 tarefas concluídas'},
+  {id:'b_hidratado',  ico:'💧', name:'Hidratado',       desc:'30 dias bebendo 2L de água'},
+  {id:'b_zen',        ico:'🧘', name:'Zen Master',      desc:'21 dias de meditação'},
+  {id:'b_bibliofilo', ico:'📚', name:'Bibliófilo',      desc:'60h de leitura registrada'},
+  {id:'b_diamante',   ico:'💎', name:'Diamante',        desc:'Atingiu Liga Diamante'},
+  {id:'b_comandante', ico:'🦅', name:'Comandante',      desc:'Atingiu Nível 9'},
+  {id:'b_campeao',    ico:'🏆', name:'Campeão',         desc:'1º no ranking semanal'},
+  {id:'b_lendario',   ico:'🔱', name:'Lendário',        desc:'Nível máximo atingido'},
+  {id:'b_protocolo',  ico:'🛡️', name:'Protocolo',       desc:'30 dias sem falhar'},
+];
+
+// Converte array de IDs (Firestore) → array de objetos badge (local)
+function badgeIdsToObjects(ids=[], customBadges=[]){
+  const allDefs=[...BADGES_DEF,...customBadges];
+  const earned=new Set(ids);
+  return allDefs.map(b=>({...b, earned:earned.has(b.id), new:false}));
+}
+
+// Converte objetos badge (local) → array de IDs (Firestore)
+function badgeObjectsToIds(badges=[]){
+  return badges.filter(b=>b.earned).map(b=>b.id);
+}
+
 let S = {
   nextId: 100,
   name: 'Alpha.7',
@@ -1302,15 +1399,15 @@ let S = {
     {id:'p4', author:'Omega.1', avatar:'👑', role:'elite', tipo:'conquista', text:'🔱 Nível 8 atingido. 8.000 XP acumulados. Obrigado a todos do protocolo por essa energia coletiva.', xp:710, likes:31, time:'há 3h', liked:false},
   ],
   badges: [
-    {id:'b1', ico:'🌅', name:'Madrugador', desc:'Acordou às 6am por 7 dias', earned:true, new:true},
-    {id:'b2', ico:'🔥', name:'Em Chamas', desc:'10 dias consecutivos', earned:true, new:false},
-    {id:'b3', ico:'⚡', name:'Executor', desc:'50 tarefas concluídas', earned:true, new:false},
-    {id:'b4', ico:'💧', name:'Hidratado', desc:'30 dias bebendo 2L', earned:false},
-    {id:'b5', ico:'🧘', name:'Zen Master', desc:'21 dias de meditação', earned:false},
-    {id:'b6', ico:'📚', name:'Bibliófilo', desc:'60h de leitura', earned:false},
-    {id:'b7', ico:'💎', name:'Diamante', desc:'Atingiu Liga Diamante', earned:false},
-    {id:'b8', ico:'🦅', name:'Comandante', desc:'Nível 9', earned:false},
-    {id:'b9', ico:'🏆', name:'Campeão', desc:'1º no ranking semanal', earned:false},
+    {id:'b_madrugador', ico:'🌅', name:'Madrugador',    desc:'Acordou às 6am por 7 dias',         earned:true,  new:true},
+    {id:'b_chamas',     ico:'🔥', name:'Em Chamas',      desc:'10 dias consecutivos de streak',     earned:true,  new:false},
+    {id:'b_executor',   ico:'⚡', name:'Executor',        desc:'50 tarefas concluídas',              earned:true,  new:false},
+    {id:'b_hidratado',  ico:'💧', name:'Hidratado',       desc:'30 dias bebendo 2L de água',         earned:false},
+    {id:'b_zen',        ico:'🧘', name:'Zen Master',      desc:'21 dias de meditação',               earned:false},
+    {id:'b_bibliofilo', ico:'📚', name:'Bibliófilo',      desc:'60h de leitura registrada',          earned:false},
+    {id:'b_diamante',   ico:'💎', name:'Diamante',        desc:'Atingiu Liga Diamante',              earned:false},
+    {id:'b_comandante', ico:'🦅', name:'Comandante',      desc:'Atingiu Nível 9',                   earned:false},
+    {id:'b_campeao',    ico:'🏆', name:'Campeão',         desc:'1º no ranking semanal',              earned:false},
   ],
   rankings: {
     bronze: [
@@ -1462,11 +1559,16 @@ function renderWeekDots(){
 function renderTaskList(){
   const el=document.getElementById('taskList');
   if(!S.tasks.length){el.innerHTML=`<div class="empty-state"><span class="empty-ico">📋</span>Nenhuma tarefa ainda</div>`;return;}
+  const notifOn=_notifPermission==='granted';
   el.innerHTML=S.tasks.map(t=>`
     <div class="task-item ${t.done?'done':''}" onclick="toggleTask(${t.id})">
       <div class="task-topbar-row">
         <span class="task-window">⏱ ${t.window||'Qualquer hora'}</span>
-        <span class="task-xp-lbl">+${t.score} XP</span>
+        <div style="display:flex;align-items:center;gap:6px" onclick="event.stopPropagation()">
+          <button class="task-notif-btn ${t.notif&&notifOn?'on':''}" title="${notifOn?(t.notif?'Notificação ativa':'Ativar notificação'):'Ative notificações primeiro'}"
+            onclick="toggleTaskNotif(${t.id})" style="font-size:15px">🔔</button>
+          <span class="task-xp-lbl">+${t.score} XP</span>
+        </div>
       </div>
       <div class="task-body-row">
         <div class="task-check">${t.done?'✓':''}</div>
@@ -1475,12 +1577,33 @@ function renderTaskList(){
           <div class="task-cat">
             ${t.cat}
             <span class="diff-badge diff-${t.diff||'normal'}">${diffLabel(t.diff)}</span>
+            ${t.notif&&notifOn?'<span style="font-size:9px;color:var(--green);font-family:var(--fm)">🔔 ALERTA ATIVO</span>':''}
           </div>
         </div>
         <div class="task-score-badge ${t.done?'green':''}">${t.score}</div>
       </div>
     </div>
   `).join('');
+}
+
+async function toggleTaskNotif(taskId){
+  const task=S.tasks.find(t=>t.id===taskId);
+  if(!task) return;
+  if(_notifPermission!=='granted'){
+    const granted=await requestNotifPermission();
+    if(!granted) return;
+    _notifPermission='granted';
+  }
+  task.notif=!task.notif;
+  if(task.notif){
+    scheduleTaskNotif(task);
+    toast(`🔔 Alerta ativado para "${task.name}"`, 'success');
+  } else {
+    cancelTaskNotif(task.id);
+    toast(`🔕 Alerta removido de "${task.name}"`, 'info');
+  }
+  renderTaskList();
+  scheduleSync();
 }
 function diffLabel(d){return {facil:'Fácil',normal:'Normal',hard:'Difícil',extremo:'Extremo'}[d]||'Normal'}
 
@@ -2243,6 +2366,7 @@ function renderAdminUsers(){
         ${u.totalFocusMinutes?`<span class="admin-chip c-green">🎯 ${Math.round(u.totalFocusMinutes/60)}h foco</span>`:''}
       </div>
       ${isMe?'':`<div class="admin-actions">
+        <button class="admin-btn" style="border-color:var(--blue);color:var(--blue)" onclick="adminViewProfile('${u.id}')">👤 Ver Perfil</button>
         <button class="admin-btn admin-btn-promote" onclick="adminSetRole('${u.id}','executor',this)">↑ Executor</button>
         <button class="admin-btn admin-btn-promote" onclick="adminSetRole('${u.id}','mentor',this)">↑↑ Mentor</button>
         <button class="admin-btn admin-btn-premium" onclick="adminSetRole('${u.id}','elite',this)">★ Elite</button>
@@ -2374,27 +2498,14 @@ async function renderBadgeEditorGrid(){
     const snap=await db.collection('users').doc(_adminBadgeTarget.id).get();
     if(snap.exists){freshBadges=snap.data().badges||[];_adminBadgeTarget.badges=freshBadges;}
   }catch(e){}
-  // Static badges list
-  const STATIC_BADGES=[
-    {id:'b_madrugador',ico:'🌅',name:'Madrugador',desc:'Acordou às 6am por 7 dias'},
-    {id:'b_chamas',ico:'🔥',name:'Em Chamas',desc:'10 dias consecutivos de streak'},
-    {id:'b_executor',ico:'⚡',name:'Executor',desc:'50 tarefas concluídas'},
-    {id:'b_hidratado',ico:'💧',name:'Hidratado',desc:'30 dias bebendo 2L de água'},
-    {id:'b_zen',ico:'🧘',name:'Zen Master',desc:'21 dias de meditação'},
-    {id:'b_bibliofilo',ico:'📚',name:'Bibliófilo',desc:'60h de leitura registrada'},
-    {id:'b_diamante',ico:'💎',name:'Diamante',desc:'Atingiu Liga Diamante'},
-    {id:'b_comandante',ico:'🦅',name:'Comandante',desc:'Atingiu Nível 9'},
-    {id:'b_campeao',ico:'🏆',name:'Campeão',desc:'1º no ranking semanal'},
-    {id:'b_lendario',ico:'🔱',name:'Lendário',desc:'Nível máximo atingido'},
-    {id:'b_protocolo',ico:'🛡️',name:'Protocolo',desc:'30 dias sem falhar'},
-  ];
+  // Static badges from global BADGES_DEF
   // Also fetch custom badges from Firestore
   let customBadges=[];
   try{
     const cs=await db.collection('badges').get();
     cs.forEach(d=>customBadges.push({id:d.id,_custom:true,...d.data()}));
   }catch(e){}
-  const allBadges=[...STATIC_BADGES,...customBadges];
+  const allBadges=[...BADGES_DEF.map(b=>({...b,_custom:false})),...customBadges];
 
   grid.innerHTML=allBadges.map(b=>{
     const has=freshBadges.includes(b.id);
@@ -2662,9 +2773,266 @@ async function loadBroadcasts(){
 }
 
 // ═══════════════════════════════════════════
+//  ADMIN — USER PROFILE VIEWER
 // ═══════════════════════════════════════════
 
-// Save user data to Firestore
+async function adminViewProfile(uid){
+  const u=_adminUsers.find(x=>x.id===uid);
+  if(!u){toast('Usuário não encontrado','error');return;}
+  const lvl=getLevelInfo(u.xp||0);
+  const badgeIds=u.badges||[];
+  const badgeObjs=badgeIdsToObjects(badgeIds);
+  const earnedBadges=badgeObjs.filter(b=>b.earned);
+  const lastSeen=u.updatedAt?.toDate?u.updatedAt.toDate().toLocaleString('pt-BR',{day:'2-digit',month:'2-digit',year:'numeric',hour:'2-digit',minute:'2-digit'}):'—';
+  const pct=lvl.next===lvl.cur?100:Math.round(((u.xp||0-lvl.cur)/(lvl.next-lvl.cur))*100);
+
+  const overlay=document.getElementById('adminProfileOverlay');
+  document.getElementById('adminProfileContent').innerHTML=`
+    <!-- Hero -->
+    <div style="background:radial-gradient(ellipse at 50% 0%,rgba(255,59,48,.25) 0%,transparent 70%),var(--bg3);border-radius:16px;padding:24px;text-align:center;margin-bottom:16px">
+      <div style="font-size:54px;margin-bottom:8px">${lvl.icon}</div>
+      <div style="font-size:20px;font-weight:800;margin-bottom:4px">${escHtml(u.name||u.nomeGuerra||'?')}</div>
+      <div style="display:flex;justify-content:center;gap:8px;flex-wrap:wrap;margin-bottom:12px">
+        <span class="role-tag role-${u.role||'operador'}">${u.role||'operador'}</span>
+        ${u.premium?'<span class="role-tag" style="background:rgba(191,90,242,.12);color:var(--purple);border-color:rgba(191,90,242,.25)">⭐ Premium</span>':''}
+        ${u.banned?'<span class="role-tag" style="background:rgba(255,59,48,.12);color:var(--red);border-color:rgba(255,59,48,.25)">🚫 Banido</span>':''}
+      </div>
+      <div style="font-family:var(--fb);font-size:13px;color:var(--txt3);text-transform:uppercase;letter-spacing:1px;margin-bottom:10px">${lvl.name} · NÍVEL ${lvl.lvl}</div>
+      <div style="background:rgba(255,255,255,.05);border-radius:8px;height:6px;overflow:hidden;margin-bottom:4px">
+        <div style="height:100%;width:${Math.min(pct,100)}%;background:linear-gradient(90deg,var(--red),var(--gold));border-radius:8px"></div>
+      </div>
+      <div style="font-size:10px;color:var(--txt3);font-family:var(--fm)">${(u.xp||0).toLocaleString('pt-BR')} XP · ${pct}% para Nível ${lvl.lvl+1}</div>
+    </div>
+
+    <!-- Stats -->
+    <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:16px">
+      <div style="background:var(--bg3);border:1px solid var(--bdr);border-radius:12px;padding:14px;text-align:center">
+        <div style="font-family:var(--fb);font-size:26px;color:var(--gold)">${(u.xp||0).toLocaleString('pt-BR')}</div>
+        <div style="font-size:9px;color:var(--txt3);text-transform:uppercase;letter-spacing:.8px;margin-top:2px">XP Total</div>
+      </div>
+      <div style="background:var(--bg3);border:1px solid var(--bdr);border-radius:12px;padding:14px;text-align:center">
+        <div style="font-family:var(--fb);font-size:26px;color:var(--red)">${u.streak||0}🔥</div>
+        <div style="font-size:9px;color:var(--txt3);text-transform:uppercase;letter-spacing:.8px;margin-top:2px">Streak</div>
+      </div>
+      <div style="background:var(--bg3);border:1px solid var(--bdr);border-radius:12px;padding:14px;text-align:center">
+        <div style="font-family:var(--fb);font-size:26px;color:var(--green)">${earnedBadges.length}</div>
+        <div style="font-size:9px;color:var(--txt3);text-transform:uppercase;letter-spacing:.8px;margin-top:2px">Insígnias</div>
+      </div>
+    </div>
+
+    <!-- Info -->
+    <div style="background:var(--bg3);border:1px solid var(--bdr);border-radius:12px;padding:14px;margin-bottom:16px">
+      <div style="font-family:var(--fm);font-size:9px;color:var(--txt3);text-transform:uppercase;letter-spacing:1.5px;margin-bottom:10px">Informações</div>
+      <div style="display:flex;justify-content:space-between;padding:7px 0;border-bottom:1px solid var(--bdr);font-size:12px">
+        <span style="color:var(--txt3)">Email</span><span>${escHtml(u.email||'—')}</span>
+      </div>
+      <div style="display:flex;justify-content:space-between;padding:7px 0;border-bottom:1px solid var(--bdr);font-size:12px">
+        <span style="color:var(--txt3)">Posts</span><span>${u._postCount||0}</span>
+      </div>
+      <div style="display:flex;justify-content:space-between;padding:7px 0;border-bottom:1px solid var(--bdr);font-size:12px">
+        <span style="color:var(--txt3)">Membro desde</span><span>${u.joinDate||'—'}</span>
+      </div>
+      <div style="display:flex;justify-content:space-between;padding:7px 0;font-size:12px">
+        <span style="color:var(--txt3)">Última atividade</span><span>${lastSeen}</span>
+      </div>
+    </div>
+
+    <!-- Badges -->
+    ${earnedBadges.length?`
+    <div style="font-family:var(--fm);font-size:9px;color:var(--txt3);text-transform:uppercase;letter-spacing:1.5px;margin-bottom:10px">🏅 Insígnias Conquistadas</div>
+    <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:16px">
+      ${earnedBadges.map(b=>`
+        <div style="background:rgba(255,214,10,.06);border:1px solid rgba(255,214,10,.2);border-radius:12px;padding:12px;text-align:center">
+          <div style="font-size:24px;margin-bottom:4px">${b.ico}</div>
+          <div style="font-size:10px;font-weight:700;margin-bottom:2px">${b.name}</div>
+          <div style="font-size:9px;color:var(--txt3);line-height:1.3">${b.desc}</div>
+        </div>`).join('')}
+    </div>`:''}
+
+    <!-- Quick actions -->
+    <div style="display:flex;gap:8px;flex-wrap:wrap">
+      <button class="admin-btn admin-btn-give" onclick="closePubAdmin();switchAdminTab('badges',document.getElementById('atab-badges'));setTimeout(()=>openBadgeEditor('${uid}','${escHtml(u.name||u.nomeGuerra||'?')}'),200)" style="flex:1">🏅 Gerenciar Insígnias</button>
+      <button class="admin-btn admin-btn-ban" onclick="adminToggleBan('${uid}',${!u.banned});closePubAdmin()" style="flex:1">${u.banned?'✅ Desbanir':'🚫 Banir'}</button>
+    </div>
+  `;
+  overlay.classList.add('open');
+}
+
+function closePubAdmin(){
+  document.getElementById('adminProfileOverlay').classList.remove('open');
+}
+
+// ═══════════════════════════════════════════
+//  PWA — INSTALAR COMO APP
+// ═══════════════════════════════════════════
+
+let _deferredInstallPrompt = null;
+
+// Captura o evento de instalação
+window.addEventListener('beforeinstallprompt', e => {
+  e.preventDefault();
+  _deferredInstallPrompt = e;
+  showInstallBanner();
+});
+
+// Esconde o banner quando já instalado
+window.addEventListener('appinstalled', () => {
+  hideInstallBanner();
+  _deferredInstallPrompt = null;
+  toast('✅ App instalado com sucesso!', 'success');
+});
+
+function isRunningAsPWA(){
+  return window.matchMedia('(display-mode: standalone)').matches
+    || window.navigator.standalone === true
+    || document.referrer.includes('android-app://');
+}
+
+function showInstallBanner(){
+  if(isRunningAsPWA()) return; // já é app, não mostra
+  const b = document.getElementById('installBanner');
+  if(b) b.classList.add('show');
+}
+
+function hideInstallBanner(){
+  const b = document.getElementById('installBanner');
+  if(b) b.classList.remove('show');
+}
+
+async function triggerInstall(){
+  if(!_deferredInstallPrompt){
+    // iOS Safari — mostra instrução manual
+    toast('No iOS: toque em Compartilhar → "Adicionar à Tela de Início"', 'info');
+    return;
+  }
+  _deferredInstallPrompt.prompt();
+  const { outcome } = await _deferredInstallPrompt.userChoice;
+  if(outcome === 'accepted'){
+    hideInstallBanner();
+    _deferredInstallPrompt = null;
+  }
+}
+
+// Verifica no carregamento se já é PWA
+window.addEventListener('DOMContentLoaded', ()=>{
+  if(isRunningAsPWA()){
+    hideInstallBanner();
+  }
+});
+
+// ═══════════════════════════════════════════
+//  NOTIFICAÇÕES PUSH — TAREFAS
+// ═══════════════════════════════════════════
+
+let _notifPermission = 'default';
+let _notifTimers = []; // array de { taskId, timerId }
+
+async function requestNotifPermission(){
+  if(!('Notification' in window)){
+    toast('Seu navegador não suporta notificações','error');
+    return false;
+  }
+  if(Notification.permission === 'granted'){ _notifPermission='granted'; return true; }
+  if(Notification.permission === 'denied'){ toast('Notificações bloqueadas nas configurações do navegador','error'); return false; }
+  const perm = await Notification.requestPermission();
+  _notifPermission = perm;
+  return perm === 'granted';
+}
+
+function parseTaskTime(window){
+  // window format: "HH:MM–HH:MM" or "HH:MM-HH:MM"
+  if(!window) return null;
+  const match = window.match(/(\d{1,2}):(\d{2})/);
+  if(!match) return null;
+  return { h: parseInt(match[1]), m: parseInt(match[2]) };
+}
+
+function scheduleTaskNotif(task){
+  // Cancel existing timer for this task
+  cancelTaskNotif(task.id);
+  if(!task.window || task.done) return;
+  const time = parseTaskTime(task.window);
+  if(!time) return;
+  const now = new Date();
+  const target = new Date();
+  target.setHours(time.h, time.m, 0, 0);
+
+  // Notify 10 min before start
+  const notifTime = new Date(target.getTime() - 10 * 60000);
+
+  // Also notify exactly at start time
+  const notifStart = new Date(target.getTime());
+
+  const msUntilWarning = notifTime - now;
+  const msUntilStart = notifStart - now;
+
+  if(msUntilWarning > 0){
+    const t1 = setTimeout(()=>{
+      if(!task.done) fireNotif(`⏰ Em 10 minutos: ${task.name}`, `Prepare-se! Janela começa às ${time.h}:${String(time.m).padStart(2,'0')}`, task);
+    }, msUntilWarning);
+    _notifTimers.push({taskId:task.id, timerId:t1});
+  }
+
+  if(msUntilStart > 0){
+    const t2 = setTimeout(()=>{
+      if(!task.done) fireNotif(`🚀 AGORA: ${task.name}`, `Janela aberta! Execute agora. +${task.score} XP`, task);
+    }, msUntilStart);
+    _notifTimers.push({taskId:task.id, timerId:t2});
+  }
+}
+
+function cancelTaskNotif(taskId){
+  _notifTimers = _notifTimers.filter(t=>{
+    if(t.taskId === taskId){ clearTimeout(t.timerId); return false; }
+    return true;
+  });
+}
+
+function fireNotif(title, body, task){
+  if(_notifPermission !== 'granted') return;
+  try{
+    const n = new Notification(title, {
+      body,
+      icon: 'data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64"><rect width="64" height="64" rx="16" fill="%23000"/><text x="32" y="44" text-anchor="middle" font-size="36">🛡</text></svg>',
+      badge: 'data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64"><text x="32" y="44" text-anchor="middle" font-size="36">⚡</text></svg>',
+      tag: `task-${task.id}`,
+      requireInteraction: false,
+      silent: false,
+    });
+    n.onclick = ()=>{ window.focus(); n.close(); goSec('hoje'); };
+  }catch(e){ console.warn('Notif error:', e); }
+}
+
+function scheduleAllNotifs(){
+  if(_notifPermission !== 'granted') return;
+  // Cancel all existing
+  _notifTimers.forEach(t=>clearTimeout(t.timerId));
+  _notifTimers = [];
+  S.tasks.forEach(t=>scheduleTaskNotif(t));
+}
+
+async function enableNotifications(){
+  if(_notifPermission==='granted'){
+    toast('🔔 Notificações já estão ativas! Clique no 🔔 de cada tarefa.', 'info');
+    return;
+  }
+  const granted = await requestNotifPermission();
+  if(granted){
+    _notifPermission='granted';
+    toast('🔔 Notificações ativadas! Clique no 🔔 de cada tarefa.', 'success');
+    scheduleAllNotifs();
+    renderTaskList();
+    const btn=document.getElementById('notifToggleBtn');
+    if(btn) btn.classList.add('active');
+  }
+}
+
+// Schedule on load and when tasks change
+function onTasksChanged(){
+  scheduleAllNotifs();
+}
+
+// ═══════════════════════════════════════════
 async function saveToFirebase() {
   if (!FIREBASE_OK || !currentUser) return;
   try {
@@ -2672,10 +3040,11 @@ async function saveToFirebase() {
       name: S.name,
       avatar: S.avatar,
       xp: S.xp,
-      level: S.level,
+      level: getLevelInfo(S.xp).lvl,
       streak: S.streak,
       tasks: S.tasks,
       habits: S.habits,
+      badges: badgeObjectsToIds(S.badges), // salva como array de IDs
       updatedAt: firebase.firestore.FieldValue.serverTimestamp()
     }, { merge: true });
   } catch(e) { console.warn('Sync error:', e); }
@@ -2694,6 +3063,10 @@ async function loadFromFirebase(uid) {
       if (typeof d.streak === 'number') S.streak = d.streak;
       if (Array.isArray(d.tasks)) S.tasks = d.tasks;
       if (Array.isArray(d.habits)) S.habits = d.habits;
+      // Badges: Firestore stores as ID array → convert to full objects
+      if (Array.isArray(d.badges)) {
+        S.badges = badgeIdsToObjects(d.badges);
+      }
       renderAll();
       toast('☁️ Dados sincronizados!', 'info');
     }
@@ -2854,6 +3227,8 @@ if(FIREBASE_OK){
         if(typeof d.streak==='number') S.streak=d.streak;
         if(Array.isArray(d.tasks)) S.tasks=d.tasks;
         if(Array.isArray(d.habits)) S.habits=d.habits;
+        // Badges: Firestore stores as ID array → convert to full objects
+        if(Array.isArray(d.badges)) S.badges=badgeIdsToObjects(d.badges);
         if(d.role==='admin'){
           S.isAdmin=true;
           showAdminNav();
@@ -2865,6 +3240,16 @@ if(FIREBASE_OK){
 
     renderAll();
     loadFirebaseRanking();
+
+    // Restore notification schedules if permission was previously granted
+    if('Notification' in window && Notification.permission === 'granted'){
+      _notifPermission = 'granted';
+      setTimeout(()=>{
+        scheduleAllNotifs();
+        const btn=document.getElementById('notifToggleBtn');
+        if(btn) btn.classList.add('active');
+      }, 1500);
+    }
 
     // Real-time listener for pushed changes (role, ban, xp adjustment by admin)
     ref.onSnapshot(snap=>{
@@ -2905,6 +3290,18 @@ window.saveProfile = function() { _origSaveProfile(); scheduleSync(); };
 if(new URLSearchParams(location.search).get('admin')==='1'){
   S.isAdmin=true;
   setTimeout(()=>{ showAdminNav(); toast('🛡 Admin local ativado','gold'); },500);
+}
+
+// Check notification permission state on load
+if('Notification' in window){
+  _notifPermission = Notification.permission;
+  if(_notifPermission === 'granted'){
+    setTimeout(()=>{
+      scheduleAllNotifs();
+      const btn=document.getElementById('notifToggleBtn');
+      if(btn) btn.classList.add('active');
+    }, 1000);
+  }
 }
 
 renderAll();
