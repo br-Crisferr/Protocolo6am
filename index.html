@@ -610,9 +610,154 @@ select.form-input option{background:var(--bg3)}
 .empty-state{text-align:center;padding:40px 20px;color:var(--txt3);font-size:13px}
 .empty-state .empty-ico{font-size:40px;margin-bottom:12px;display:block;opacity:.5}
 
-/* ═══ HABIT CAT COLORS ═══ */
-.cat-saude{color:#30d158}.cat-alimentar{color:#f59e0b}.cat-rotina{color:#0a84ff}
-.cat-estudos{color:#bf5af2}.cat-espiritual{color:#ffd60a}.cat-trabalho{color:#ff9f0a}
+/* ═══ ADMIN PANEL ═══ */
+.admin-stats-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:14px}
+.admin-stat-card{
+  background:var(--bg3);border:1px solid var(--bdr);border-radius:12px;
+  padding:14px 10px;text-align:center;
+}
+.admin-stat-val{font-family:var(--fb);font-size:28px;line-height:1;margin-bottom:3px}
+.admin-stat-val.blue{color:var(--blue)}
+.admin-stat-val.gold{color:var(--gold)}
+.admin-stat-val.green{color:var(--green)}
+.admin-stat-val.red{color:var(--red)}
+.admin-stat-val.purple{color:var(--purple)}
+.admin-stat-lbl{font-size:9px;color:var(--txt3);text-transform:uppercase;letter-spacing:.8px}
+.admin-refresh-btn{
+  font-family:var(--fm);font-size:10px;padding:6px 12px;border-radius:8px;
+  border:1px solid var(--bdr3);background:transparent;color:var(--txt2);cursor:pointer;transition:all .2s;
+}
+.admin-refresh-btn:hover{border-color:var(--red);color:var(--red)}
+.admin-tabs{display:flex;gap:5px;margin-bottom:14px;overflow-x:auto;padding-bottom:3px}
+.admin-tabs::-webkit-scrollbar{display:none}
+.admin-tab{
+  padding:7px 12px;border-radius:8px;border:1px solid var(--bdr3);
+  background:transparent;color:var(--txt3);font-size:10px;font-weight:700;
+  cursor:pointer;white-space:nowrap;transition:all .2s;font-family:var(--f);
+}
+.admin-tab.active{background:rgba(255,59,48,.15);border-color:rgba(255,59,48,.4);color:var(--red)}
+.admin-warn-box{
+  background:rgba(255,59,48,.08);border:1px solid rgba(255,59,48,.3);
+  border-radius:10px;padding:12px 14px;margin-bottom:12px;font-size:12px;color:var(--red);line-height:1.6;
+}
+.admin-info-box{
+  background:rgba(255,214,10,.06);border:1px solid rgba(255,214,10,.2);
+  border-radius:10px;padding:12px 14px;font-size:12px;color:var(--txt2);line-height:1.6;
+}
+.admin-search-inp{
+  width:100%;background:var(--bg4);border:1px solid var(--bdr2);color:var(--txt);
+  padding:11px 14px;border-radius:10px;font-size:13px;outline:none;margin-bottom:10px;transition:border-color .2s;
+}
+.admin-search-inp:focus{border-color:var(--red)}
+.admin-search-inp::placeholder{color:var(--txt3)}
+.admin-inp{
+  width:100%;background:var(--bg4);border:1px solid var(--bdr2);color:var(--txt);
+  padding:10px 12px;border-radius:9px;font-size:13px;outline:none;transition:border-color .2s;
+}
+.admin-inp:focus{border-color:var(--red)}
+.admin-inp::placeholder{color:var(--txt3)}
+textarea.admin-inp{min-height:80px;resize:none;font-family:var(--f)}
+select.admin-inp option{background:var(--bg3)}
+.filter-chip{
+  padding:5px 11px;border-radius:20px;border:1px solid var(--bdr3);
+  background:transparent;color:var(--txt3);font-size:10px;font-weight:700;
+  cursor:pointer;font-family:var(--f);transition:all .2s;
+}
+.filter-chip.active{background:var(--bdr3);color:var(--txt)}
+.admin-card{
+  background:var(--bg3);border:1px solid var(--bdr);border-radius:13px;
+  padding:14px;margin-bottom:10px;
+}
+.admin-card-title{font-family:var(--fm);font-size:10px;color:var(--txt3);text-transform:uppercase;letter-spacing:1.5px;margin-bottom:10px}
+.admin-user-card{
+  background:var(--bg3);border:1px solid var(--bdr);border-radius:13px;
+  padding:14px;margin-bottom:8px;transition:border-color .2s;
+}
+.admin-user-card:hover{border-color:var(--bdr3)}
+.admin-user-card.banned-card{border-color:rgba(255,59,48,.25);background:rgba(255,59,48,.03)}
+.admin-user-top{display:flex;align-items:center;gap:10px;margin-bottom:10px}
+.admin-user-avatar{font-size:26px;width:44px;height:44px;border-radius:50%;background:var(--bg4);display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.admin-user-name{font-size:14px;font-weight:700;margin-bottom:3px;display:flex;align-items:center;gap:6px;flex-wrap:wrap}
+.admin-user-sub{font-size:11px;color:var(--txt3);font-family:var(--fm)}
+.admin-chips{display:flex;gap:5px;flex-wrap:wrap;margin-bottom:10px}
+.admin-chip{
+  font-family:var(--fm);font-size:9px;padding:3px 8px;border-radius:20px;
+  border:1px solid var(--bdr3);color:var(--txt3);
+}
+.admin-chip.c-blue{border-color:rgba(10,132,255,.3);color:var(--blue)}
+.admin-chip.c-gold{border-color:rgba(255,214,10,.3);color:var(--gold)}
+.admin-chip.c-green{border-color:rgba(48,209,88,.3);color:var(--green)}
+.admin-chip.c-red{border-color:rgba(255,59,48,.3);color:var(--red)}
+.admin-chip.c-purple{border-color:rgba(191,90,242,.3);color:var(--purple)}
+.admin-actions{display:flex;gap:5px;flex-wrap:wrap}
+.admin-btn{
+  padding:7px 11px;border-radius:8px;border:1px solid var(--bdr3);
+  background:transparent;color:var(--txt2);font-size:10px;font-weight:700;
+  cursor:pointer;font-family:var(--f);transition:all .2s;white-space:nowrap;
+}
+.admin-btn:hover{border-color:var(--bdr3);background:var(--bdr)}
+.admin-btn-promote{border-color:rgba(48,209,88,.4);color:var(--green)}
+.admin-btn-promote:hover{background:rgba(48,209,88,.1)}
+.admin-btn-demote{border-color:rgba(255,159,10,.4);color:var(--orange)}
+.admin-btn-demote:hover{background:rgba(255,159,10,.1)}
+.admin-btn-ban{border-color:rgba(255,59,48,.4);color:var(--red)}
+.admin-btn-ban:hover{background:rgba(255,59,48,.1)}
+.admin-btn-give{border-color:rgba(255,214,10,.4);color:var(--gold)}
+.admin-btn-give:hover{background:rgba(255,214,10,.1)}
+.admin-btn-revoke{border-color:rgba(255,159,10,.4);color:var(--orange)}
+.admin-btn-revoke:hover{background:rgba(255,159,10,.1)}
+.admin-btn-premium{border-color:rgba(191,90,242,.4);color:var(--purple)}
+.admin-btn-premium:hover{background:rgba(191,90,242,.1)}
+.admin-back-btn{
+  padding:7px 12px;border-radius:8px;border:1px solid var(--bdr3);
+  background:transparent;color:var(--txt2);font-size:11px;font-weight:700;cursor:pointer;transition:all .2s;
+}
+.admin-back-btn:hover{border-color:var(--red);color:var(--red)}
+.admin-badge-row{
+  display:flex;align-items:center;gap:10px;
+  padding:12px;background:var(--bg3);border:1px solid var(--bdr);
+  border-radius:11px;margin-bottom:8px;transition:all .2s;
+}
+.admin-badge-row.has-badge{border-color:rgba(255,214,10,.3);background:rgba(255,214,10,.03)}
+.admin-badge-ico{font-size:24px;min-width:36px;text-align:center}
+.admin-badge-info{flex:1}
+.admin-badge-name{font-size:13px;font-weight:700;margin-bottom:2px}
+.admin-badge-desc{font-size:11px;color:var(--txt3)}
+.admin-post-card{
+  display:flex;justify-content:space-between;align-items:flex-start;gap:10px;
+  background:var(--bg3);border:1px solid var(--bdr);border-radius:11px;padding:13px;margin-bottom:8px;
+}
+.admin-post-meta{font-size:13px;font-weight:700;margin-bottom:4px}
+.admin-post-text{font-size:12px;color:var(--txt2);line-height:1.4}
+.admin-reward-row{
+  display:flex;justify-content:space-between;align-items:center;
+  background:var(--bg3);border:1px solid var(--bdr);border-radius:11px;padding:13px;margin-bottom:8px;
+}
+.admin-reward-info{}
+.admin-reward-name{font-size:13px;font-weight:700;margin-bottom:3px}
+.admin-reward-meta{font-size:11px;color:var(--txt3)}
+.xp-user-result{
+  display:flex;align-items:center;gap:10px;
+  background:var(--bg3);border:1px solid var(--bdr);border-radius:10px;padding:12px;
+  margin-bottom:6px;cursor:pointer;transition:all .2s;
+}
+.xp-user-result:hover{border-color:var(--red)}
+.xp-user-result.selected{border-color:var(--red);background:rgba(255,59,48,.05)}
+.xp-log-item{
+  background:var(--bg3);border:1px solid var(--bdr);border-radius:10px;padding:12px;margin-bottom:6px;
+  display:flex;justify-content:space-between;align-items:center;
+}
+.xp-log-amount{font-family:var(--fm);font-size:16px;font-weight:700}
+.xp-log-amount.pos{color:var(--green)}
+.xp-log-amount.neg{color:var(--red)}
+.xp-log-meta{font-size:11px;color:var(--txt3);margin-top:2px}
+.broadcast-item{
+  background:var(--bg3);border:1px solid rgba(255,59,48,.3);border-radius:11px;
+  padding:13px;margin-bottom:8px;border-left:3px solid var(--red);
+}
+.broadcast-item-hdr{display:flex;justify-content:space-between;align-items:center;margin-bottom:6px}
+.broadcast-type{font-family:var(--fm);font-size:9px;text-transform:uppercase;letter-spacing:1px;color:var(--red)}
+.broadcast-text{font-size:13px;line-height:1.5}
 </style>
 </head>
 <body>
@@ -845,10 +990,151 @@ select.form-input option{background:var(--bg3)}
       </div>
     </div>
 
+    <!-- ═══ ADMIN ═══ -->
+    <div class="sec" id="secAdmin">
+      <div class="sec-hdr">
+        <div style="display:flex;align-items:center;gap:10px">
+          <div class="sec-ttl">🛡 PAINEL ADMIN</div>
+          <div style="font-family:var(--fm);font-size:8px;padding:3px 8px;border-radius:20px;background:rgba(255,59,48,.15);border:1px solid rgba(255,59,48,.3);color:var(--red);text-transform:uppercase;letter-spacing:1px">MODO DEUS</div>
+        </div>
+        <button class="admin-refresh-btn" onclick="loadAdminData()">↻ Atualizar</button>
+      </div>
+
+      <!-- STATS GRID -->
+      <div class="admin-stats-grid">
+        <div class="admin-stat-card"><div class="admin-stat-val blue" id="aStat-users">—</div><div class="admin-stat-lbl">Operadores</div></div>
+        <div class="admin-stat-card"><div class="admin-stat-val gold" id="aStat-active">—</div><div class="admin-stat-lbl">Ativos Hoje</div></div>
+        <div class="admin-stat-card"><div class="admin-stat-val green" id="aStat-posts">—</div><div class="admin-stat-lbl">Posts</div></div>
+        <div class="admin-stat-card"><div class="admin-stat-val red" id="aStat-banned">—</div><div class="admin-stat-lbl">Banidos</div></div>
+        <div class="admin-stat-card"><div class="admin-stat-val" id="aStat-xpTotal">—</div><div class="admin-stat-lbl">XP Global</div></div>
+        <div class="admin-stat-card"><div class="admin-stat-val purple" id="aStat-premium">—</div><div class="admin-stat-lbl">Premium</div></div>
+      </div>
+
+      <!-- PERMISSION WARNING -->
+      <div id="adminPermWarn" style="display:none" class="admin-warn-box">
+        ⛔ <strong>Erro de permissão.</strong> Atualize as regras no Firebase Console → Firestore → Regras conforme instruções no final do arquivo.
+      </div>
+
+      <!-- ADMIN TABS -->
+      <div class="admin-tabs">
+        <button class="admin-tab active" id="atab-users" onclick="switchAdminTab('users',this)">👥 Usuários</button>
+        <button class="admin-tab" id="atab-posts" onclick="switchAdminTab('posts',this)">🧾 Mural</button>
+        <button class="admin-tab" id="atab-badges" onclick="switchAdminTab('badges',this)">🏅 Insígnias</button>
+        <button class="admin-tab" id="atab-rewards" onclick="switchAdminTab('rewards',this)">🎁 Resgates</button>
+        <button class="admin-tab" id="atab-xp" onclick="switchAdminTab('xp',this)">⚡ XP</button>
+        <button class="admin-tab" id="atab-broadcast" onclick="switchAdminTab('broadcast',this)">📣 Anúncio</button>
+      </div>
+
+      <!-- PANEL: USERS -->
+      <div id="apanel-users">
+        <input class="admin-search-inp" id="adminSearch" placeholder="🔍 Buscar por nome de guerra..." oninput="adminFilterUsers()"/>
+        <div style="display:flex;gap:6px;margin-bottom:12px;flex-wrap:wrap">
+          <button class="filter-chip active" data-filter="all" onclick="adminSetFilter('all',this)">Todos</button>
+          <button class="filter-chip" data-filter="elite" onclick="adminSetFilter('elite',this)">Elite</button>
+          <button class="filter-chip" data-filter="mentor" onclick="adminSetFilter('mentor',this)">Mentores</button>
+          <button class="filter-chip" data-filter="banned" onclick="adminSetFilter('banned',this)">Banidos</button>
+          <button class="filter-chip" data-filter="premium" onclick="adminSetFilter('premium',this)">Premium</button>
+        </div>
+        <div id="adminUserList"></div>
+      </div>
+
+      <!-- PANEL: POSTS/MURAL -->
+      <div id="apanel-posts" style="display:none">
+        <div id="adminPostList"></div>
+      </div>
+
+      <!-- PANEL: BADGES -->
+      <div id="apanel-badges" style="display:none">
+        <div class="admin-info-box" style="margin-bottom:12px">
+          ⚠️ Selecione um operador para gerenciar suas insígnias individualmente.
+        </div>
+        <input class="admin-search-inp" id="adminBadgeSearch" placeholder="🔍 Buscar operador..." oninput="adminBadgeFilter()"/>
+        <div id="adminBadgeUserList"></div>
+        <div id="adminBadgeEditor" style="display:none">
+          <div style="display:flex;align-items:center;gap:10px;padding:10px 0;margin-bottom:10px;border-bottom:1px solid var(--bdr)">
+            <button class="admin-back-btn" onclick="closeBadgeEditor()">← Voltar</button>
+            <div style="font-size:14px;font-weight:700" id="adminBadgeTargetName">—</div>
+          </div>
+          <div id="adminBadgeGrid"></div>
+          <div class="admin-card" style="margin-top:16px">
+            <div class="admin-card-title">➕ Criar Insígnia Customizada</div>
+            <div style="display:flex;gap:8px;margin-bottom:8px">
+              <input type="text" class="admin-inp" id="newBadgeIco" placeholder="🎯" style="width:70px;flex-shrink:0;text-align:center;font-size:18px"/>
+              <input type="text" class="admin-inp" id="newBadgeName" placeholder="Nome da insígnia" style="flex:1"/>
+            </div>
+            <input type="text" class="admin-inp" id="newBadgeDesc" placeholder="Descrição curta" style="margin-bottom:10px"/>
+            <button class="admin-btn admin-btn-give" onclick="adminCreateBadge()" style="width:100%">+ Criar e Conceder</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- PANEL: REWARDS -->
+      <div id="apanel-rewards" style="display:none">
+        <div class="admin-card" style="margin-bottom:14px">
+          <div class="admin-card-title">➕ Novo Item de Resgate</div>
+          <input type="text" class="admin-inp" id="newRewardName" placeholder="Nome (ex: 🌙 Modo Noturno)" style="margin-bottom:8px"/>
+          <input type="text" class="admin-inp" id="newRewardDesc" placeholder="Descrição curta" style="margin-bottom:8px"/>
+          <div style="display:flex;gap:8px">
+            <input type="number" class="admin-inp" id="newRewardCost" placeholder="Custo XP" min="1" max="9999" style="flex:1"/>
+            <button class="admin-btn admin-btn-give" onclick="adminCreateReward()">+ Criar</button>
+          </div>
+        </div>
+        <div id="adminRewardList"></div>
+      </div>
+
+      <!-- PANEL: XP ADJUSTMENT -->
+      <div id="apanel-xp" style="display:none">
+        <div class="admin-card" style="margin-bottom:14px">
+          <div class="admin-card-title">⚡ Ajuste Manual de XP</div>
+          <div class="admin-info-box" style="margin-bottom:12px">Use para corrigir erros, premiações especiais ou penalidades. Tudo é registrado no Firestore.</div>
+          <input type="text" class="admin-inp" id="xpTargetSearch" placeholder="🔍 Nome de guerra do operador..." oninput="xpSearchUser()" style="margin-bottom:8px"/>
+          <div id="xpUserResults" style="margin-bottom:10px"></div>
+          <div style="display:flex;gap:8px;margin-bottom:8px">
+            <input type="number" class="admin-inp" id="xpAmount" placeholder="Quantidade XP" style="flex:1"/>
+            <select class="admin-inp" id="xpOperation" style="flex:1">
+              <option value="add">➕ Adicionar</option>
+              <option value="sub">➖ Remover</option>
+              <option value="set">🎯 Definir exato</option>
+            </select>
+          </div>
+          <input type="text" class="admin-inp" id="xpReason" placeholder="Motivo (obrigatório)" style="margin-bottom:10px"/>
+          <button class="admin-btn admin-btn-promote" onclick="adminAdjustXP()" style="width:100%">⚡ Aplicar Ajuste</button>
+        </div>
+        <div class="admin-card-title" style="margin-bottom:8px">📋 Últimos Ajustes</div>
+        <div id="xpLogList"></div>
+      </div>
+
+      <!-- PANEL: BROADCAST -->
+      <div id="apanel-broadcast" style="display:none">
+        <div class="admin-card">
+          <div class="admin-card-title">📣 Publicar Anúncio Global</div>
+          <div class="admin-info-box" style="margin-bottom:12px">Aparecerá no topo do Mural para todos os operadores, marcado como ADMIN.</div>
+          <select class="admin-inp" id="broadcastType" style="margin-bottom:8px">
+            <option value="anuncio">📢 Anúncio</option>
+            <option value="alerta">🚨 Alerta</option>
+            <option value="conquista">🏆 Conquista Global</option>
+            <option value="manutencao">🔧 Manutenção</option>
+          </select>
+          <textarea class="admin-inp" id="broadcastText" placeholder="Mensagem para todos os operadores..." rows="4" style="resize:none;line-height:1.5"></textarea>
+          <div style="display:flex;gap:8px;margin-top:10px">
+            <label style="display:flex;align-items:center;gap:6px;font-size:12px;color:var(--txt2);cursor:pointer">
+              <input type="checkbox" id="broadcastPin" style="accent-color:var(--red)"/> Fixar no topo
+            </label>
+            <button class="admin-btn admin-btn-promote" onclick="adminBroadcast()" style="flex:1">📣 Publicar</button>
+          </div>
+        </div>
+        <div style="margin-top:16px">
+          <div class="admin-card-title" style="margin-bottom:8px">📌 Anúncios Ativos</div>
+          <div id="broadcastList"></div>
+        </div>
+      </div>
+
+    </div><!-- /secAdmin -->
+
   </div><!-- /main-scroll -->
 
   <!-- BOTTOM NAV -->
-  <nav class="nav">
+  <nav class="nav" id="mainNav" style="grid-template-columns:repeat(5,1fr)">
     <button class="nav-btn active" id="nav-hoje" onclick="goSec('hoje')">
       <span class="ico">⚡</span>Hoje
     </button>
@@ -864,6 +1150,9 @@ select.form-input option{background:var(--bg3)}
     </button>
     <button class="nav-btn" id="nav-perfil" onclick="goSec('perfil')">
       <span class="ico">🪖</span>Perfil
+    </button>
+    <button class="nav-btn" id="nav-admin" onclick="goSec('admin')" style="display:none">
+      <span class="ico">🛡</span>Admin
     </button>
   </nav>
 
@@ -901,6 +1190,7 @@ let S = {
   xp: 420,
   level: 3,
   streak: 5,
+  isAdmin: false,
   currentSec: 'hoje',
   currentView: 'lista',
   modalType: 'tarefa',
@@ -1000,12 +1290,18 @@ function goSec(sec){
   S.currentSec=sec;
   document.querySelectorAll('.sec').forEach(s=>s.classList.remove('active'));
   document.querySelectorAll('.nav-btn').forEach(b=>b.classList.remove('active'));
-  document.getElementById('sec'+cap(sec)).classList.add('active');
-  document.getElementById('nav-'+sec).classList.add('active');
+  const secEl=document.getElementById('sec'+cap(sec));
+  if(secEl) secEl.classList.add('active');
+  const navEl=document.getElementById('nav-'+sec);
+  if(navEl) navEl.classList.add('active');
   if(sec==='ranking')renderRanking();
   if(sec==='habitos'){if(S.currentView==='tracker')renderTracker();if(S.currentView==='cal')renderCalendario();}
   if(sec==='mural')renderMural();
   if(sec==='perfil')renderProfile();
+  if(sec==='admin'){
+    if(!S.isAdmin){toast('🚫 Acesso negado','error');goSec('hoje');return;}
+    loadAdminData();
+  }
 }
 function cap(s){return s.charAt(0).toUpperCase()+s.slice(1)}
 
@@ -1607,7 +1903,576 @@ document.addEventListener('input',e=>{
 });
 
 // ═══════════════════════════════════════════
-//  FIREBASE SYNC
+//  🛡 ADMIN — CORE
+// ═══════════════════════════════════════════
+
+let _adminUsers = [];
+let _adminCurrentTab = 'users';
+let _adminFilter = 'all';
+let _adminBadgeTarget = null;
+let _xpTarget = null;
+let _xpLog = [];
+
+function showAdminNav(){
+  const btn = document.getElementById('nav-admin');
+  const nav = document.getElementById('mainNav');
+  if(!btn||!nav) return;
+  btn.style.display='flex';
+  nav.style.gridTemplateColumns='repeat(6,1fr)';
+}
+
+function hideAdminNav(){
+  const btn = document.getElementById('nav-admin');
+  const nav = document.getElementById('mainNav');
+  if(!btn||!nav) return;
+  btn.style.display='none';
+  nav.style.gridTemplateColumns='repeat(5,1fr)';
+}
+
+function adminPermError(e){
+  if(e.code==='permission-denied'||String(e.message).includes('permission')||String(e.message).includes('Missing')){
+    const w=document.getElementById('adminPermWarn');if(w)w.style.display='block';
+    toast('⛔ Sem permissão — atualize regras Firestore','error');
+  } else {
+    toast('Erro: '+e.message,'error');
+  }
+  console.error('[ADMIN]',e);
+}
+
+async function loadAdminData(){
+  if(!S.isAdmin){toast('🚫 Acesso negado','error');return;}
+  if(!FIREBASE_OK){toast('⚠️ Firebase necessário','error');return;}
+  toast('🔄 Carregando dados admin...','info');
+  try{
+    // Users
+    const uSnap = await db.collection('users').orderBy('xp','desc').limit(200).get();
+    _adminUsers=[];
+    uSnap.forEach(d=>_adminUsers.push({id:d.id,...d.data()}));
+
+    // Posts count
+    let postCount = 0;
+    try{
+      const pSnap = await db.collection('posts').get();
+      postCount = pSnap.size;
+      // Enrich users with post counts
+      const pCounts={};
+      pSnap.forEach(d=>{const aid=d.data().authorId;pCounts[aid]=(pCounts[aid]||0)+1;});
+      _adminUsers.forEach(u=>{u._postCount=pCounts[u.id]||0;});
+    }catch(e){}
+
+    // Compute last 24h active
+    const dayAgo = new Date(Date.now()-86400000);
+    const activeToday = _adminUsers.filter(u=>{
+      if(!u.updatedAt?.toDate) return false;
+      return u.updatedAt.toDate() > dayAgo;
+    }).length;
+    const premium = _adminUsers.filter(u=>u.premium||u.role==='admin').length;
+    const banned = _adminUsers.filter(u=>u.banned).length;
+    const totalXP = _adminUsers.reduce((a,u)=>a+(u.xp||0),0);
+
+    // Update stat cards
+    document.getElementById('aStat-users').textContent=_adminUsers.length;
+    document.getElementById('aStat-active').textContent=activeToday;
+    document.getElementById('aStat-posts').textContent=postCount;
+    document.getElementById('aStat-banned').textContent=banned;
+    document.getElementById('aStat-xpTotal').textContent=totalXP.toLocaleString('pt-BR');
+    document.getElementById('aStat-premium').textContent=premium;
+
+    renderAdminUsers();
+    toast('✅ Painel atualizado!','success');
+  }catch(e){adminPermError(e);}
+}
+
+function switchAdminTab(tab, btn){
+  _adminCurrentTab=tab;
+  document.querySelectorAll('.admin-tab').forEach(t=>t.classList.remove('active'));
+  if(btn) btn.classList.add('active');
+  ['users','posts','badges','rewards','xp','broadcast'].forEach(p=>{
+    const el=document.getElementById('apanel-'+p);
+    if(el) el.style.display = p===tab?'block':'none';
+  });
+  if(tab==='users') renderAdminUsers();
+  else if(tab==='posts') loadAdminPosts();
+  else if(tab==='badges') renderAdminBadgeUserList();
+  else if(tab==='rewards') loadAdminRewards();
+  else if(tab==='xp') loadXpLog();
+  else if(tab==='broadcast') loadBroadcasts();
+}
+
+function adminSetFilter(filter, btn){
+  _adminFilter=filter;
+  document.querySelectorAll('.filter-chip').forEach(c=>c.classList.remove('active'));
+  if(btn) btn.classList.add('active');
+  renderAdminUsers();
+}
+
+function adminFilterUsers(){
+  renderAdminUsers();
+}
+
+function renderAdminUsers(){
+  const el=document.getElementById('adminUserList');if(!el)return;
+  const q=(document.getElementById('adminSearch')?.value||'').toLowerCase();
+  let users=_adminUsers.filter(u=>{
+    const nameMatch=(u.name||u.nomeGuerra||'').toLowerCase().includes(q);
+    if(!nameMatch) return false;
+    if(_adminFilter==='all') return true;
+    if(_adminFilter==='elite') return u.role==='elite'||u.role==='admin';
+    if(_adminFilter==='mentor') return u.role==='mentor';
+    if(_adminFilter==='banned') return u.banned;
+    if(_adminFilter==='premium') return u.premium||u.role==='admin';
+    return true;
+  });
+
+  if(!users.length){
+    el.innerHTML=`<div class="empty-state"><span class="empty-ico">👥</span>Nenhum operador encontrado</div>`;
+    return;
+  }
+  el.innerHTML=users.map(u=>{
+    const isMe=currentUser&&u.id===currentUser.uid;
+    const role=u.role||'operador';
+    const lvl=getLevelInfo(u.xp||0);
+    const lastSeen=u.updatedAt?.toDate?u.updatedAt.toDate().toLocaleDateString('pt-BR'):'—';
+    return`<div class="admin-user-card ${u.banned?'banned-card':''}">
+      <div class="admin-user-top">
+        <div class="admin-user-avatar">${lvl.icon}</div>
+        <div style="flex:1;min-width:0">
+          <div class="admin-user-name">
+            ${escHtml(u.name||u.nomeGuerra||'?')}
+            ${isMe?'<span style="font-size:9px;color:var(--red);font-family:var(--fm)">VOCÊ</span>':''}
+            <span class="role-tag role-${role}">${role}</span>
+            ${u.premium?'<span class="role-tag" style="background:rgba(191,90,242,.12);color:var(--purple);border-color:rgba(191,90,242,.25)">⭐</span>':''}
+            ${u.banned?'<span class="role-tag admin-btn-ban">🚫 Banido</span>':''}
+          </div>
+          <div class="admin-user-sub">Nv ${lvl.lvl} · ${(u.xp||0).toLocaleString('pt-BR')} XP · 🔥${u.streak||0}</div>
+        </div>
+      </div>
+      <div class="admin-chips">
+        <span class="admin-chip c-blue">📋 ${u._postCount||0} posts</span>
+        <span class="admin-chip c-gold">🏅 ${(u.badges||[]).length} insígnias</span>
+        <span class="admin-chip">📅 ${lastSeen}</span>
+        ${u.totalFocusMinutes?`<span class="admin-chip c-green">🎯 ${Math.round(u.totalFocusMinutes/60)}h foco</span>`:''}
+      </div>
+      ${isMe?'':`<div class="admin-actions">
+        <button class="admin-btn admin-btn-promote" onclick="adminSetRole('${u.id}','executor',this)">↑ Executor</button>
+        <button class="admin-btn admin-btn-promote" onclick="adminSetRole('${u.id}','mentor',this)">↑↑ Mentor</button>
+        <button class="admin-btn admin-btn-premium" onclick="adminSetRole('${u.id}','elite',this)">★ Elite</button>
+        <button class="admin-btn admin-btn-demote" onclick="adminSetRole('${u.id}','operador',this)">↓ Operador</button>
+        <button class="admin-btn admin-btn-premium" onclick="adminTogglePremium('${u.id}',${!u.premium},this)">${u.premium?'⛔ Premium':'⭐ Premium'}</button>
+        <button class="admin-btn admin-btn-ban" onclick="adminToggleBan('${u.id}',${!u.banned},this)">${u.banned?'✅ Desbanir':'🚫 Banir'}</button>
+      </div>`}
+    </div>`;
+  }).join('');
+}
+
+// ═══ ADMIN — ROLE / BAN / PREMIUM ═══
+
+async function adminSetRole(uid, role, btn){
+  if(btn&&btn.dataset.confirm!==role){
+    btn.dataset.confirm=role;const orig=btn.textContent;btn.textContent='❓';
+    setTimeout(()=>{if(btn.dataset.confirm===role){btn.dataset.confirm='';btn.textContent=orig;}},3000);return;
+  }
+  if(btn){btn.dataset.confirm='';btn.disabled=true;}
+  try{
+    await db.collection('users').doc(uid).update({role});
+    const u=_adminUsers.find(x=>x.id===uid);if(u)u.role=role;
+    renderAdminUsers();
+    toast(`✅ Cargo alterado para ${role}!`,'success');
+  }catch(e){adminPermError(e);}
+  if(btn)btn.disabled=false;
+}
+
+async function adminTogglePremium(uid, value, btn){
+  if(btn)btn.disabled=true;
+  try{
+    await db.collection('users').doc(uid).update({premium:value});
+    const u=_adminUsers.find(x=>x.id===uid);if(u)u.premium=value;
+    renderAdminUsers();
+    toast(value?'⭐ Premium ativado!':'Premium removido','success');
+  }catch(e){adminPermError(e);}
+  if(btn)btn.disabled=false;
+}
+
+async function adminToggleBan(uid, value, btn){
+  if(value&&btn&&btn.dataset.confirmBan!=='1'){
+    btn.dataset.confirmBan='1';const orig=btn.textContent;btn.textContent='❓ Confirmar?';
+    setTimeout(()=>{if(btn.dataset.confirmBan==='1'){btn.dataset.confirmBan='';btn.textContent=orig;}},3000);return;
+  }
+  if(btn){btn.dataset.confirmBan='';btn.disabled=true;}
+  try{
+    await db.collection('users').doc(uid).update({banned:value});
+    const u=_adminUsers.find(x=>x.id===uid);if(u)u.banned=value;
+    renderAdminUsers();
+    toast(value?'🚫 Usuário banido!':'✅ Banimento removido',value?'error':'success');
+  }catch(e){adminPermError(e);}
+  if(btn)btn.disabled=false;
+}
+
+// ═══ ADMIN — POSTS/MURAL ═══
+
+async function loadAdminPosts(){
+  const el=document.getElementById('adminPostList');if(!el)return;
+  el.innerHTML=`<div class="empty-state"><span class="empty-ico" style="animation:spin 1s linear infinite;display:block">⟳</span>Carregando...</div>`;
+  try{
+    const snap=await db.collection('posts').orderBy('timestamp','desc').limit(100).get();
+    if(snap.empty){el.innerHTML=`<div class="empty-state"><span class="empty-ico">🧾</span>Sem posts</div>`;return;}
+    const posts=[];snap.forEach(d=>posts.push({id:d.id,...d.data()}));
+    el.innerHTML=posts.map(p=>`
+      <div class="admin-post-card">
+        <div style="flex:1;min-width:0">
+          <div class="admin-post-meta">${escHtml(p.nomeGuerra||p.author||'?')} <span class="role-tag role-${p.role||'operador'}">${p.role||'operador'}</span></div>
+          <div class="admin-post-text">${escHtml((p.text||p.texto||'').substring(0,140))}${(p.text||p.texto||'').length>140?'...':''}</div>
+          <div style="font-size:10px;color:var(--txt3);margin-top:4px;font-family:var(--fm)">❤ ${p.likes||0} likes</div>
+        </div>
+        <button class="admin-btn admin-btn-ban" onclick="adminDeletePost('${p.id}',this)">🗑</button>
+      </div>`).join('');
+  }catch(e){el.innerHTML=`<div class="empty-state"><span class="empty-ico">⚠️</span>Erro ao carregar</div>`;adminPermError(e);}
+}
+
+async function adminDeletePost(postId, btn){
+  if(btn&&btn.dataset.confirm!=='1'){
+    btn.dataset.confirm='1';const orig=btn.textContent;btn.textContent='❓';
+    setTimeout(()=>{if(btn.dataset.confirm==='1'){btn.dataset.confirm='';btn.textContent=orig;}},3000);return;
+  }
+  if(btn){btn.dataset.confirm='';btn.disabled=true;}
+  try{
+    await db.collection('posts').doc(postId).delete();
+    toast('🗑 Post removido','success');
+    loadAdminPosts();
+  }catch(e){adminPermError(e);if(btn)btn.disabled=false;}
+}
+
+// ═══ ADMIN — BADGES ═══
+
+function renderAdminBadgeUserList(){
+  const el=document.getElementById('adminBadgeUserList');if(!el)return;
+  const q=(document.getElementById('adminBadgeSearch')?.value||'').toLowerCase();
+  const users=_adminUsers.filter(u=>(u.name||u.nomeGuerra||'').toLowerCase().includes(q));
+  el.innerHTML=users.map(u=>`
+    <div class="admin-badge-row" style="cursor:pointer" onclick="openBadgeEditor('${u.id}','${escHtml(u.name||u.nomeGuerra||'?')}')">
+      <div class="admin-badge-ico">${getLevelInfo(u.xp||0).icon}</div>
+      <div class="admin-badge-info">
+        <div class="admin-badge-name">${escHtml(u.name||u.nomeGuerra||'?')}</div>
+        <div class="admin-badge-desc">Nv ${getLevelInfo(u.xp||0).lvl} · 🏅 ${(u.badges||[]).length} insígnias</div>
+      </div>
+      <span style="color:var(--txt3);font-size:18px">›</span>
+    </div>`).join('')||`<div class="empty-state"><span class="empty-ico">👥</span>Sem operadores</div>`;
+}
+
+function adminBadgeFilter(){renderAdminBadgeUserList();}
+
+function closeBadgeEditor(){
+  _adminBadgeTarget=null;
+  document.getElementById('adminBadgeEditor').style.display='none';
+  document.getElementById('adminBadgeUserList').style.display='block';
+}
+
+async function openBadgeEditor(uid, name){
+  _adminBadgeTarget=_adminUsers.find(u=>u.id===uid);
+  if(!_adminBadgeTarget)return;
+  document.getElementById('adminBadgeTargetName').textContent=name;
+  document.getElementById('adminBadgeUserList').style.display='none';
+  document.getElementById('adminBadgeEditor').style.display='block';
+  await renderBadgeEditorGrid();
+}
+
+async function renderBadgeEditorGrid(){
+  const grid=document.getElementById('adminBadgeGrid');if(!grid||!_adminBadgeTarget)return;
+  grid.innerHTML=`<div class="empty-state"><span class="empty-ico" style="animation:spin 1s linear infinite;display:block">⟳</span></div>`;
+  // Fetch fresh user data
+  let freshBadges=[];
+  try{
+    const snap=await db.collection('users').doc(_adminBadgeTarget.id).get();
+    if(snap.exists){freshBadges=snap.data().badges||[];_adminBadgeTarget.badges=freshBadges;}
+  }catch(e){}
+  // Static badges list
+  const STATIC_BADGES=[
+    {id:'b_madrugador',ico:'🌅',name:'Madrugador',desc:'Acordou às 6am por 7 dias'},
+    {id:'b_chamas',ico:'🔥',name:'Em Chamas',desc:'10 dias consecutivos de streak'},
+    {id:'b_executor',ico:'⚡',name:'Executor',desc:'50 tarefas concluídas'},
+    {id:'b_hidratado',ico:'💧',name:'Hidratado',desc:'30 dias bebendo 2L de água'},
+    {id:'b_zen',ico:'🧘',name:'Zen Master',desc:'21 dias de meditação'},
+    {id:'b_bibliofilo',ico:'📚',name:'Bibliófilo',desc:'60h de leitura registrada'},
+    {id:'b_diamante',ico:'💎',name:'Diamante',desc:'Atingiu Liga Diamante'},
+    {id:'b_comandante',ico:'🦅',name:'Comandante',desc:'Atingiu Nível 9'},
+    {id:'b_campeao',ico:'🏆',name:'Campeão',desc:'1º no ranking semanal'},
+    {id:'b_lendario',ico:'🔱',name:'Lendário',desc:'Nível máximo atingido'},
+    {id:'b_protocolo',ico:'🛡️',name:'Protocolo',desc:'30 dias sem falhar'},
+  ];
+  // Also fetch custom badges from Firestore
+  let customBadges=[];
+  try{
+    const cs=await db.collection('badges').get();
+    cs.forEach(d=>customBadges.push({id:d.id,_custom:true,...d.data()}));
+  }catch(e){}
+  const allBadges=[...STATIC_BADGES,...customBadges];
+
+  grid.innerHTML=allBadges.map(b=>{
+    const has=freshBadges.includes(b.id);
+    return`<div class="admin-badge-row ${has?'has-badge':''}" id="bdrow_${b.id}">
+      <div class="admin-badge-ico">${b.ico||'🏅'}</div>
+      <div class="admin-badge-info">
+        <div class="admin-badge-name">${escHtml(b.name)}${b._custom?'<span style="font-size:8px;color:var(--blue);margin-left:4px">[CUSTOM]</span>':''}</div>
+        <div class="admin-badge-desc">${escHtml(b.desc||'')}</div>
+      </div>
+      <div style="display:flex;flex-direction:column;gap:4px">
+        ${has
+          ?`<button class="admin-btn admin-btn-revoke" onclick="adminRevokeBadge('${_adminBadgeTarget.id}','${b.id}',this)">− Revogar</button>`
+          :`<button class="admin-btn admin-btn-give" onclick="adminGiveBadge('${_adminBadgeTarget.id}','${b.id}',this)">+ Dar</button>`
+        }
+        ${b._custom?`<button class="admin-btn admin-btn-ban" onclick="adminDeleteBadge('${b.id}',this)" style="font-size:9px">🗑</button>`:''}
+      </div>
+    </div>`;
+  }).join('');
+}
+
+async function adminGiveBadge(uid, badgeId, btn){
+  if(btn){btn.disabled=true;btn.textContent='...';}
+  try{
+    const snap=await db.collection('users').doc(uid).get();
+    if(!snap.exists){toast('Usuário não encontrado','error');return;}
+    const badges=[...new Set([...(snap.data().badges||[]),badgeId])];
+    await db.collection('users').doc(uid).update({badges});
+    const u=_adminUsers.find(x=>x.id===uid);if(u)u.badges=badges;
+    if(_adminBadgeTarget?.id===uid)_adminBadgeTarget.badges=badges;
+    toast('🏅 Insígnia concedida!','success');
+    await renderBadgeEditorGrid();
+  }catch(e){adminPermError(e);if(btn){btn.disabled=false;btn.textContent='+ Dar';}}
+}
+
+async function adminRevokeBadge(uid, badgeId, btn){
+  if(btn&&btn.dataset.confirm!=='1'){
+    btn.dataset.confirm='1';const orig=btn.textContent;btn.textContent='❓';
+    btn.style.background='rgba(255,159,10,.15)';btn.style.borderColor='var(--orange)';btn.style.color='var(--orange)';
+    setTimeout(()=>{if(btn.dataset.confirm==='1'){btn.dataset.confirm='';btn.textContent=orig;btn.style.background='';btn.style.borderColor='';btn.style.color='';}},3000);return;
+  }
+  if(btn){btn.dataset.confirm='';btn.disabled=true;}
+  try{
+    const snap=await db.collection('users').doc(uid).get();
+    if(!snap.exists){toast('Usuário não encontrado','error');return;}
+    const badges=(snap.data().badges||[]).filter(b=>b!==badgeId);
+    await db.collection('users').doc(uid).update({badges});
+    const u=_adminUsers.find(x=>x.id===uid);if(u)u.badges=badges;
+    if(_adminBadgeTarget?.id===uid)_adminBadgeTarget.badges=badges;
+    toast('🗑 Insígnia revogada','info');
+    await renderBadgeEditorGrid();
+  }catch(e){adminPermError(e);if(btn){btn.disabled=false;btn.textContent='− Revogar';}}
+}
+
+async function adminCreateBadge(){
+  const ico=(document.getElementById('newBadgeIco')?.value||'').trim()||'🏅';
+  const name=(document.getElementById('newBadgeName')?.value||'').trim();
+  const desc=(document.getElementById('newBadgeDesc')?.value||'').trim();
+  if(!name){toast('Informe o nome da insígnia','error');return;}
+  if(!_adminBadgeTarget){toast('Selecione um operador primeiro','error');return;}
+  try{
+    const ref=await db.collection('badges').add({ico,name,desc,createdAt:firebase.firestore.FieldValue.serverTimestamp()});
+    const snap=await db.collection('users').doc(_adminBadgeTarget.id).get();
+    const badges=[...new Set([...(snap.data()?.badges||[]),ref.id])];
+    await db.collection('users').doc(_adminBadgeTarget.id).update({badges});
+    document.getElementById('newBadgeIco').value='';
+    document.getElementById('newBadgeName').value='';
+    document.getElementById('newBadgeDesc').value='';
+    toast(`✅ Insígnia "${name}" criada e concedida!`,'success');
+    await renderBadgeEditorGrid();
+  }catch(e){adminPermError(e);}
+}
+
+async function adminDeleteBadge(badgeId, btn){
+  if(btn&&btn.dataset.confirm!=='1'){
+    btn.dataset.confirm='1';const orig=btn.textContent;btn.textContent='❓';
+    setTimeout(()=>{if(btn.dataset.confirm==='1'){btn.dataset.confirm='';btn.textContent=orig;}},3000);return;
+  }
+  if(btn){btn.dataset.confirm='';btn.disabled=true;}
+  try{
+    await db.collection('badges').doc(badgeId).delete();
+    toast('🗑 Insígnia excluída','info');
+    await renderBadgeEditorGrid();
+  }catch(e){toast('Erro: '+e.message,'error');if(btn)btn.disabled=false;}
+}
+
+// ═══ ADMIN — REWARDS ═══
+
+async function loadAdminRewards(){
+  const el=document.getElementById('adminRewardList');if(!el)return;
+  el.innerHTML=`<div class="empty-state"><span class="empty-ico">⏳</span>Carregando...</div>`;
+  try{
+    const snap=await db.collection('rewards').orderBy('cost','asc').get();
+    if(snap.empty){el.innerHTML=`<div class="empty-state"><span class="empty-ico">🎁</span>Nenhum item criado ainda</div>`;return;}
+    const items=[];snap.forEach(d=>items.push({id:d.id,...d.data()}));
+    el.innerHTML=items.map(r=>`
+      <div class="admin-reward-row">
+        <div class="admin-reward-info">
+          <div class="admin-reward-name">${escHtml(r.name||'?')}</div>
+          <div class="admin-reward-meta">${escHtml(r.desc||'')} · <span style="color:var(--gold)">${r.cost} XP</span></div>
+        </div>
+        <button class="admin-btn admin-btn-ban" onclick="adminDeleteReward('${r.id}',this)">🗑</button>
+      </div>`).join('');
+  }catch(e){adminPermError(e);}
+}
+
+async function adminCreateReward(){
+  const name=(document.getElementById('newRewardName')?.value||'').trim();
+  const desc=(document.getElementById('newRewardDesc')?.value||'').trim();
+  const cost=parseInt(document.getElementById('newRewardCost')?.value||'0');
+  if(!name){toast('Informe o nome','error');return;}
+  if(!cost||cost<1){toast('Custo inválido','error');return;}
+  try{
+    await db.collection('rewards').add({name,desc,cost,createdAt:firebase.firestore.FieldValue.serverTimestamp()});
+    toast('✅ Item criado!','success');
+    document.getElementById('newRewardName').value='';
+    document.getElementById('newRewardDesc').value='';
+    document.getElementById('newRewardCost').value='';
+    loadAdminRewards();
+  }catch(e){adminPermError(e);}
+}
+
+async function adminDeleteReward(rewardId, btn){
+  if(btn&&btn.dataset.confirm!=='1'){
+    btn.dataset.confirm='1';const orig=btn.textContent;btn.textContent='❓';
+    setTimeout(()=>{if(btn.dataset.confirm==='1'){btn.dataset.confirm='';btn.textContent=orig;}},3000);return;
+  }
+  if(btn){btn.dataset.confirm='';btn.disabled=true;}
+  try{
+    await db.collection('rewards').doc(rewardId).delete();
+    toast('🗑 Item removido','info');
+    loadAdminRewards();
+  }catch(e){adminPermError(e);if(btn)btn.disabled=false;}
+}
+
+// ═══ ADMIN — XP ADJUSTMENT ═══
+
+let _xpSearchTimeout;
+function xpSearchUser(){
+  clearTimeout(_xpSearchTimeout);
+  _xpSearchTimeout=setTimeout(()=>{
+    const q=(document.getElementById('xpTargetSearch')?.value||'').toLowerCase();
+    const el=document.getElementById('xpUserResults');if(!el)return;
+    if(!q){el.innerHTML='';_xpTarget=null;return;}
+    const matches=_adminUsers.filter(u=>(u.name||u.nomeGuerra||'').toLowerCase().includes(q)).slice(0,5);
+    el.innerHTML=matches.map(u=>`
+      <div class="xp-user-result ${_xpTarget?.id===u.id?'selected':''}" onclick="selectXpTarget('${u.id}')">
+        <span style="font-size:20px">${getLevelInfo(u.xp||0).icon}</span>
+        <div>
+          <div style="font-size:13px;font-weight:700">${escHtml(u.name||u.nomeGuerra||'?')}</div>
+          <div style="font-size:10px;color:var(--txt3);font-family:var(--fm)">XP atual: ${(u.xp||0).toLocaleString('pt-BR')}</div>
+        </div>
+        ${_xpTarget?.id===u.id?'<span style="color:var(--red)">✓</span>':''}
+      </div>`).join('');
+  },300);
+}
+
+function selectXpTarget(uid){
+  _xpTarget=_adminUsers.find(u=>u.id===uid);
+  if(_xpTarget){
+    document.getElementById('xpTargetSearch').value=_xpTarget.name||_xpTarget.nomeGuerra||'';
+    document.getElementById('xpUserResults').innerHTML='';
+    toast(`🎯 Selecionado: ${_xpTarget.name||_xpTarget.nomeGuerra}`,'info');
+  }
+}
+
+async function adminAdjustXP(){
+  if(!_xpTarget){toast('Selecione um operador','error');return;}
+  const amount=parseInt(document.getElementById('xpAmount')?.value||'0');
+  const op=document.getElementById('xpOperation')?.value||'add';
+  const reason=(document.getElementById('xpReason')?.value||'').trim();
+  if(!amount||amount<0){toast('Informe um valor válido','error');return;}
+  if(!reason){toast('Informe o motivo','error');return;}
+
+  const curXP=_xpTarget.xp||0;
+  let newXP=curXP;
+  let delta=0;
+  if(op==='add'){newXP=curXP+amount;delta=amount;}
+  else if(op==='sub'){newXP=Math.max(0,curXP-amount);delta=-(curXP-newXP);}
+  else if(op==='set'){newXP=amount;delta=amount-curXP;}
+
+  try{
+    await db.collection('users').doc(_xpTarget.id).update({xp:newXP});
+    // Log the adjustment
+    await db.collection('xpLogs').add({
+      targetUid:_xpTarget.id,
+      targetName:_xpTarget.name||_xpTarget.nomeGuerra,
+      adminUid:currentUser?.uid,
+      adminName:S.name,
+      delta, newXP, reason, op,
+      timestamp:firebase.firestore.FieldValue.serverTimestamp()
+    });
+    const u=_adminUsers.find(x=>x.id===_xpTarget.id);if(u)u.xp=newXP;
+    toast(`✅ XP ajustado! ${_xpTarget.name}: ${curXP} → ${newXP}`,'success');
+    document.getElementById('xpAmount').value='';
+    document.getElementById('xpReason').value='';
+    _xpTarget=null;document.getElementById('xpTargetSearch').value='';
+    loadXpLog();
+  }catch(e){adminPermError(e);}
+}
+
+async function loadXpLog(){
+  const el=document.getElementById('xpLogList');if(!el)return;
+  el.innerHTML=`<div class="empty-state" style="padding:20px"><span class="empty-ico">⏳</span>Carregando...</div>`;
+  try{
+    const snap=await db.collection('xpLogs').orderBy('timestamp','desc').limit(20).get();
+    if(snap.empty){el.innerHTML=`<div class="empty-state"><span class="empty-ico">📋</span>Sem ajustes registrados</div>`;return;}
+    const logs=[];snap.forEach(d=>logs.push({id:d.id,...d.data()}));
+    el.innerHTML=logs.map(l=>{
+      const ts=l.timestamp?.toDate?l.timestamp.toDate().toLocaleString('pt-BR',{day:'2-digit',month:'2-digit',hour:'2-digit',minute:'2-digit'}):'—';
+      return`<div class="xp-log-item">
+        <div>
+          <div style="font-size:13px;font-weight:700">${escHtml(l.targetName||'?')}</div>
+          <div class="xp-log-meta">${escHtml(l.reason)} · Admin: ${escHtml(l.adminName||'?')}</div>
+          <div class="xp-log-meta">${ts} · ${l.newXP} XP total</div>
+        </div>
+        <div class="xp-log-amount ${l.delta>=0?'pos':'neg'}">${l.delta>=0?'+':''}${l.delta}</div>
+      </div>`;
+    }).join('');
+  }catch(e){el.innerHTML=`<div class="empty-state"><span class="empty-ico">⚠️</span>Sem permissão para ver logs</div>`;}
+}
+
+// ═══ ADMIN — BROADCAST ═══
+
+async function adminBroadcast(){
+  const text=(document.getElementById('broadcastText')?.value||'').trim();
+  const type=document.getElementById('broadcastType')?.value||'anuncio';
+  const pin=document.getElementById('broadcastPin')?.checked||false;
+  if(!text){toast('Escreva uma mensagem','error');return;}
+  try{
+    await db.collection('posts').add({
+      nomeGuerra:'PROTOCOLO 6AM',
+      author:'PROTOCOLO 6AM',
+      avatar:'🛡',
+      role:'admin',
+      tipo:type,
+      text, pin,
+      isAdminBroadcast:true,
+      likes:0,
+      timestamp:firebase.firestore.FieldValue.serverTimestamp(),
+      authorId:currentUser?.uid
+    });
+    document.getElementById('broadcastText').value='';
+    toast('📣 Anúncio publicado no Mural!','success');
+    loadBroadcasts();
+  }catch(e){adminPermError(e);}
+}
+
+async function loadBroadcasts(){
+  const el=document.getElementById('broadcastList');if(!el)return;
+  el.innerHTML='';
+  try{
+    const snap=await db.collection('posts').where('isAdminBroadcast','==',true).orderBy('timestamp','desc').limit(10).get();
+    if(snap.empty){el.innerHTML=`<div class="empty-state"><span class="empty-ico">📣</span>Nenhum anúncio ainda</div>`;return;}
+    const items=[];snap.forEach(d=>items.push({id:d.id,...d.data()}));
+    const typeIcons={anuncio:'📢',alerta:'🚨',conquista:'🏆',manutencao:'🔧'};
+    el.innerHTML=items.map(i=>`
+      <div class="broadcast-item">
+        <div class="broadcast-item-hdr">
+          <span class="broadcast-type">${typeIcons[i.tipo]||'📢'} ${i.tipo?.toUpperCase()||'ANÚNCIO'}${i.pin?' 📌':''}</span>
+          <button class="admin-btn admin-btn-ban" onclick="adminDeletePost('${i.id}',this)" style="font-size:10px">🗑</button>
+        </div>
+        <div class="broadcast-text">${escHtml(i.text||'')}</div>
+      </div>`).join('');
+  }catch(e){el.innerHTML=`<div class="empty-state"><span class="empty-ico">⚠️</span>Erro ao carregar</div>`;}
+}
+
+// ═══════════════════════════════════════════
 // ═══════════════════════════════════════════
 
 // Save user data to Firestore
@@ -1689,12 +2554,35 @@ async function loadFirebaseRanking() {
 
 // Auth state observer
 if (FIREBASE_OK) {
-  auth.onAuthStateChanged(user => {
+  auth.onAuthStateChanged(async user => {
     currentUser = user;
     if (user) {
-      loadFromFirebase(user.uid);
+      await loadFromFirebase(user.uid);
       loadFirebaseRanking();
-      // Show sync indicator in topbar rank
+      // Check if user is admin in Firestore
+      try{
+        const snap = await db.collection('users').doc(user.uid).get();
+        if(snap.exists){
+          const role = snap.data().role;
+          if(role === 'admin'){
+            S.isAdmin = true;
+            showAdminNav();
+            toast('🛡 Modo Admin ativado','gold');
+          }
+          // Real-time listener for role/badge changes pushed by admin
+          db.collection('users').doc(user.uid).onSnapshot(d=>{
+            if(!d.exists) return;
+            const data = d.data();
+            if(data.role==='admin' && !S.isAdmin){S.isAdmin=true;showAdminNav();toast('🛡 Modo Admin ativado','gold');}
+            if(data.banned){auth.signOut();toast('🚫 Sua conta foi banida','error');return;}
+            if(data.xp!==undefined && data.xp!==S.xp){S.xp=data.xp;renderAll();}
+            if(Array.isArray(data.badges)){
+              const newBadges=data.badges.filter(b=>!S.badges.find(sb=>sb.id===b));
+              if(newBadges.length) toast('🏅 Nova insígnia recebida!','gold');
+            }
+          });
+        }
+      }catch(e){console.warn('Admin check error:',e);}
       document.getElementById('topRank').textContent += ' · ☁️';
     }
   });
@@ -1713,9 +2601,13 @@ window.saveModal = function() { _origSaveModal(); scheduleSync(); };
 const _origSaveProfile = saveProfile;
 window.saveProfile = function() { _origSaveProfile(); scheduleSync(); };
 
-// ═══════════════════════════════════════════
-//  INIT
-// ═══════════════════════════════════════════
+// ─── LOCAL DEV BYPASS ───
+// Acesse com ?admin=1 na URL para testar o painel sem Firebase
+if(new URLSearchParams(location.search).get('admin')==='1'){
+  S.isAdmin=true;
+  setTimeout(()=>{ showAdminNav(); toast('🛡 Admin local ativado','gold'); },500);
+}
+
 renderAll();
 // Hide ranking dot after viewing
 document.getElementById('nav-ranking').addEventListener('click',()=>{
