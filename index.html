@@ -5,6 +5,41 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"/>
 <meta name="theme-color" content="#000000"/>
 <meta name="apple-mobile-web-app-capable" content="yes"/>
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"/>
+<meta name="apple-mobile-web-app-title" content="6AM"/>
+<meta name="description" content="Protocolo 6AM — Arena de Desempenho. Construa hábitos, complete tarefas e compita no ranking global."/>
+
+<!-- Open Graph (WhatsApp, Telegram, iMessage) -->
+<meta property="og:type" content="website"/>
+<meta property="og:title" content="PROTOCOLO 6AM — Arena de Desempenho"/>
+<meta property="og:description" content="Construa hábitos reais, execute tarefas com disciplina e compita no ranking global de operadores."/>
+<meta property="og:url" content="https://protocolo-6am.web.app"/>
+<meta property="og:image" content="https://protocolo-6am.web.app/og-image.png"/>
+<meta property="og:image:width" content="1200"/>
+<meta property="og:image:height" content="630"/>
+
+<!-- Twitter Card -->
+<meta name="twitter:card" content="summary_large_image"/>
+<meta name="twitter:title" content="PROTOCOLO 6AM"/>
+<meta name="twitter:description" content="Arena de Desempenho. Hábitos. Tarefas. Competição."/>
+<meta name="twitter:image" content="https://protocolo-6am.web.app/og-image.png"/>
+
+<!-- PWA Manifest (inline para single-file deploy) -->
+<link rel="manifest" href="data:application/manifest+json,{
+  &quot;name&quot;:&quot;Protocolo 6AM&quot;,
+  &quot;short_name&quot;:&quot;6AM&quot;,
+  &quot;description&quot;:&quot;Arena de Desempenho&quot;,
+  &quot;start_url&quot;:&quot;/&quot;,
+  &quot;display&quot;:&quot;standalone&quot;,
+  &quot;background_color&quot;:&quot;#000000&quot;,
+  &quot;theme_color&quot;:&quot;#000000&quot;,
+  &quot;orientation&quot;:&quot;portrait&quot;,
+  &quot;icons&quot;:[
+    {&quot;src&quot;:&quot;https://protocolo-6am.web.app/icon-192.png&quot;,&quot;sizes&quot;:&quot;192x192&quot;,&quot;type&quot;:&quot;image/png&quot;},
+    {&quot;src&quot;:&quot;https://protocolo-6am.web.app/icon-512.png&quot;,&quot;sizes&quot;:&quot;512x512&quot;,&quot;type&quot;:&quot;image/png&quot;,&quot;purpose&quot;:&quot;any maskable&quot;}
+  ]
+}"/>
+
 <title>PROTOCOLO 6AM — Arena de Desempenho</title>
 <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;600;700;800&family=Space+Mono:wght@400;700&family=Bebas+Neue&display=swap" rel="stylesheet"/>
 
@@ -946,6 +981,20 @@ select.admin-inp option{background:var(--bg3)}
 .post-delete{background:none;border:none;color:var(--txt3);font-size:12px;cursor:pointer;padding:3px 5px;border-radius:5px;transition:all .15s;line-height:1}
 .post-delete:hover{color:var(--red);background:rgba(255,59,48,.08)}
 
+
+.btn-report{background:none;border:none;color:var(--txt3);font-size:12px;cursor:pointer;padding:3px 6px;border-radius:5px;transition:all .15s;margin-left:auto;opacity:.5}
+.btn-report:hover{color:var(--orange);opacity:1}
+.report-modal-overlay{position:fixed;inset:0;z-index:9800;background:rgba(0,0,0,.85);backdrop-filter:blur(10px);display:none;align-items:center;justify-content:center;padding:24px}
+.report-modal-overlay.open{display:flex;animation:fadeUp .2s ease}
+.report-modal{background:var(--bg2);border:1px solid var(--bdr2);border-radius:20px;padding:24px;width:100%;max-width:380px}
+.report-modal-ttl{font-size:16px;font-weight:800;margin-bottom:4px}
+.report-modal-sub{font-size:11px;color:var(--txt3);margin-bottom:18px}
+.report-option{display:flex;align-items:center;gap:12px;padding:12px;border:1px solid var(--bdr);border-radius:12px;margin-bottom:8px;cursor:pointer;transition:all .2s;font-size:13px}
+.report-option:hover{border-color:var(--orange);background:rgba(255,159,10,.06);color:var(--orange)}
+.report-option-ico{font-size:18px;flex-shrink:0}
+.report-cancel{width:100%;margin-top:8px;padding:12px;background:transparent;border:1px solid var(--bdr2);border-radius:12px;color:var(--txt2);font-size:13px;cursor:pointer;font-family:var(--f);transition:all .2s}
+.report-cancel:hover{border-color:var(--bdr3)}
+
 </style>
 </head>
 <body>
@@ -1217,6 +1266,7 @@ select.admin-inp option{background:var(--bg3)}
         <button class="admin-tab" id="atab-rewards" onclick="switchAdminTab('rewards',this)">🎁 Resgates</button>
         <button class="admin-tab" id="atab-xp" onclick="switchAdminTab('xp',this)">⚡ XP</button>
         <button class="admin-tab" id="atab-broadcast" onclick="switchAdminTab('broadcast',this)">📣 Anúncio</button>
+        <button class="admin-tab" id="atab-reports" onclick="switchAdminTab('reports',this)">⚑ Denúncias</button>
       </div>
 
       <!-- PANEL: USERS -->
@@ -1353,6 +1403,20 @@ select.admin-inp option{background:var(--bg3)}
 </div>
 
 <!-- DAY DETAIL MODAL -->
+
+
+<!-- ═══ MODAL: DENÚNCIA ═══ -->
+<div class="report-modal-overlay" id="reportOverlay" onclick="if(event.target===this)closeReport()">
+  <div class="report-modal">
+    <div class="report-modal-ttl">⚑ Denunciar Post</div>
+    <div class="report-modal-sub" id="reportSubTitle">Selecione o motivo:</div>
+    <div class="report-option" onclick="submitReport('spam')"><span class="report-option-ico">🚫</span>Spam ou conteúdo repetitivo</div>
+    <div class="report-option" onclick="submitReport('ofensivo')"><span class="report-option-ico">⚠️</span>Conteúdo ofensivo ou impróprio</div>
+    <div class="report-option" onclick="submitReport('falso')"><span class="report-option-ico">🎭</span>Informação falsa ou enganosa</div>
+    <div class="report-option" onclick="submitReport('assedio')"><span class="report-option-ico">🛑</span>Assédio ou discurso de ódio</div>
+    <button class="report-cancel" onclick="closeReport()">Cancelar</button>
+  </div>
+</div>
 
 <!-- ═══ MODAL: PERFIL PÚBLICO ═══ -->
 <div class="pub-overlay" id="pubOverlay" onclick="if(event.target===this)closePubProfile()">
@@ -2021,9 +2085,24 @@ function setTipo(btn){
   btn.classList.add('active');
 }
 
+let _lastPostTime=0;
+
 async function publishPost(){
   const txt=document.getElementById('composeText').value.trim();
   if(!txt){toast('✏️ Escreva algo primeiro','error');return;}
+
+  // Rate limit: 1 post a cada 45 segundos
+  const now=Date.now();
+  const cooldown=45000;
+  if(now-_lastPostTime<cooldown){
+    const restante=Math.ceil((cooldown-(now-_lastPostTime))/1000);
+    toast(`⏳ Aguarde ${restante}s para postar novamente`,'error');
+    return;
+  }
+
+  // Limite de tamanho
+  if(txt.length>600){toast('✏️ Máximo 600 caracteres','error');return;}
+
   const btn=document.querySelector('.btn-post');
   if(btn){btn.disabled=true;btn.textContent='…';}
   const lvl=getLevelInfo(S.xp);
@@ -2043,6 +2122,7 @@ async function publishPost(){
         commentCount: 0,
         ts: firebase.firestore.FieldValue.serverTimestamp()
       });
+      _lastPostTime=Date.now();
       document.getElementById('composeText').value='';
       document.getElementById('composeText').style.height='auto';
       toast('✅ Publicado!','success');
@@ -2063,15 +2143,26 @@ async function publishPost(){
 
 const _likedPosts={};
 
-async function renderMural(){
+let _muralLastDoc=null;
+let _muralAllLoaded=false;
+const MURAL_PAGE=20;
+
+async function renderMural(append=false){
   document.getElementById('composeAvatar').textContent=S.avatar;
   const feed=document.getElementById('muralFeed');
 
   if(FIREBASE_OK){
-    feed.innerHTML=`<div class="mural-loading"><div class="mural-spinner"></div><div style="font-size:11px">Carregando mural...</div></div>`;
-    try{
-      const snap=await db.collection('posts').orderBy('ts','desc').limit(40).get();
+    if(!append){
+      _muralLastDoc=null; _muralAllLoaded=false;
+      feed.innerHTML=`<div class="mural-loading"><div class="mural-spinner"></div><div style="font-size:11px">Carregando mural...</div></div>`;
       S.posts=[];
+    }
+    try{
+      let query=db.collection('posts').orderBy('ts','desc').limit(MURAL_PAGE);
+      if(append&&_muralLastDoc) query=query.startAfter(_muralLastDoc);
+      const snap=await query.get();
+      if(snap.docs.length<MURAL_PAGE) _muralAllLoaded=true;
+      if(snap.docs.length>0) _muralLastDoc=snap.docs[snap.docs.length-1];
       snap.forEach(d=>S.posts.push({id:d.id,...d.data()}));
     }catch(e){ console.warn('Mural load:',e); }
   }
@@ -2081,7 +2172,9 @@ async function renderMural(){
     return;
   }
 
-  feed.innerHTML=S.posts.map(p=>{
+  // Se append, não limpar feed, só adicionar novos
+  const postsToRender = append ? S.posts.slice(-MURAL_PAGE) : S.posts;
+  const cards=postsToRender.map(p=>{
     const ts=p.ts?.toDate?p.ts.toDate():new Date(p.createdAt||Date.now());
     const ago=timeAgo(ts);
     const isMe=currentUser&&p.authorId===currentUser.uid;
@@ -2109,10 +2202,42 @@ async function renderMural(){
           💬 <span class="comment-count" id="cc-${p.id}">${p.commentCount||0}</span>
         </button>
         <span class="post-xp">⚡ ${p.xp||0} XP</span>
+        ${!isMe&&currentUser?`<button class="btn-report" onclick="reportPost('${p.id}','${escHtml(p.author||'').replace(/'/g,'')}',this)" title="Denunciar post">⚑</button>`:''}
       </div>
       <div style="display:none" id="cmt-${p.id}"></div>
     </div>`;
   }).join('');
+
+  if(append){
+    // Remover botão antigo antes de adicionar novos cards
+    const oldBtn=document.getElementById('loadMoreBtn');
+    if(oldBtn)oldBtn.remove();
+    feed.insertAdjacentHTML('beforeend', cards);
+  } else {
+    feed.innerHTML=cards;
+  }
+
+  // Botão "Carregar mais"
+  const existBtn=document.getElementById('loadMoreBtn');
+  if(existBtn)existBtn.remove();
+  if(!_muralAllLoaded && FIREBASE_OK){
+    const btn=document.createElement('button');
+    btn.id='loadMoreBtn';
+    btn.textContent='Carregar mais posts ↓';
+    btn.style.cssText='display:block;width:calc(100% - 32px);margin:12px 16px 0;padding:12px;background:transparent;border:1px solid var(--bdr2);border-radius:12px;color:var(--txt2);font-size:12px;font-weight:700;cursor:pointer;font-family:var(--f);transition:all .2s';
+    btn.onmouseenter=()=>{btn.style.borderColor='var(--red)';btn.style.color='var(--red)';};
+    btn.onmouseleave=()=>{btn.style.borderColor='var(--bdr2)';btn.style.color='var(--txt2)';};
+    btn.onclick=async()=>{
+      btn.textContent='Carregando...'; btn.disabled=true;
+      await renderMural(true);
+    };
+    feed.after(btn);
+  } else if(_muralAllLoaded && S.posts.length>=MURAL_PAGE){
+    const end=document.createElement('div');
+    end.style.cssText='text-align:center;padding:16px;font-size:10px;color:var(--txt3);font-family:var(--fm);letter-spacing:1px';
+    end.textContent='— FIM DO MURAL —';
+    feed.after(end);
+  }
 }
 
 function timeAgo(d){
@@ -2195,10 +2320,24 @@ function renderComments(postId, comments){
   </div>`;
 }
 
+const _commentTimes=[];
+
 async function sendComment(postId){
   const inp=document.getElementById('cinp-'+postId);
   const txt=inp?.value.trim();
   if(!txt)return;
+
+  // Rate limit: max 10 comentários por 5 minutos
+  const now=Date.now();
+  const window5m=5*60*1000;
+  _commentTimes.push(now);
+  const recent=_commentTimes.filter(t=>now-t<window5m);
+  _commentTimes.length=0;_commentTimes.push(...recent);
+  if(recent.length>10){toast('⏳ Muitos comentários. Aguarde alguns minutos.','error');return;}
+
+  // Limite tamanho
+  if(txt.length>300){toast('✏️ Comentário muito longo (máx 300)','error');return;}
+
   inp.value='';inp.style.height='auto';
   const newCmt={
     authorId:currentUser?.uid||'',
@@ -2900,6 +3039,61 @@ async function adminDeleteBadge(badgeId, btn){
   }catch(e){toast('Erro: '+e.message,'error');if(btn)btn.disabled=false;}
 }
 
+
+// ═══ ADMIN — DENÚNCIAS ═══
+async function loadAdminReports(){
+  const el=document.getElementById('adminReportList');if(!el)return;
+  el.innerHTML=`<div class="empty-state"><span class="empty-ico">⏳</span>Carregando...</div>`;
+  try{
+    const snap=await db.collection('reports').orderBy('ts','desc').limit(50).get();
+    if(snap.empty){el.innerHTML=`<div class="empty-state"><span class="empty-ico">✅</span>Nenhuma denúncia pendente</div>`;return;}
+    el.innerHTML='';
+    snap.forEach(doc=>{
+      const r=doc.data();
+      const ts=r.ts?.toDate?r.ts.toDate().toLocaleDateString('pt-BR',{day:'2-digit',month:'2-digit',hour:'2-digit',minute:'2-digit'}):'—';
+      const div=document.createElement('div');
+      div.className='admin-post-card';
+      div.style.borderLeft=`3px solid ${r.status==='pending'?'var(--orange)':r.status==='resolved'?'var(--green)':'var(--bdr)'}`;
+      div.innerHTML=`
+        <div style="flex:1;min-width:0">
+          <div class="admin-post-meta">⚑ ${escHtml(r.reason||'sem motivo')}</div>
+          <div class="admin-post-text">Post de: <strong>${escHtml(r.reportedAuthor||'?')}</strong> · Denunciado por: ${escHtml(r.reporterName||'?')}</div>
+          <div style="font-size:10px;color:var(--txt3);margin-top:4px">${ts} · Status: <span style="color:${r.status==='pending'?'var(--orange)':'var(--green)'}">${r.status||'pending'}</span></div>
+          <div style="display:flex;gap:6px;margin-top:8px;flex-wrap:wrap">
+            <button class="admin-btn admin-btn-give" onclick="resolveReport('${doc.id}',this)">✅ Resolver</button>
+            <button class="admin-btn admin-btn-ban" onclick="deleteReportedPost('${doc.id}','${r.postId}',this)">🗑 Apagar Post</button>
+            <button class="admin-btn" onclick="openPubProfile('${r.reportedAuthorId||''}')" style="border-color:var(--blue);color:var(--blue)">👤 Ver Autor</button>
+          </div>
+        </div>`;
+      el.appendChild(div);
+    });
+  }catch(e){adminPermError(e);}
+}
+
+async function resolveReport(reportId, btn){
+  if(btn){btn.disabled=true;btn.textContent='...';}
+  try{
+    await db.collection('reports').doc(reportId).update({status:'resolved'});
+    toast('✅ Denúncia marcada como resolvida','success');
+    loadAdminReports();
+  }catch(e){adminPermError(e);}
+}
+
+async function deleteReportedPost(reportId, postId, btn){
+  if(btn.dataset.c!=='1'){
+    btn.dataset.c='1';btn.textContent='❓';
+    setTimeout(()=>{if(btn.dataset.c==='1'){btn.dataset.c='';btn.textContent='🗑 Apagar Post';}},3000);
+    return;
+  }
+  if(btn){btn.disabled=true;}
+  try{
+    if(postId) await db.collection('posts').doc(postId).delete();
+    await db.collection('reports').doc(reportId).update({status:'post_deleted'});
+    toast('🗑 Post apagado e denúncia resolvida','success');
+    loadAdminReports();
+  }catch(e){adminPermError(e);}
+}
+
 // ═══ ADMIN — REWARDS ═══
 
 async function loadAdminRewards(){
@@ -3321,6 +3515,44 @@ function copyHabit(h, btn){
 function catIcon(cat){
   const map={Saúde:'💪',Estudos:'📚',Trabalho:'💼',Espiritual:'🧘',Rotina:'⏰',Alimentar:'🥗',Finanças:'💰',Social:'🤝'};
   return map[cat]||'⚡';
+}
+
+
+// ═══ DENÚNCIA ═══
+let _reportPostId=null, _reportAuthor=null;
+
+function reportPost(postId, author, btn){
+  if(btn&&btn.dataset.r==='1'){toast('Já denunciado','info');return;}
+  _reportPostId=postId;_reportAuthor=author;
+  document.getElementById('reportSubTitle').textContent=`Post de ${author}:`;
+  document.getElementById('reportOverlay').classList.add('open');
+}
+
+function closeReport(){
+  document.getElementById('reportOverlay').classList.remove('open');
+}
+
+async function submitReport(reason){
+  closeReport();
+  if(!_reportPostId||!currentUser||!FIREBASE_OK)return;
+  try{
+    await db.collection('reports').add({
+      postId:_reportPostId,
+      reportedAuthor:_reportAuthor,
+      reportedBy:currentUser.uid,
+      reporterName:S.name,
+      reason,
+      ts:firebase.firestore.FieldValue.serverTimestamp(),
+      status:'pending'
+    });
+    // Marcar botão como já denunciado
+    const btn=document.querySelector(`button.btn-report[onclick*="${_reportPostId}"]`);
+    if(btn){btn.dataset.r='1';btn.style.color='var(--orange)';btn.style.opacity='1';}
+    toast('✅ Denúncia enviada. Obrigado!','success');
+  }catch(e){
+    toast('Erro ao enviar denúncia','error');
+  }
+  _reportPostId=null;_reportAuthor=null;
 }
 
 function closePubAdmin(){
@@ -3793,11 +4025,129 @@ if('Notification' in window){
   }
 }
 
+
+// ═══ SERVICE WORKER ═══
+if('serviceWorker' in navigator){
+  // Registra SW inline (blob) para funcionar sem servidor separado
+  const swCode=`
+const CACHE='p6am-v1';
+const STATIC=['/'];
+self.addEventListener('install',e=>e.waitUntil(caches.open(CACHE).then(c=>c.addAll(STATIC))));
+self.addEventListener('activate',e=>e.waitUntil(caches.keys().then(ks=>Promise.all(ks.filter(k=>k!==CACHE).map(k=>caches.delete(k))))));
+self.addEventListener('fetch',e=>{
+  if(e.request.method!=='GET')return;
+  e.respondWith(fetch(e.request).catch(()=>caches.match(e.request)||caches.match('/')));
+});
+`;
+  const blob=new Blob([swCode],{type:'application/javascript'});
+  const swUrl=URL.createObjectURL(blob);
+  navigator.serviceWorker.register(swUrl).catch(()=>{});
+}
+
 renderAll();
 // Hide ranking dot after viewing
 document.getElementById('nav-ranking').addEventListener('click',()=>{
   document.getElementById('dotRanking').classList.remove('show');
 });
 </script>
+
+/*
+══════════════════════════════════════════════════════════════════════════
+  FIRESTORE SECURITY RULES — Cole no Firebase Console
+  Console → Firestore Database → Regras (Rules)
+══════════════════════════════════════════════════════════════════════════
+
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // ─── USUÁRIOS ───────────────────────────────────────────────
+    match /users/{userId} {
+      // Qualquer autenticado pode ler perfis (ranking, perfil público)
+      allow read: if request.auth != null;
+      // Só o próprio usuário pode criar/editar seu perfil
+      allow create: if request.auth.uid == userId;
+      // Edição: usuário só pode mudar name, avatar, xp, streak, tasks, habits, level
+      // Não pode mudar role, badges, premium, banned (apenas admin)
+      allow update: if request.auth.uid == userId
+        && !('role' in request.resource.data.diff(resource.data))
+        && !('badges' in request.resource.data.diff(resource.data))
+        && !('premium' in request.resource.data.diff(resource.data))
+        && !('banned' in request.resource.data.diff(resource.data));
+      // Admin pode alterar tudo
+      allow write: if get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin';
+    }
+
+    // ─── POSTS / MURAL ──────────────────────────────────────────
+    match /posts/{postId} {
+      allow read: if request.auth != null;
+      // Criar post: autenticado, não banido, tamanho válido
+      allow create: if request.auth != null
+        && request.resource.data.authorId == request.auth.uid
+        && request.resource.data.text.size() <= 600
+        && request.resource.data.text.size() > 0;
+      // Editar: só likes e commentCount (não o texto)
+      allow update: if request.auth != null
+        && (
+          // Like
+          request.resource.data.diff(resource.data).affectedKeys().hasOnly(['likes','likedBy'])
+          // Count de comentários
+          || request.resource.data.diff(resource.data).affectedKeys().hasOnly(['commentCount'])
+          // Admin pode tudo
+          || get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin'
+        );
+      // Deletar: autor ou admin
+      allow delete: if request.auth.uid == resource.data.authorId
+        || get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin';
+    }
+
+    // ─── COMENTÁRIOS ────────────────────────────────────────────
+    match /posts/{postId}/comments/{commentId} {
+      allow read: if request.auth != null;
+      allow create: if request.auth != null
+        && request.resource.data.authorId == request.auth.uid
+        && request.resource.data.text.size() <= 300;
+      allow delete: if request.auth.uid == resource.data.authorId
+        || get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin';
+    }
+
+    // ─── INSÍGNIAS (badges) ─────────────────────────────────────
+    match /badges/{badgeId} {
+      allow read: if request.auth != null;
+      // Só admin cria/edita/deleta badges
+      allow write: if get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin';
+    }
+
+    // ─── DENÚNCIAS ───────────────────────────────────────────────
+    match /reports/{reportId} {
+      allow create: if request.auth != null;
+      allow read, write: if get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin';
+    }
+
+    // ─── RECOMPENSAS ─────────────────────────────────────────────
+    match /rewards/{rewardId} {
+      allow read: if request.auth != null;
+      allow write: if get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin';
+    }
+
+    // ─── XP LOG ──────────────────────────────────────────────────
+    match /xpLog/{logId} {
+      allow read: if request.auth != null
+        && (resource.data.targetId == request.auth.uid
+            || get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin');
+      allow write: if get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin';
+    }
+
+    // ─── BROADCASTS ──────────────────────────────────────────────
+    match /broadcasts/{broadcastId} {
+      allow read: if request.auth != null;
+      allow write: if get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin';
+    }
+  }
+}
+
+══════════════════════════════════════════════════════════════════════════
+*/
+
 </body>
 </html>
