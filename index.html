@@ -1023,7 +1023,7 @@ select.admin-inp option{background:var(--bg3)}
     <!-- ═══ HOJE (Dashboard) ═══ -->
     <div class="sec active" id="secHoje">
       <div class="score-hero">
-        <div class="score-hero-date" id="heroDate">SÁBADO · 28 FEV 2026</div>
+        <div class="score-hero-date" id="heroDate"></div>
         <div class="score-hero-val" id="heroScore">0</div>
         <div class="score-hero-max">de <span id="heroMax">0</span> pts possíveis</div>
         <div class="score-hero-streak" id="heroStreak">🔥 0 dias consecutivos</div>
@@ -1183,7 +1183,7 @@ select.admin-inp option{background:var(--bg3)}
         <div class="prof-stat"><div class="prof-val blue" id="profTasks">0</div><div class="prof-lbl">Tarefas</div></div>
         <div class="prof-stat"><div class="prof-val" id="profHabits">0</div><div class="prof-lbl">Hábitos</div></div>
         <div class="prof-stat"><div class="prof-val gold" id="profBadges">0</div><div class="prof-lbl">Insígnias</div></div>
-        <div class="prof-stat"><div class="prof-val" id="profRank">#3</div><div class="prof-lbl">Ranking</div></div>
+        <div class="prof-stat"><div class="prof-val" id="profRank">—</div><div class="prof-lbl">Ranking</div></div>
       </div>
 
       <div class="block-title"><span>🏅</span> Insígnias Conquistadas</div>
@@ -2392,6 +2392,10 @@ function renderProfile(){
   document.getElementById('profTasks').textContent=S.tasks.filter(t=>t.done).length;
   document.getElementById('profHabits').textContent=S.habits.filter(h=>h.checks[TODAY_KEY]).length;
   document.getElementById('profBadges').textContent=S.badges.filter(b=>b.earned).length;
+  // Posição real no ranking global
+  const _gr=S.rankings.global||[];
+  const _myPos=_gr.findIndex(r=>r.me);
+  document.getElementById('profRank').textContent=_myPos>=0?'#'+(_myPos+1):'—';
   renderBadges();
   renderMiniCharts();
 }
@@ -2413,12 +2417,55 @@ function renderBadges(){
 // ═══════════════════════════════════════════
 //  MINI CHARTS
 // ═══════════════════════════════════════════
+function getLast7Scores(){
+  // Calcula score dos últimos 7 dias com base nos checks de hábitos
+  const scores=[];
+  for(let i=6;i>=0;i--){
+    const d=new Date(TODAY);d.setDate(d.getDate()-i);
+    const k=`${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+    const hs=S.habits.reduce((a,h)=>a+(h.checks[k]?h.score:0),0);
+    const ts=i===0?S.tasks.filter(t=>t.done).reduce((a,t)=>a+t.score,0):0;
+    scores.push(hs+ts);
+  }
+  return scores;
+}
+
 function renderMiniCharts(){
-  const data7=[8,22,14,35,18,28,todayScore()];
+  const scores7=getLast7Scores();
+  const maxScore=Math.max(...scores7,1);
+  const media=Math.round(scores7.reduce((a,b)=>a+b,0)/7);
+  const melhor=Math.max(...scores7);
+
+  // Stats reais
+  const totalHabits=S.habits.length;
+  const checkedToday=S.habits.filter(h=>h.checks[TODAY_KEY]).length;
+  const taxaHabits=totalHabits?Math.round(
+    S.habits.reduce((acc,h)=>{
+      const checks=Object.values(h.checks||{}).filter(Boolean).length;
+      const total=Object.keys(h.checks||{}).length||1;
+      return acc+(checks/total);
+    },0)/totalHabits*100
+  ):0;
+  const tarefasFeitas=S.tasks.filter(t=>t.done).length;
+
+  // Atualizar valores
+  const statMedia=document.getElementById('statMedia');
+  const statMelhor=document.getElementById('statMelhor');
+  const statHabits=document.getElementById('statHabits');
+  const statTasks=document.getElementById('statTasks');
+  if(statMedia)statMedia.textContent=media;
+  if(statMelhor)statMelhor.textContent=melhor;
+  if(statHabits)statHabits.textContent=taxaHabits+'%';
+  if(statTasks)statTasks.textContent=tarefasFeitas;
+
+  // Mini charts
+  const datasets=[scores7,scores7,
+    S.habits.map((_,i)=>Math.max(0,scores7[i]||0)),
+    [0,0,0,0,0,0,tarefasFeitas]
+  ];
   ['chartMedia','chartMelhor','chartHabits','chartTasks'].forEach((id,ci)=>{
     const el=document.getElementById(id);if(!el)return;
-    const base=[data7,[35,28,35,22,31,35,35],[60,80,70,90,65,78,82],[2,4,3,5,2,4,todayScore()]];
-    const d=base[ci];const mx=Math.max(...d);
+    const d=datasets[ci];const mx=Math.max(...d,1);
     el.innerHTML=d.map(v=>`<div class="mc-bar" style="height:${Math.round((v/mx)*100)}%;background:${['var(--gold)','var(--green)','var(--blue)','var(--red)'][ci]}"></div>`).join('');
   });
 }
@@ -4050,7 +4097,7 @@ document.getElementById('nav-ranking').addEventListener('click',()=>{
   document.getElementById('dotRanking').classList.remove('show');
 });
 </script>
-
+<!-- FIRESTORE RULES: Cole no Firebase Console → Firestore → Regras
 /*
 ══════════════════════════════════════════════════════════════════════════
   FIRESTORE SECURITY RULES — Cole no Firebase Console
@@ -4148,6 +4195,7 @@ service cloud.firestore {
 
 ══════════════════════════════════════════════════════════════════════════
 */
+-->
 
 </body>
 </html>
