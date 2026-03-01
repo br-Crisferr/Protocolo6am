@@ -781,6 +781,171 @@ select.admin-inp option{background:var(--bg3)}
   opacity:.4;transition:opacity .2s;padding:2px;line-height:1;flex-shrink:0;
 }
 .task-notif-btn.on{opacity:1;filter:drop-shadow(0 0 4px rgba(255,214,10,.6))}
+
+/* ═══ MICRO INTERACTIONS ═══ */
+.post-card{animation:fadeUp .3s ease;transition:transform .15s ease,box-shadow .15s ease}
+.post-card:active{transform:scale(.995)}
+.task-item{transition:all .25s cubic-bezier(.34,1.56,.64,1)}
+.task-item.completing{animation:taskPop .4s cubic-bezier(.34,1.56,.64,1)}
+@keyframes taskPop{0%{transform:scale(1)}40%{transform:scale(1.04)}100%{transform:scale(1)}}
+.habit-check.checking{animation:habitBounce .35s cubic-bezier(.34,1.56,.64,1)}
+@keyframes habitBounce{0%{transform:scale(1)}50%{transform:scale(1.35)}100%{transform:scale(1)}}
+@keyframes slideDown{from{opacity:0;transform:translateY(-8px)}to{opacity:1;transform:translateY(0)}}
+@keyframes commentIn{from{opacity:0;transform:translateX(-10px)}to{opacity:1;transform:translateX(0)}}
+@keyframes pulseRed{0%,100%{box-shadow:0 0 0 0 rgba(255,59,48,.4)}50%{box-shadow:0 0 0 8px rgba(255,59,48,0)}}
+
+/* ═══ COMENTÁRIOS ═══ */
+.comment-wrap{
+  margin-top:8px;border-top:1px solid var(--bdr);padding-top:10px;
+  animation:slideDown .25s ease;
+}
+.comment-list{margin-bottom:8px}
+.comment-item{
+  display:flex;gap:8px;margin-bottom:10px;
+  animation:commentIn .2s ease;
+}
+.comment-avatar{
+  width:26px;height:26px;border-radius:50%;
+  background:var(--bg3);border:1px solid var(--bdr2);
+  display:flex;align-items:center;justify-content:center;
+  font-size:13px;flex-shrink:0;
+}
+.comment-body{flex:1;min-width:0}
+.comment-author{
+  font-size:11px;font-weight:700;
+  display:inline-flex;align-items:center;gap:4px;
+  cursor:pointer;transition:color .15s;
+}
+.comment-author:hover{color:var(--red)}
+.comment-text{font-size:12px;color:var(--txt2);line-height:1.45;margin-top:2px;word-break:break-word}
+.comment-time{font-size:9px;color:var(--txt3);margin-top:3px;font-family:var(--fm)}
+.comment-compose{display:flex;gap:8px;margin-top:6px;align-items:flex-end}
+.comment-inp{
+  flex:1;background:var(--bg3);border:1px solid var(--bdr2);
+  color:var(--txt);border-radius:10px;padding:8px 11px;
+  font-size:12px;font-family:var(--f);outline:none;resize:none;
+  min-height:34px;max-height:72px;line-height:1.4;
+  transition:border-color .2s;
+}
+.comment-inp:focus{border-color:rgba(255,59,48,.45)}
+.comment-inp::placeholder{color:var(--txt3)}
+.btn-comment-send{
+  padding:8px 13px;background:var(--red);border:none;color:#fff;
+  border-radius:9px;font-size:11px;font-weight:700;cursor:pointer;
+  white-space:nowrap;flex-shrink:0;transition:all .2s;
+}
+.btn-comment-send:hover{background:#e03328;transform:scale(1.05)}
+.btn-comment-send:disabled{opacity:.35;cursor:default;transform:none}
+.btn-comments-toggle{
+  background:none;border:none;color:var(--txt3);
+  font-size:11px;cursor:pointer;padding:0;
+  display:inline-flex;align-items:center;gap:4px;
+  transition:color .15s;font-family:var(--f);
+}
+.btn-comments-toggle:hover{color:var(--txt2)}
+.comment-count{
+  background:var(--bg3);border:1px solid var(--bdr2);
+  border-radius:9px;padding:1px 6px;font-size:9px;
+  font-family:var(--fm);transition:all .2s;
+}
+.comment-count.bump{animation:pulseRed .4s ease;border-color:rgba(255,59,48,.5);color:var(--red)}
+.comment-empty{text-align:center;font-size:11px;color:var(--txt3);padding:12px 0}
+
+/* ═══ PERFIL PÚBLICO ═══ */
+.pub-overlay{
+  position:fixed;inset:0;z-index:9500;
+  background:rgba(0,0,0,.88);backdrop-filter:blur(16px);
+  display:none;align-items:flex-end;justify-content:center;
+}
+.pub-overlay.open{display:flex;animation:fadeUp .28s cubic-bezier(.34,1.56,.64,1)}
+.pub-sheet{
+  width:100%;max-width:600px;
+  background:var(--bg2);
+  border:1px solid var(--bdr2);
+  border-radius:24px 24px 0 0;
+  max-height:90vh;overflow-y:auto;
+  padding-bottom:40px;
+  position:relative;
+}
+.pub-sheet::-webkit-scrollbar{width:0}
+.pub-handle{width:36px;height:3px;background:var(--bdr3);border-radius:2px;margin:12px auto}
+.pub-close{
+  position:absolute;top:12px;right:14px;
+  width:30px;height:30px;border-radius:50%;
+  background:var(--bg4);border:1px solid var(--bdr2);
+  color:var(--txt2);font-size:15px;cursor:pointer;
+  display:flex;align-items:center;justify-content:center;
+  transition:all .2s;z-index:2;
+}
+.pub-close:hover{border-color:var(--red);color:var(--red)}
+.pub-hero{
+  padding:20px 20px 16px;text-align:center;
+  background:radial-gradient(ellipse at 50% -10%,rgba(255,59,48,.18) 0%,transparent 65%);
+}
+.pub-avatar{
+  width:72px;height:72px;border-radius:50%;
+  background:var(--bg3);border:2px solid var(--bdr2);
+  display:flex;align-items:center;justify-content:center;
+  font-size:42px;margin:0 auto 10px;
+}
+.pub-name{font-size:19px;font-weight:800;margin-bottom:3px}
+.pub-rank-lbl{font-family:var(--fb);font-size:11px;color:var(--txt3);text-transform:uppercase;letter-spacing:1px;margin-bottom:8px}
+.pub-tags{display:flex;justify-content:center;gap:5px;flex-wrap:wrap;margin-bottom:12px}
+.pub-xp-wrap{background:rgba(255,255,255,.05);border-radius:3px;height:4px;overflow:hidden;margin-bottom:4px}
+.pub-xp-fill{height:100%;background:linear-gradient(90deg,var(--red),var(--gold));border-radius:3px;transition:width .6s ease}
+.pub-xp-lbl{font-size:9px;color:var(--txt3);font-family:var(--fm);text-align:right}
+.pub-stats{display:grid;grid-template-columns:repeat(3,1fr);gap:7px;padding:0 14px;margin-bottom:14px}
+.pub-stat{background:var(--bg3);border:1px solid var(--bdr);border-radius:11px;padding:12px;text-align:center}
+.pub-stat-v{font-family:var(--fb);font-size:22px;line-height:1;margin-bottom:2px}
+.pub-stat-l{font-size:9px;color:var(--txt3);text-transform:uppercase;letter-spacing:.6px}
+.pub-tabs{display:flex;gap:5px;padding:0 14px;margin-bottom:12px}
+.pub-tab{
+  flex:1;padding:8px 4px;border-radius:10px;
+  border:1px solid var(--bdr2);background:transparent;
+  color:var(--txt3);font-size:11px;font-weight:700;
+  cursor:pointer;transition:all .2s;font-family:var(--f);
+}
+.pub-tab.active{background:var(--red);border-color:var(--red);color:#fff}
+.pub-content{padding:0 14px}
+
+/* ═══ COPY ITEMS ═══ */
+.copy-item{
+  display:flex;align-items:center;gap:10px;
+  background:var(--bg3);border:1px solid var(--bdr);
+  border-radius:12px;padding:11px 12px;margin-bottom:7px;
+  transition:all .2s;
+}
+.copy-item:hover{border-color:var(--bdr2);background:var(--bg4)}
+.copy-item-ico{font-size:20px;min-width:30px;text-align:center}
+.copy-item-info{flex:1;min-width:0}
+.copy-item-name{font-size:13px;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.copy-item-meta{font-size:10px;color:var(--txt3);margin-top:1px}
+.btn-copy{
+  padding:6px 11px;background:transparent;
+  border:1px solid var(--bdr3);color:var(--txt2);
+  border-radius:8px;font-size:11px;font-weight:700;
+  cursor:pointer;white-space:nowrap;flex-shrink:0;
+  transition:all .2s;font-family:var(--f);
+}
+.btn-copy:hover{border-color:var(--red);color:var(--red);background:rgba(255,59,48,.06)}
+.btn-copy.done{border-color:var(--green);color:var(--green);background:rgba(48,209,88,.07);pointer-events:none}
+
+/* ═══ POST AUTOR CLICÁVEL ═══ */
+.post-author-btn{
+  cursor:pointer;transition:color .15s;display:inline;
+  background:none;border:none;padding:0;color:inherit;
+  font:inherit;font-weight:700;
+}
+.post-author-btn:hover{color:var(--red)}
+.rank-row-clickable{cursor:pointer;transition:background .15s}
+.rank-row-clickable:hover{background:rgba(255,59,48,.04)}
+
+/* ═══ MURAL MELHORADO ═══ */
+.mural-loading{text-align:center;padding:40px 16px;color:var(--txt3)}
+.mural-spinner{width:24px;height:24px;border:2px solid var(--bdr2);border-top-color:var(--red);border-radius:50%;animation:spin .8s linear infinite;margin:0 auto 8px}
+.post-delete{background:none;border:none;color:var(--txt3);font-size:12px;cursor:pointer;padding:3px 5px;border-radius:5px;transition:all .15s;line-height:1}
+.post-delete:hover{color:var(--red);background:rgba(255,59,48,.08)}
+
 </style>
 </head>
 <body>
@@ -1188,6 +1353,34 @@ select.admin-inp option{background:var(--bg3)}
 </div>
 
 <!-- DAY DETAIL MODAL -->
+
+<!-- ═══ MODAL: PERFIL PÚBLICO ═══ -->
+<div class="pub-overlay" id="pubOverlay" onclick="if(event.target===this)closePubProfile()">
+  <div class="pub-sheet" id="pubSheet">
+    <div class="pub-handle"></div>
+    <button class="pub-close" onclick="closePubProfile()">✕</button>
+    <div class="pub-hero">
+      <div class="pub-avatar" id="pubAvatar">🪖</div>
+      <div class="pub-name" id="pubName">—</div>
+      <div class="pub-rank-lbl" id="pubRankLbl">—</div>
+      <div class="pub-tags" id="pubTags"></div>
+      <div class="pub-xp-wrap"><div class="pub-xp-fill" id="pubXpFill" style="width:0%"></div></div>
+      <div class="pub-xp-lbl" id="pubXpLbl">—</div>
+    </div>
+    <div class="pub-stats">
+      <div class="pub-stat"><div class="pub-stat-v gold" id="pubStatXp">0</div><div class="pub-stat-l">XP</div></div>
+      <div class="pub-stat"><div class="pub-stat-v red" id="pubStatStreak">0🔥</div><div class="pub-stat-l">Streak</div></div>
+      <div class="pub-stat"><div class="pub-stat-v" id="pubStatBadges">0</div><div class="pub-stat-l">Insígnias</div></div>
+    </div>
+    <div class="pub-tabs">
+      <button class="pub-tab active" id="ptab-badges" onclick="switchPubTab('badges',this)">🏅 Insígnias</button>
+      <button class="pub-tab" id="ptab-tasks" onclick="switchPubTab('tasks',this)">⚡ Tarefas</button>
+      <button class="pub-tab" id="ptab-habits" onclick="switchPubTab('habits',this)">🔁 Hábitos</button>
+    </div>
+    <div class="pub-content" id="pubContent"></div>
+  </div>
+</div>
+
 <div class="modal-overlay" id="dayDetailOverlay" onclick="if(event.target===this)closeDayDetail()">
   <div class="modal" style="max-height:88vh">
     <div class="modal-hdr">
@@ -1363,11 +1556,11 @@ function badgeObjectsToIds(badges=[]){
 
 let S = {
   nextId: 100,
-  name: 'Alpha.7',
+  name: 'Operador',
   avatar: '🪖',
-  xp: 420,
-  level: 3,
-  streak: 5,
+  xp: 0,
+  level: 1,
+  streak: 0,
   isAdmin: false,
   currentSec: 'hoje',
   currentView: 'lista',
@@ -1378,65 +1571,11 @@ let S = {
   calMonth: new Date().getMonth(),
   calYear: new Date().getFullYear(),
   currentLiga: 'bronze',
-  tasks: [
-    {id:1, name:'Treino matinal', score:8, cat:'Saúde', diff:'normal', window:'06:00–08:00', done:false},
-    {id:2, name:'Leitura 30min', score:5, cat:'Estudos', diff:'facil', window:'07:00–09:00', done:true},
-    {id:3, name:'Revisão de metas', score:6, cat:'Trabalho', diff:'normal', window:'09:00–10:00', done:false},
-    {id:4, name:'Meditação', score:3, cat:'Espiritual', diff:'facil', window:'06:00–07:00', done:true},
-    {id:5, name:'Projeto principal', score:12, cat:'Trabalho', diff:'hard', window:'10:00–14:00', done:false},
-  ],
-  habits: [
-    {id:10, name:'Acordar às 6am', cat:'Rotina', catColor:'#0a84ff', score:5, checks:{'2026-02-28':true,'2026-02-27':true,'2026-02-26':true,'2026-02-25':false,'2026-02-24':true}},
-    {id:11, name:'Beber 2L de água', cat:'Saúde', catColor:'#30d158', score:3, checks:{'2026-02-28':true,'2026-02-27':true,'2026-02-26':false,'2026-02-25':true,'2026-02-24':true}},
-    {id:12, name:'Diário de gratidão', cat:'Espiritual', catColor:'#ffd60a', score:2, checks:{'2026-02-28':false,'2026-02-27':true,'2026-02-26':true}},
-    {id:13, name:'Sem redes sociais manhã', cat:'Rotina', catColor:'#0a84ff', score:4, checks:{'2026-02-28':true,'2026-02-27':false,'2026-02-26':true}},
-    {id:14, name:'Proteína no café', cat:'Alimentar', catColor:'#f59e0b', score:2, checks:{'2026-02-28':false,'2026-02-27':true,'2026-02-26':true,'2026-02-25':true}},
-  ],
-  posts: [
-    {id:'p1', author:'Delta.9', avatar:'⚔️', role:'executor', tipo:'conquista', text:'🏆 Completei meu primeiro mês com 100% de streak! 30 dias direto acordando às 6am. Isso mudou completamente meu desempenho no trabalho.', xp:380, likes:14, time:'há 23 min', liked:false},
-    {id:'p2', author:'Sierra.5', avatar:'🛡️', role:'mentor', tipo:'relato', text:'Dia 47 de protocolo. A chave foi eliminar o celular da cama. Primeiras 2h do dia são SAGRADAS. Score hoje: 42 pts.', xp:290, likes:8, time:'há 1h', liked:false},
-    {id:'p3', author:'Bravo.3', avatar:'🪖', role:'operador', tipo:'pergunta', text:'Alguém tem dicas para manter o streak nos fins de semana? Consigo durante a semana mas sábado e domingo é outra luta...', xp:120, likes:5, time:'há 2h', liked:false},
-    {id:'p4', author:'Omega.1', avatar:'👑', role:'elite', tipo:'conquista', text:'🔱 Nível 8 atingido. 8.000 XP acumulados. Obrigado a todos do protocolo por essa energia coletiva.', xp:710, likes:31, time:'há 3h', liked:false},
-  ],
-  badges: [
-    {id:'b_madrugador', ico:'🌅', name:'Madrugador',    desc:'Acordou às 6am por 7 dias',         earned:true,  new:true},
-    {id:'b_chamas',     ico:'🔥', name:'Em Chamas',      desc:'10 dias consecutivos de streak',     earned:true,  new:false},
-    {id:'b_executor',   ico:'⚡', name:'Executor',        desc:'50 tarefas concluídas',              earned:true,  new:false},
-    {id:'b_hidratado',  ico:'💧', name:'Hidratado',       desc:'30 dias bebendo 2L de água',         earned:false},
-    {id:'b_zen',        ico:'🧘', name:'Zen Master',      desc:'21 dias de meditação',               earned:false},
-    {id:'b_bibliofilo', ico:'📚', name:'Bibliófilo',      desc:'60h de leitura registrada',          earned:false},
-    {id:'b_diamante',   ico:'💎', name:'Diamante',        desc:'Atingiu Liga Diamante',              earned:false},
-    {id:'b_comandante', ico:'🦅', name:'Comandante',      desc:'Atingiu Nível 9',                   earned:false},
-    {id:'b_campeao',    ico:'🏆', name:'Campeão',         desc:'1º no ranking semanal',              earned:false},
-  ],
-  rankings: {
-    bronze: [
-      {name:'Alpha.7', avatar:'🪖', role:'operador', xp:420, level:3, badges:['🌅','🔥','⚡'], me:true},
-      {name:'Zulu.2', avatar:'⚔️', role:'executor', xp:385, level:3, badges:['🌅','🔥'], me:false},
-      {name:'Foxtrot.4', avatar:'🪖', role:'operador', xp:310, level:2, badges:['🌅'], me:false},
-      {name:'Mike.6', avatar:'🪖', role:'operador', xp:280, level:2, badges:[], me:false},
-      {name:'Lima.8', avatar:'🪖', role:'operador', xp:245, level:2, badges:['🔥'], me:false},
-      {name:'India.0', avatar:'🪖', role:'operador', xp:190, level:1, badges:[], me:false},
-      {name:'Kilo.3', avatar:'🪖', role:'operador', xp:155, level:1, badges:[], me:false},
-      {name:'November.5', avatar:'🪖', role:'operador', xp:120, level:1, badges:[], me:false},
-    ],
-    prata: [
-      {name:'Bravo.1', avatar:'🛡️', role:'executor', xp:820, level:5, badges:['🌅','🔥','⚡','💧'], me:false},
-      {name:'Charlie.7', avatar:'⚔️', role:'mentor', xp:740, level:4, badges:['🌅','🔥','⚡'], me:false},
-      {name:'Delta.9', avatar:'⚔️', role:'executor', xp:680, level:4, badges:['🌅','🔥'], me:false},
-      {name:'Echo.2', avatar:'🪖', role:'operador', xp:610, level:4, badges:['🌅'], me:false},
-    ],
-    ouro: [
-      {name:'Sierra.5', avatar:'🛡️', role:'mentor', xp:1650, level:7, badges:['🌅','🔥','⚡','💧','🧘'], me:false},
-      {name:'Tango.8', avatar:'⭐', role:'mentor', xp:1420, level:6, badges:['🌅','🔥','⚡','💧'], me:false},
-    ],
-    diamante: [
-      {name:'Victor.3', avatar:'🌟', role:'elite', xp:3200, level:9, badges:['🌅','🔥','⚡','💧','🧘','📚','💎'], me:false},
-    ],
-    elite: [
-      {name:'Omega.1', avatar:'👑', role:'elite', xp:8700, level:10, badges:['🌅','🔥','⚡','💧','🧘','📚','💎','🦅','🏆'], me:false},
-    ]
-  }
+  tasks: [],
+  habits: [],
+  posts: [],
+  badges: BADGES_DEF.map(b=>({...b, earned:false, new:false})), // loaded from Firestore on login
+  rankings: { global: [] }
 };
 
 function dateKey(y,m,d){return `${y}-${String(m+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`}
@@ -1561,7 +1700,7 @@ function renderTaskList(){
   if(!S.tasks.length){el.innerHTML=`<div class="empty-state"><span class="empty-ico">📋</span>Nenhuma tarefa ainda</div>`;return;}
   const notifOn=_notifPermission==='granted';
   el.innerHTML=S.tasks.map(t=>`
-    <div class="task-item ${t.done?'done':''}" onclick="toggleTask(${t.id})">
+    <div class="task-item ${t.done?'done':''}" data-id="${t.id}" onclick="toggleTask(${t.id})">
       <div class="task-topbar-row">
         <span class="task-window">⏱ ${t.window||'Qualquer hora'}</span>
         <div style="display:flex;align-items:center;gap:6px" onclick="event.stopPropagation()">
@@ -1615,7 +1754,7 @@ function renderHabitToday(){
   if(!S.habits.length){el.innerHTML=`<div class="empty-state"><span class="empty-ico">🔁</span>Nenhum hábito ainda</div>`;return;}
   el.innerHTML=S.habits.map(h=>`
     <div class="habit-item ${h.checks[TODAY_KEY]?'done':''}" onclick="toggleHabitToday(${h.id})">
-      <div class="habit-check" style="${h.checks[TODAY_KEY]?`background:var(--gold);border-color:var(--gold);color:#000`:''}">
+      <div class="habit-check" data-id="${h.id}" style="${h.checks[TODAY_KEY]?`background:var(--gold);border-color:var(--gold);color:#000`:''}">
         ${h.checks[TODAY_KEY]?'✓':''}
       </div>
       <div class="habit-info">
@@ -1644,7 +1783,7 @@ function renderHabitFull(){
     </div>
   `+S.habits.map(h=>`
     <div class="habit-item ${h.checks[TODAY_KEY]?'done':''}" onclick="toggleHabitToday(${h.id})">
-      <div class="habit-check" style="${h.checks[TODAY_KEY]?`background:var(--gold);border-color:var(--gold);color:#000`:''}">
+      <div class="habit-check" data-id="${h.id}" style="${h.checks[TODAY_KEY]?`background:var(--gold);border-color:var(--gold);color:#000`:''}">
         ${h.checks[TODAY_KEY]?'✓':''}
       </div>
       <div class="habit-info">
@@ -1842,22 +1981,26 @@ function closeDayDetail(){
 function renderRanking(){
   const data=S.rankings[S.currentLiga]||[];
   const posColors=['gold','silver','bronze'];
-  document.getElementById('rankList').innerHTML=data.map((r,i)=>`
-    <div class="rank-item ${i===0?'rank-1':i===1?'rank-2':i===2?'rank-3':''} ${r.me?'rank-me':''}">
+  if(!data.length){
+    document.getElementById('rankList').innerHTML=`<div class="empty-state"><span class="empty-ico">🏆</span>Sem dados para esta liga.<br><span style="font-size:11px">O ranking global carrega após login.</span></div>`;
+    return;
+  }
+  document.getElementById('rankList').innerHTML=data.map((r,i)=>{
+    const canClick=r.uid&&!r.me&&FIREBASE_OK;
+    return`<div class="rank-item ${i===0?'rank-1':i===1?'rank-2':i===2?'rank-3':''} ${r.me?'rank-me':''} ${canClick?'rank-row-clickable':''}" onclick="${canClick?`openPubProfile('${r.uid}')`:''}" style="${canClick?'cursor:pointer':''}">
       <div class="rank-pos ${posColors[i]||'normal'}">${i+1}</div>
       <div class="rank-avatar">${r.avatar}</div>
       <div class="rank-info">
         <div class="rank-name">
           ${escHtml(r.name)}
-          <span class="role-tag role-${r.role}">${r.role}</span>
+          <span class="role-tag role-${r.role||'operador'}">${r.role||'operador'}</span>
           ${r.me?'<span style="font-size:9px;color:var(--red);font-family:var(--fm)">VOCÊ</span>':''}
         </div>
-        <div class="rank-sub">NVL ${r.level}</div>
-        <div class="rank-badge-row">${r.badges.slice(0,4).map(b=>`<span class="mini-badge">${b}</span>`).join('')}</div>
+        <div class="rank-sub">NVL ${r.level} · ${r.streak||0}🔥</div>
       </div>
-      <div class="rank-xp">${r.xp}</div>
-    </div>
-  `).join('')||`<div class="empty-state"><span class="empty-ico">🏆</span>Sem dados para esta liga</div>`;
+      <div class="rank-xp">${(r.xp||0).toLocaleString('pt-BR')}</div>
+    </div>`;
+  }).join('');
 }
 
 function switchLiga(liga, btn){
@@ -1878,55 +2021,221 @@ function setTipo(btn){
   btn.classList.add('active');
 }
 
-function publishPost(){
+async function publishPost(){
   const txt=document.getElementById('composeText').value.trim();
   if(!txt){toast('✏️ Escreva algo primeiro','error');return;}
-  const post={
-    id:'p'+Date.now(), author:S.name, avatar:S.avatar, role:'operador',
-    tipo:S.composeTipo, text:txt, xp:S.xp, likes:0, time:'agora', liked:false
-  };
-  S.posts.unshift(post);
-  document.getElementById('composeText').value='';
-  document.getElementById('composeText').style.height='auto';
-  renderMural();
-  toast('✅ Publicado no mural!','success');
+  const btn=document.querySelector('.btn-post');
+  if(btn){btn.disabled=true;btn.textContent='…';}
+  const lvl=getLevelInfo(S.xp);
+  if(FIREBASE_OK&&currentUser){
+    try{
+      await db.collection('posts').add({
+        authorId: currentUser.uid,
+        author:   S.name,
+        avatar:   S.avatar,
+        role:     S.isAdmin?'admin':'operador',
+        tipo:     S.composeTipo,
+        text:     txt,
+        xp:       S.xp,
+        level:    lvl.lvl,
+        likes:    0,
+        likedBy:  [],
+        commentCount: 0,
+        ts: firebase.firestore.FieldValue.serverTimestamp()
+      });
+      document.getElementById('composeText').value='';
+      document.getElementById('composeText').style.height='auto';
+      toast('✅ Publicado!','success');
+      renderMural();
+    }catch(e){ toast('Erro: '+e.message,'error'); }
+  } else {
+    // modo offline
+    S.posts.unshift({id:'p'+Date.now(),author:S.name,avatar:S.avatar,
+      role:'operador',tipo:S.composeTipo,text:txt,xp:S.xp,likes:0,
+      likedBy:[],commentCount:0,ts:null});
+    document.getElementById('composeText').value='';
+    document.getElementById('composeText').style.height='auto';
+    renderMural();
+    toast('✅ Publicado (offline)','success');
+  }
+  if(btn){btn.disabled=false;btn.textContent='Publicar';}
 }
 
-function renderMural(){
+const _likedPosts={};
+
+async function renderMural(){
   document.getElementById('composeAvatar').textContent=S.avatar;
-  document.getElementById('muralFeed').innerHTML=S.posts.map(p=>`
-    <div class="post-card tipo-${p.tipo}">
+  const feed=document.getElementById('muralFeed');
+
+  if(FIREBASE_OK){
+    feed.innerHTML=`<div class="mural-loading"><div class="mural-spinner"></div><div style="font-size:11px">Carregando mural...</div></div>`;
+    try{
+      const snap=await db.collection('posts').orderBy('ts','desc').limit(40).get();
+      S.posts=[];
+      snap.forEach(d=>S.posts.push({id:d.id,...d.data()}));
+    }catch(e){ console.warn('Mural load:',e); }
+  }
+
+  if(!S.posts.length){
+    feed.innerHTML=`<div class="empty-state" style="padding:48px 0"><span class="empty-ico">🧾</span><br>Nenhum post ainda.<br><span style="font-size:11px;color:var(--txt3)">Seja o primeiro a relatar!</span></div>`;
+    return;
+  }
+
+  feed.innerHTML=S.posts.map(p=>{
+    const ts=p.ts?.toDate?p.ts.toDate():new Date(p.createdAt||Date.now());
+    const ago=timeAgo(ts);
+    const isMe=currentUser&&p.authorId===currentUser.uid;
+    const canClick=p.authorId&&!isMe&&FIREBASE_OK;
+    const liked=!!_likedPosts[p.id];
+    return`<div class="post-card tipo-${p.tipo||'relato'}" id="pc-${p.id}">
       <div class="post-hdr">
-        <div class="post-avatar">${p.avatar}</div>
+        <div class="post-avatar" style="${canClick?'cursor:pointer':''}"          onclick="${canClick?`openPubProfile('${p.authorId}')`:''}">${p.avatar||'🪖'}</div>
         <div class="post-meta">
           <div class="post-name">
-            ${escHtml(p.author)}
-            <span class="role-tag role-${p.role}">${p.role}</span>
-            <span class="tipo-tag tipo-${p.tipo}">${tipoLabel(p.tipo)}</span>
+            <button class="post-author-btn" onclick="${canClick?`openPubProfile('${p.authorId}')`:''}              " style="cursor:${canClick?'pointer':'default'}">${escHtml(p.author||'Operador')}</button>
+            <span class="role-tag role-${p.role||'operador'}">${p.role||'operador'}</span>
+            <span class="tipo-tag tipo-${p.tipo||'relato'}">${tipoLabel(p.tipo)}</span>
           </div>
-          <div class="post-time">${p.time}</div>
+          <div class="post-time">${ago}</div>
         </div>
+        ${isMe||S.isAdmin?`<button class="post-delete" onclick="deletePost('${p.id}',this)" title="Apagar">✕</button>`:''}
       </div>
-      <div class="post-text">${escHtml(p.text)}</div>
+      <div class="post-text">${escHtml(p.text||'')}</div>
       <div class="post-footer">
-        <button class="btn-like ${p.liked?'liked':''}" onclick="likePost('${p.id}',this)">
-          ❤ ${p.likes}
+        <button class="btn-like${liked?' liked':''}" id="like-${p.id}" onclick="likePost('${p.id}',this)">
+          ❤ ${p.likes||0}
         </button>
-        <span class="post-xp">⚡ ${p.xp} XP</span>
+        <button class="btn-comments-toggle" onclick="toggleComments('${p.id}',this)">
+          💬 <span class="comment-count" id="cc-${p.id}">${p.commentCount||0}</span>
+        </button>
+        <span class="post-xp">⚡ ${p.xp||0} XP</span>
       </div>
+      <div style="display:none" id="cmt-${p.id}"></div>
+    </div>`;
+  }).join('');
+}
+
+function timeAgo(d){
+  const s=Math.floor((Date.now()-d.getTime())/1000);
+  if(s<60)return'agora';if(s<3600)return Math.floor(s/60)+'min';
+  if(s<86400)return Math.floor(s/3600)+'h';return Math.floor(s/86400)+'d';
+}
+
+async function likePost(postId, btn){
+  if(_likedPosts[postId]){toast('Já curtiu!','info');return;}
+  _likedPosts[postId]=true;
+  btn.classList.add('liked');
+  const cur=parseInt(btn.textContent.replace('❤','').trim())||0;
+  btn.textContent='❤ '+(cur+1);
+  if(FIREBASE_OK&&currentUser){
+    try{
+      await db.collection('posts').doc(postId).update({
+        likes: firebase.firestore.FieldValue.increment(1),
+        likedBy: firebase.firestore.FieldValue.arrayUnion(currentUser.uid)
+      });
+    }catch(e){console.warn('Like:',e);}
+  }
+}
+
+async function deletePost(postId, btn){
+  if(btn.dataset.c!=='1'){
+    btn.dataset.c='1';btn.textContent='❓';btn.style.color='var(--orange)';
+    setTimeout(()=>{if(btn.dataset.c==='1'){btn.dataset.c='';btn.textContent='✕';btn.style.color='';}},3000);
+    return;
+  }
+  if(FIREBASE_OK){
+    try{await db.collection('posts').doc(postId).delete();}catch(e){}
+  }
+  const card=document.getElementById('pc-'+postId);
+  if(card){card.style.opacity='0';card.style.height='0';card.style.overflow='hidden';
+    card.style.transition='all .3s';setTimeout(()=>card.remove(),300);}
+  S.posts=S.posts.filter(p=>p.id!==postId);
+  toast('🗑 Post apagado','info');
+}
+
+async function toggleComments(postId, btn){
+  const wrap=document.getElementById('cmt-'+postId);
+  if(!wrap)return;
+  if(wrap.style.display!=='none'){wrap.style.display='none';return;}
+  wrap.style.display='block';
+  wrap.innerHTML=`<div class="comment-wrap"><div class="comment-empty">Carregando...</div></div>`;
+  let comments=[];
+  if(FIREBASE_OK){
+    try{
+      const snap=await db.collection('posts').doc(postId)
+        .collection('comments').orderBy('ts','asc').limit(50).get();
+      snap.forEach(d=>comments.push({id:d.id,...d.data()}));
+    }catch(e){console.warn('Comments:',e);}
+  }
+  renderComments(postId, comments);
+}
+
+function renderComments(postId, comments){
+  const wrap=document.getElementById('cmt-'+postId);
+  if(!wrap)return;
+  const list=comments.map(cm=>{
+    const ts=cm.ts?.toDate?cm.ts.toDate():new Date();
+    const canClick=cm.authorId&&currentUser&&cm.authorId!==currentUser.uid&&FIREBASE_OK;
+    return`<div class="comment-item">
+      <div class="comment-avatar">${cm.avatar||'🪖'}</div>
+      <div class="comment-body">
+        <span class="comment-author" onclick="${canClick?`openPubProfile('${cm.authorId}')`:''}">${escHtml(cm.author||'?')}</span>
+        <div class="comment-text">${escHtml(cm.text||'')}</div>
+        <div class="comment-time">${timeAgo(ts)}</div>
+      </div>
+    </div>`;
+  }).join('');
+  wrap.innerHTML=`<div class="comment-wrap">
+    <div class="comment-list">${list||'<div class="comment-empty">Sem comentários ainda. Seja o primeiro!</div>'}</div>
+    <div class="comment-compose">
+      <div class="comment-avatar">${S.avatar}</div>
+      <textarea class="comment-inp" id="cinp-${postId}" placeholder="Escreva um comentário..."        rows="1" oninput="this.style.height='auto';this.style.height=this.scrollHeight+'px'"></textarea>
+      <button class="btn-comment-send" onclick="sendComment('${postId}')">Enviar</button>
     </div>
-  `).join('');
+  </div>`;
+}
+
+async function sendComment(postId){
+  const inp=document.getElementById('cinp-'+postId);
+  const txt=inp?.value.trim();
+  if(!txt)return;
+  inp.value='';inp.style.height='auto';
+  const newCmt={
+    authorId:currentUser?.uid||'',
+    author:S.name, avatar:S.avatar,
+    text:txt, ts:new Date()
+  };
+  if(FIREBASE_OK&&currentUser){
+    try{
+      const ref=db.collection('posts').doc(postId).collection('comments');
+      await ref.add({...newCmt, ts:firebase.firestore.FieldValue.serverTimestamp()});
+      await db.collection('posts').doc(postId).update({
+        commentCount: firebase.firestore.FieldValue.increment(1)
+      });
+    }catch(e){console.warn('Comment send:',e);}
+  }
+  // Atualiza contagem local
+  const cc=document.getElementById('cc-'+postId);
+  if(cc){const n=parseInt(cc.textContent)||0;cc.textContent=n+1;cc.classList.add('bump');setTimeout(()=>cc.classList.remove('bump'),500);}
+  // Adiciona comentário na UI sem recarregar
+  const list=document.querySelector(`#cmt-${postId} .comment-list`);
+  if(list){
+    const div=document.createElement('div');
+    div.className='comment-item';div.style.animation='commentIn .2s ease';
+    div.innerHTML=`<div class="comment-avatar">${S.avatar}</div>
+      <div class="comment-body">
+        <span class="comment-author">${escHtml(S.name)}</span>
+        <div class="comment-text">${escHtml(txt)}</div>
+        <div class="comment-time">agora</div>
+      </div>`;
+    const emptyMsg=list.querySelector('.comment-empty');
+    if(emptyMsg)emptyMsg.remove();
+    list.appendChild(div);
+    div.scrollIntoView({behavior:'smooth',block:'nearest'});
+  }
 }
 
 function tipoLabel(t){return {relato:'Relato',conquista:'Conquista',pergunta:'Pergunta',auto:'Auto'}[t]||t}
-
-function likePost(id, btn){
-  const p=S.posts.find(x=>x.id===id);
-  if(!p||p.liked)return;
-  p.liked=true; p.likes++;
-  btn.classList.add('liked');
-  btn.textContent='❤ '+p.likes;
-}
 
 // ═══════════════════════════════════════════
 //  PROFILE
@@ -2858,6 +3167,162 @@ async function adminViewProfile(uid){
   overlay.classList.add('open');
 }
 
+
+
+// ═══════════════════════════════════════════
+//  PERFIL PÚBLICO + COPIAR TAREFAS/HÁBITOS
+// ═══════════════════════════════════════════
+
+let _pubData = null; // dados do usuário público carregado
+
+async function openPubProfile(uid){
+  if(!uid||!FIREBASE_OK){toast('Perfil indisponível offline','info');return;}
+  const overlay=document.getElementById('pubOverlay');
+  overlay.classList.add('open');
+  document.getElementById('pubContent').innerHTML=`<div style="text-align:center;padding:32px;color:var(--txt3)"><div style="width:24px;height:24px;border:2px solid var(--bdr2);border-top-color:var(--red);border-radius:50%;animation:spin .8s linear infinite;margin:0 auto 10px"></div>Carregando...</div>`;
+
+  try{
+    const snap=await db.collection('users').doc(uid).get();
+    if(!snap.exists){toast('Usuário não encontrado','error');closePubProfile();return;}
+    const d=snap.data();
+    _pubData={id:uid,...d};
+
+    const li=getLevelInfo(d.xp||0);
+    const badges=Array.isArray(d.badges)?badgeIdsToObjects(d.badges):[];
+    const earned=badges.filter(b=>b.earned);
+
+    // Preencher hero
+    document.getElementById('pubAvatar').textContent=d.avatar||'🪖';
+    document.getElementById('pubName').textContent=escHtml(d.name||d.nomeGuerra||'Operador');
+    document.getElementById('pubRankLbl').textContent=li.name.toUpperCase()+' · NÍVEL '+li.lvl;
+    document.getElementById('pubTags').innerHTML=`
+      <span class="role-tag role-${d.role||'operador'}">${d.role||'operador'}</span>
+      ${d.premium?'<span class="role-tag" style="background:rgba(191,90,242,.1);color:var(--purple);border-color:rgba(191,90,242,.25)">⭐ Premium</span>':''}
+    `;
+    document.getElementById('pubXpFill').style.width=li.pct+'%';
+    document.getElementById('pubXpLbl').textContent=`${(d.xp||0).toLocaleString('pt-BR')} XP — ${li.pct}% para Nível ${li.lvl+1}`;
+    document.getElementById('pubStatXp').textContent=(d.xp||0).toLocaleString('pt-BR');
+    document.getElementById('pubStatStreak').textContent=(d.streak||0)+'🔥';
+    document.getElementById('pubStatBadges').textContent=earned.length;
+
+    // Ativar aba padrão
+    document.querySelectorAll('.pub-tab').forEach(t=>t.classList.remove('active'));
+    document.getElementById('ptab-badges').classList.add('active');
+    renderPubBadges(earned);
+  }catch(e){
+    toast('Erro ao carregar perfil','error');
+    closePubProfile();
+  }
+}
+
+function closePubProfile(){
+  document.getElementById('pubOverlay').classList.remove('open');
+  _pubData=null;
+}
+
+function switchPubTab(tab, btn){
+  document.querySelectorAll('.pub-tab').forEach(t=>t.classList.remove('active'));
+  if(btn)btn.classList.add('active');
+  if(tab==='badges'){
+    const badges=Array.isArray(_pubData?.badges)?badgeIdsToObjects(_pubData.badges):[];
+    renderPubBadges(badges.filter(b=>b.earned));
+  } else if(tab==='tasks'){
+    renderPubTasks(_pubData?.tasks||[]);
+  } else if(tab==='habits'){
+    renderPubHabits(_pubData?.habits||[]);
+  }
+}
+
+function renderPubBadges(earned){
+  const el=document.getElementById('pubContent');
+  if(!earned.length){
+    el.innerHTML=`<div class="empty-state" style="padding:24px"><span class="empty-ico">🏅</span><br>Nenhuma insígnia conquistada</div>`;
+    return;
+  }
+  el.innerHTML=`<div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px">${
+    earned.map(b=>`
+      <div style="background:rgba(255,214,10,.06);border:1px solid rgba(255,214,10,.2);border-radius:12px;padding:12px;text-align:center;animation:badgePop .3s ease">
+        <div style="font-size:26px;margin-bottom:5px">${b.ico}</div>
+        <div style="font-size:10px;font-weight:700;margin-bottom:2px">${b.name}</div>
+        <div style="font-size:9px;color:var(--txt3);line-height:1.3">${b.desc||''}</div>
+      </div>`).join('')
+  }</div>`;
+}
+
+function renderPubTasks(tasks){
+  const el=document.getElementById('pubContent');
+  if(!tasks.length){
+    el.innerHTML=`<div class="empty-state" style="padding:24px"><span class="empty-ico">⚡</span><br>Nenhuma tarefa pública</div>`;
+    return;
+  }
+  el.innerHTML=tasks.map(t=>{
+    const already=S.tasks.some(x=>x.name===t.name);
+    return`<div class="copy-item">
+      <div class="copy-item-ico">${catIcon(t.cat)}</div>
+      <div class="copy-item-info">
+        <div class="copy-item-name">${escHtml(t.name)}</div>
+        <div class="copy-item-meta">${t.cat||'Geral'} · ${diffLabel(t.diff)} · ${t.score||5} pts${t.window?' · '+t.window:''}</div>
+      </div>
+      <button class="btn-copy${already?' done':''}" onclick="copyTask(${JSON.stringify(t).replace(/"/g,"'")},this)">
+        ${already?'✓ Copiado':'+ Copiar'}
+      </button>
+    </div>`;
+  }).join('');
+}
+
+function renderPubHabits(habits){
+  const el=document.getElementById('pubContent');
+  if(!habits.length){
+    el.innerHTML=`<div class="empty-state" style="padding:24px"><span class="empty-ico">🔁</span><br>Nenhum hábito público</div>`;
+    return;
+  }
+  el.innerHTML=habits.map(h=>{
+    const already=S.habits.some(x=>x.name===h.name);
+    return`<div class="copy-item">
+      <div class="copy-item-ico" style="width:12px;height:12px;border-radius:3px;background:${h.catColor||'#666'};flex-shrink:0;margin-top:4px;width:12px;height:auto;font-size:8px"></div>
+      <div class="copy-item-info">
+        <div class="copy-item-name">${escHtml(h.name)}</div>
+        <div class="copy-item-meta">${h.cat||'Geral'} · ${h.score||2} pts/dia</div>
+      </div>
+      <button class="btn-copy${already?' done':''}" onclick="copyHabit(${JSON.stringify(h).replace(/"/g,"'")},this)">
+        ${already?'✓ Copiado':'+ Copiar'}
+      </button>
+    </div>`;
+  }).join('');
+}
+
+function copyTask(t, btn){
+  if(btn.classList.contains('done')){toast('Já copiado!','info');return;}
+  const newTask={
+    id:S.nextId++,
+    name:t.name,score:t.score||5,cat:t.cat||'Geral',
+    diff:t.diff||'normal',window:t.window||'',done:false,notif:false
+  };
+  S.tasks.push(newTask);
+  btn.classList.add('done');btn.textContent='✓ Copiado';
+  toast('⚡ Tarefa "'+newTask.name+'" copiada!','success');
+  scheduleSync();
+  if(S.currentSec==='hoje')renderAll();
+}
+
+function copyHabit(h, btn){
+  if(btn.classList.contains('done')){toast('Já copiado!','info');return;}
+  const newHabit={
+    id:S.nextId++,
+    name:h.name,cat:h.cat||'Geral',catColor:h.catColor||'#666',
+    score:h.score||2,checks:{}
+  };
+  S.habits.push(newHabit);
+  btn.classList.add('done');btn.textContent='✓ Copiado';
+  toast('🔁 Hábito "'+newHabit.name+'" copiado!','success');
+  scheduleSync();
+}
+
+function catIcon(cat){
+  const map={Saúde:'💪',Estudos:'📚',Trabalho:'💼',Espiritual:'🧘',Rotina:'⏰',Alimentar:'🥗',Finanças:'💰',Social:'🤝'};
+  return map[cat]||'⚡';
+}
+
 function closePubAdmin(){
   document.getElementById('adminProfileOverlay').classList.remove('open');
 }
@@ -3036,15 +3501,18 @@ function onTasksChanged(){
 async function saveToFirebase() {
   if (!FIREBASE_OK || !currentUser) return;
   try {
+    // BADGE FIX: NUNCA salvar badges no auto-sync.
+    // Badges são controladas exclusivamente pelo admin via painel.
+    // Salvar badges aqui sobrescreveria revogações do admin em 2s.
     await db.collection('users').doc(currentUser.uid).set({
       name: S.name,
+      nomeGuerra: S.name,
       avatar: S.avatar,
       xp: S.xp,
       level: getLevelInfo(S.xp).lvl,
       streak: S.streak,
       tasks: S.tasks,
       habits: S.habits,
-      badges: badgeObjectsToIds(S.badges), // salva como array de IDs
       updatedAt: firebase.firestore.FieldValue.serverTimestamp()
     }, { merge: true });
   } catch(e) { console.warn('Sync error:', e); }
@@ -3084,32 +3552,37 @@ function scheduleSync() {
 async function loadFirebaseRanking() {
   if (!FIREBASE_OK) return;
   try {
-    const snap = await db.collection('users').orderBy('xp','desc').limit(20).get();
+    const snap = await db.collection('users').orderBy('xp','desc').limit(50).get();
     const users = [];
     snap.forEach(d => {
       const u = d.data();
       users.push({
-        name: u.name || 'Operador',
+        uid:    d.id,
+        name:   u.name || u.nomeGuerra || 'Operador',
         avatar: u.avatar || '🪖',
-        role: 'operador',
-        xp: u.xp || 0,
-        level: u.level || 1,
-        badges: [],
-        me: currentUser && d.id === currentUser.uid
+        role:   u.role || 'operador',
+        xp:     u.xp || 0,
+        level:  u.level || 1,
+        streak: u.streak || 0,
+        badges: u.badges || [],
+        me:     currentUser && d.id === currentUser.uid
       });
     });
     if (users.length) {
       S.rankings.global = users;
-      // Show global tab
       const ligaTabs = document.getElementById('ligaTabs');
       if (!document.getElementById('tab-global')) {
         const btn = document.createElement('button');
-        btn.className = 'liga-tab';
-        btn.id = 'tab-global';
+        btn.className = 'liga-tab active'; btn.id = 'tab-global';
         btn.textContent = '🌐 Global';
         btn.onclick = () => switchLiga('global', btn);
+        // Remove active de outros e vai para global
+        ligaTabs.querySelectorAll('.liga-tab').forEach(b=>b.classList.remove('active'));
+        btn.classList.add('active');
         ligaTabs.prepend(btn);
       }
+      S.currentLiga='global';
+      renderRanking();
     }
   } catch(e) { console.warn('Ranking load error:', e); }
 }
@@ -3251,13 +3724,29 @@ if(FIREBASE_OK){
       }, 1500);
     }
 
-    // Real-time listener for pushed changes (role, ban, xp adjustment by admin)
+    // Real-time listener — Firestore é a fonte da verdade para badges, role, xp, ban
     ref.onSnapshot(snap=>{
       if(!snap.exists||!currentUser) return;
       const data=snap.data();
       if(data.banned){ auth.signOut(); toast('🚫 Sua conta foi banida','error'); return; }
       if(data.role==='admin'&&!S.isAdmin){ S.isAdmin=true; showAdminNav(); toast('🛡 Admin ativado remotamente','gold'); }
+      // XP atualizado pelo admin
       if(typeof data.xp==='number'&&data.xp!==S.xp){ S.xp=data.xp; renderAll(); }
+      // BADGE SYNC — crítico: sobrescreve local com Firestore (captura dar e revogar)
+      if(Array.isArray(data.badges)){
+        const fbIds = data.badges;
+        const localIds = badgeObjectsToIds(S.badges);
+        const same = fbIds.length===localIds.length && fbIds.every(id=>localIds.includes(id));
+        if(!same){
+          const added = fbIds.filter(id=>!localIds.includes(id));
+          S.badges = badgeIdsToObjects(fbIds);
+          renderBadges();
+          if(added.length){
+            const b = [...BADGES_DEF].find(x=>x.id===added[0]) || {name:'Nova insígnia'};
+            toast('🏅 Insígnia recebida: '+b.name,'gold');
+          }
+        }
+      }
     },err=>console.warn('Snapshot error:',err));
 
     // Update topbar with cloud sync indicator
