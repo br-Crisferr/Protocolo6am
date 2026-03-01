@@ -328,6 +328,9 @@ input,button,select,textarea{font-family:var(--f)}
 .cal-day.c-today .cal-day-num{color:var(--gold)}
 .cal-day.c-future{opacity:.4}
 .cal-day-score{font-size:7px;color:var(--gold);font-family:var(--fm);position:absolute;top:3px;left:3px}
+.cal-day-clickable{cursor:pointer;transition:transform .15s,box-shadow .15s}
+.cal-day-clickable:hover{transform:scale(1.08);box-shadow:0 4px 16px rgba(0,0,0,.5);z-index:2;position:relative}
+.cal-day-clickable:active{transform:scale(.96)}
 
 /* ═══ RANKING ═══ */
 .liga-tabs{display:flex;gap:6px;margin-bottom:16px;overflow-x:auto;padding-bottom:4px}
@@ -983,8 +986,9 @@ select.admin-inp option{background:var(--bg3)}
 
       <div class="danger-zone">
         <div class="danger-lbl">Conta</div>
-        <div style="display:flex;gap:10px;justify-content:center">
+        <div style="display:flex;gap:10px;justify-content:center;flex-wrap:wrap">
           <button class="btn-outline" onclick="editProfile()">✏️ Editar Perfil</button>
+          <button class="btn-outline" style="border-color:rgba(10,132,255,.3);color:var(--blue)" onclick="doSignOut()">↩ Sair da Conta</button>
           <button class="btn-outline" style="border-color:rgba(255,59,48,.3);color:var(--red)" onclick="resetData()">🗑 Limpar Dados</button>
         </div>
       </div>
@@ -1158,7 +1162,84 @@ select.admin-inp option{background:var(--bg3)}
 
 </div>
 
-<!-- MODAL OVERLAY -->
+<!-- DAY DETAIL MODAL -->
+<div class="modal-overlay" id="dayDetailOverlay" onclick="if(event.target===this)closeDayDetail()">
+  <div class="modal" style="max-height:88vh">
+    <div class="modal-hdr">
+      <div>
+        <div class="modal-ttl" id="dayDetailTitle">Detalhes do Dia</div>
+        <div style="font-family:var(--fm);font-size:9px;color:var(--txt3);text-transform:uppercase;letter-spacing:1px;margin-top:2px">RESUMO DE ATIVIDADES</div>
+      </div>
+      <button class="modal-close" onclick="closeDayDetail()">✕</button>
+    </div>
+    <div class="modal-body" id="dayDetailContent" style="padding-top:0"></div>
+  </div>
+</div>
+
+</div><!-- /app-wrap -->
+
+<!-- AUTH SCREEN -->
+<div id="authScreen" style="
+  position:fixed;inset:0;z-index:9000;
+  display:flex;flex-direction:column;align-items:center;justify-content:center;
+  background:#000;padding:32px 24px;
+  background-image:radial-gradient(ellipse at 50% 0%,rgba(255,59,48,.15) 0%,transparent 60%),
+                   radial-gradient(ellipse at 80% 100%,rgba(255,214,10,.06) 0%,transparent 50%);
+">
+  <!-- Logo -->
+  <div style="text-align:center;margin-bottom:48px">
+    <div style="font-family:var(--fb);font-size:96px;line-height:.9;
+      background:linear-gradient(135deg,#fff 0%,var(--red) 60%);
+      -webkit-background-clip:text;-webkit-text-fill-color:transparent;
+      letter-spacing:-4px">6AM</div>
+    <div style="font-family:var(--fm);font-size:10px;letter-spacing:4px;color:var(--txt2);text-transform:uppercase;margin-top:10px">PROTOCOLO · ARENA DE DESEMPENHO</div>
+    <div style="width:40px;height:1px;background:linear-gradient(90deg,transparent,var(--red),transparent);margin:14px auto 0"></div>
+  </div>
+
+  <!-- Rules -->
+  <div style="width:100%;max-width:380px;margin-bottom:32px">
+    <div style="font-family:var(--fm);font-size:8px;letter-spacing:3px;color:var(--red);text-transform:uppercase;margin-bottom:12px">Regras do Protocolo</div>
+    <div style="font-size:12px;color:var(--txt2);line-height:1.7">
+      <div style="display:flex;gap:10px;margin-bottom:6px"><span style="font-family:var(--fm);font-size:9px;color:var(--red)">01</span>Tarefas têm janela de tempo — execute no horário.</div>
+      <div style="display:flex;gap:10px;margin-bottom:6px"><span style="font-family:var(--fm);font-size:9px;color:var(--red)">02</span>Consistência constrói reputação real na comunidade.</div>
+      <div style="display:flex;gap:10px"><span style="font-family:var(--fm);font-size:9px;color:var(--red)">03</span>Sem manipulação — o sistema verifica integridade.</div>
+    </div>
+  </div>
+
+  <!-- Google Sign In Button -->
+  <div style="width:100%;max-width:380px">
+    <button id="btnGoogleLogin" onclick="doGoogleLogin()" style="
+      width:100%;padding:16px;
+      background:#fff;color:#1a1a1a;
+      border:none;border-radius:14px;
+      font-size:14px;font-weight:700;
+      cursor:pointer;transition:all .2s;
+      display:flex;align-items:center;justify-content:center;gap:12px;
+      box-shadow:0 4px 24px rgba(255,255,255,.08);
+    ">
+      <svg width="20" height="20" viewBox="0 0 48 48">
+        <path fill="#EA4335" d="M24 9.5c3.2 0 6 1.1 8.2 3.2l6.1-6.1C34.3 3.1 29.4 1 24 1 14.8 1 7 6.6 3.7 14.4l7.1 5.5C12.4 13.7 17.8 9.5 24 9.5z"/>
+        <path fill="#4285F4" d="M46.5 24.5c0-1.6-.1-3.1-.4-4.5H24v8.6h12.7c-.6 3-2.3 5.5-4.8 7.2l7.4 5.7c4.3-4 6.8-9.9 6.8-17z"/>
+        <path fill="#FBBC05" d="M10.8 28.1c-.5-1.4-.7-2.9-.7-4.6 0-1.6.3-3.1.7-4.6l-7.1-5.5C2.1 16.6 1 20.2 1 24c0 3.8 1 7.4 2.7 10.6l7.1-5.5z"/>
+        <path fill="#34A853" d="M24 47c5.4 0 10-1.8 13.3-4.8l-7.4-5.7c-1.9 1.3-4.3 2-5.9 2-6.2 0-11.5-4.2-13.4-9.9l-7.1 5.5C7 41.4 14.8 47 24 47z"/>
+      </svg>
+      Entrar com Google
+    </button>
+
+    <div id="authError" style="display:none;margin-top:12px;text-align:center;font-size:12px;color:var(--red);font-family:var(--fm)"></div>
+
+    <div style="text-align:center;margin-top:20px;font-size:11px;color:var(--txt3);line-height:1.6">
+      Ao entrar você concorda com os termos do protocolo.<br>
+      Apenas contas Google são aceitas.
+    </div>
+  </div>
+
+  <!-- Loading spinner (shown during login) -->
+  <div id="authSpinner" style="position:absolute;inset:0;background:rgba(0,0,0,.8);backdrop-filter:blur(8px);display:none;align-items:center;justify-content:center;flex-direction:column;gap:16px">
+    <div style="width:40px;height:40px;border:3px solid rgba(255,59,48,.3);border-top-color:var(--red);border-radius:50%;animation:spin .8s linear infinite"></div>
+    <div style="font-family:var(--fm);font-size:11px;color:var(--txt2);letter-spacing:2px">AUTENTICANDO...</div>
+  </div>
+</div>
 <div class="modal-overlay" id="modalOverlay" onclick="closeModalOut(event)">
   <div class="modal">
     <div class="modal-hdr">
@@ -1176,8 +1257,8 @@ select.admin-inp option{background:var(--bg3)}
 // ═══════════════════════════════════════════
 //  STATE
 // ═══════════════════════════════════════════
-const TODAY = new Date(2026,1,28);
-const TODAY_KEY = '2026-02-28';
+const TODAY = new Date();
+const TODAY_KEY = `${TODAY.getFullYear()}-${String(TODAY.getMonth()+1).padStart(2,'0')}-${String(TODAY.getDate()).padStart(2,'0')}`;
 
 const LEVEL_THRESHOLDS = [0,200,500,1000,2000,3500,5500,8000,11500,16000,22000];
 const RANK_NAMES = ['Recruta','Soldado','Cabo','Sargento','Tenente','Capitão','Major','Coronel','General','Comandante','Lendário'];
@@ -1195,10 +1276,10 @@ let S = {
   currentView: 'lista',
   modalType: 'tarefa',
   composeTipo: 'relato',
-  trackerMonth: 1,
-  trackerYear: 2026,
-  calMonth: 1,
-  calYear: 2026,
+  trackerMonth: new Date().getMonth(),
+  trackerYear: new Date().getFullYear(),
+  calMonth: new Date().getMonth(),
+  calYear: new Date().getFullYear(),
   currentLiga: 'bronze',
   tasks: [
     {id:1, name:'Treino matinal', score:8, cat:'Saúde', diff:'normal', window:'06:00–08:00', done:false},
@@ -1508,20 +1589,128 @@ function renderCalendario(){
   let html=dow.map(d=>`<div class="cal-dow">${d}</div>`).join('');
   for(let i=0;i<firstDay;i++) html+=`<div class="cal-day" style="background:transparent;border:none"></div>`;
   for(let d=1;d<=dip;d++){
-    const isFuture=(d>28&&m===1&&y===2026);
-    const isToday=(d===28&&m===1&&y===2026);
-    // Mock score
-    const seed=(d*13+d*3)%50;
-    const sc=isFuture?0:seed;
-    const max=40;
-    let cls=isFuture?'c-future':sc>max*0.7?'c-perfect':sc>max*0.3?'c-partial':sc>0?'c-fail':'';
+    const key=dateKey(y,m,d);
+    const todayY=TODAY.getFullYear(),todayM=TODAY.getMonth(),todayD=TODAY.getDate();
+    const isFuture=(y>todayY)||(y===todayY&&m>todayM)||(y===todayY&&m===todayM&&d>todayD);
+    const isToday=(d===todayD&&m===todayM&&y===todayY);
+    // Compute real score for this day from habits
+    let sc=0;
+    S.habits.forEach(h=>{ if(h.checks&&h.checks[key]) sc+=h.score; });
+    // For past days without data, use mock seed
+    if(!isFuture && sc===0 && !isToday){
+      const seed=(d*13+d*3)%50;
+      sc=seed;
+    }
+    if(isFuture) sc=0;
+    const max=todayMax()||40;
+    let cls=isFuture?'c-future':isToday?'':sc>max*0.7?'c-perfect':sc>max*0.35?'c-partial':sc>0?'c-fail':'';
     if(isToday) cls+=' c-today';
-    html+=`<div class="cal-day ${cls}">
+    const clickable=!isFuture;
+    html+=`<div class="cal-day ${cls} ${clickable?'cal-day-clickable':''}" ${clickable?`onclick="openDayDetail('${key}',${d},${m},${y})"`:''}>
       ${!isFuture&&sc>0?`<span class="cal-day-score">${sc}</span>`:''}
       <span class="cal-day-num">${d}</span>
     </div>`;
   }
   document.getElementById('cal-grid').innerHTML=html;
+}
+
+// ═══════════════════════════════════════════
+//  DAY DETAIL MODAL
+// ═══════════════════════════════════════════
+function openDayDetail(key, d, m, y){
+  const months=['Janeiro','Fevereiro','Março','Abril','Maio','Junho','Julho','Agosto','Setembro','Outubro','Novembro','Dezembro'];
+  const dow=['Domingo','Segunda','Terça','Quarta','Quinta','Sexta','Sábado'];
+  const date=new Date(y,m,d);
+  const dayName=dow[date.getDay()];
+
+  // Compute what was done that day
+  const habitsDone=S.habits.filter(h=>h.checks&&h.checks[key]);
+  const habitsPending=S.habits.filter(h=>!h.checks||!h.checks[key]);
+  const habitScore=habitsDone.reduce((a,h)=>a+h.score,0);
+  const totalPossible=S.habits.reduce((a,h)=>a+h.score,0);
+  const pct=totalPossible?Math.round((habitScore/totalPossible)*100):0;
+
+  // Tasks done that day (only reliable for today; show all completed for past as reference)
+  const isToday=(d===TODAY.getDate()&&m===TODAY.getMonth()&&y===TODAY.getFullYear());
+  const tasksDone=isToday?S.tasks.filter(t=>t.done):[];
+  const taskScore=tasksDone.reduce((a,t)=>a+t.score,0);
+  const totalScore=habitScore+(isToday?taskScore:0);
+
+  // Performance level
+  const perf=pct>=80?{label:'DIA PERFEITO',color:'var(--green)',ico:'🔥'}
+    :pct>=50?{label:'BOM DIA',color:'var(--gold)',ico:'⚡'}
+    :pct>=20?{label:'DIA PARCIAL',color:'var(--orange)',ico:'📉'}
+    :{label:'DIA FRACO',color:'var(--red)',ico:'💤'};
+
+  const overlay=document.getElementById('dayDetailOverlay');
+  document.getElementById('dayDetailTitle').textContent=`${dayName}, ${d} de ${months[m]}`;
+  document.getElementById('dayDetailContent').innerHTML=`
+    <!-- Performance badge -->
+    <div style="text-align:center;padding:20px 0 16px">
+      <div style="font-size:48px;margin-bottom:8px">${perf.ico}</div>
+      <div style="font-family:var(--fb);font-size:22px;color:${perf.color};letter-spacing:1px">${perf.label}</div>
+      <div style="font-family:var(--fm);font-size:28px;font-weight:700;color:var(--gold);margin-top:8px">${totalScore} <span style="font-size:14px;color:var(--txt3)">pts</span></div>
+    </div>
+
+    <!-- Progress bar -->
+    <div style="background:var(--bg4);border-radius:12px;padding:14px;margin-bottom:14px">
+      <div style="display:flex;justify-content:space-between;font-size:11px;color:var(--txt3);margin-bottom:7px">
+        <span>Taxa de conclusão</span>
+        <span style="color:${perf.color};font-family:var(--fm)">${pct}%</span>
+      </div>
+      <div class="prog-track">
+        <div class="prog-fill" style="background:${perf.color};width:${pct}%"></div>
+      </div>
+      <div style="display:flex;justify-content:space-between;font-size:10px;color:var(--txt3);margin-top:6px">
+        <span>${habitsDone.length} de ${S.habits.length} hábitos</span>
+        <span>${habitScore} / ${totalPossible} XP de hábitos</span>
+      </div>
+    </div>
+
+    <!-- Habits done -->
+    ${habitsDone.length?`
+    <div style="font-family:var(--fm);font-size:9px;color:var(--txt3);text-transform:uppercase;letter-spacing:1.5px;margin-bottom:8px">✅ Hábitos Concluídos</div>
+    ${habitsDone.map(h=>`
+      <div style="display:flex;align-items:center;gap:10px;padding:10px 12px;background:rgba(48,209,88,.08);border:1px solid rgba(48,209,88,.2);border-radius:10px;margin-bottom:6px">
+        <div style="width:20px;height:20px;border-radius:6px;background:var(--green);display:flex;align-items:center;justify-content:center;font-size:11px;flex-shrink:0">✓</div>
+        <div style="flex:1;font-size:13px;font-weight:700">${escHtml(h.name)}</div>
+        <div style="font-family:var(--fm);font-size:11px;color:var(--green)">+${h.score}</div>
+      </div>`).join('')}
+    `:''}
+
+    <!-- Habits missed -->
+    ${habitsPending.length?`
+    <div style="font-family:var(--fm);font-size:9px;color:var(--txt3);text-transform:uppercase;letter-spacing:1.5px;margin:10px 0 8px">❌ Não Concluídos</div>
+    ${habitsPending.map(h=>`
+      <div style="display:flex;align-items:center;gap:10px;padding:10px 12px;background:var(--bg3);border:1px solid var(--bdr);border-radius:10px;margin-bottom:6px;opacity:.6">
+        <div style="width:20px;height:20px;border-radius:6px;border:2px solid var(--bdr3);flex-shrink:0"></div>
+        <div style="flex:1;font-size:13px;font-weight:700;color:var(--txt2);text-decoration:line-through">${escHtml(h.name)}</div>
+        <div style="font-family:var(--fm);font-size:11px;color:var(--txt3)">-${h.score}</div>
+      </div>`).join('')}
+    `:''}
+
+    <!-- Tasks (only today) -->
+    ${isToday&&tasksDone.length?`
+    <div style="font-family:var(--fm);font-size:9px;color:var(--txt3);text-transform:uppercase;letter-spacing:1.5px;margin:10px 0 8px">⚡ Tarefas Concluídas</div>
+    ${tasksDone.map(t=>`
+      <div style="display:flex;align-items:center;gap:10px;padding:10px 12px;background:rgba(255,214,10,.06);border:1px solid rgba(255,214,10,.15);border-radius:10px;margin-bottom:6px">
+        <div style="width:20px;height:20px;border-radius:50%;background:var(--gold);display:flex;align-items:center;justify-content:center;font-size:10px;flex-shrink:0;color:#000">✓</div>
+        <div style="flex:1;font-size:13px;font-weight:700">${escHtml(t.name)}</div>
+        <div style="font-family:var(--fm);font-size:11px;color:var(--gold)">+${t.score}</div>
+      </div>`).join('')}
+    `:''}
+
+    ${!habitsDone.length&&!tasksDone.length?`
+    <div class="empty-state" style="padding:30px 0">
+      <span class="empty-ico">💤</span>
+      Nenhuma atividade registrada neste dia.
+    </div>`:''}
+  `;
+  overlay.classList.add('open');
+}
+
+function closeDayDetail(){
+  document.getElementById('dayDetailOverlay').classList.remove('open');
 }
 
 // ═══════════════════════════════════════════
@@ -2552,40 +2741,150 @@ async function loadFirebaseRanking() {
   } catch(e) { console.warn('Ranking load error:', e); }
 }
 
-// Auth state observer
-if (FIREBASE_OK) {
-  auth.onAuthStateChanged(async user => {
-    currentUser = user;
-    if (user) {
-      await loadFromFirebase(user.uid);
-      loadFirebaseRanking();
-      // Check if user is admin in Firestore
-      try{
-        const snap = await db.collection('users').doc(user.uid).get();
-        if(snap.exists){
-          const role = snap.data().role;
-          if(role === 'admin'){
-            S.isAdmin = true;
-            showAdminNav();
-            toast('🛡 Modo Admin ativado','gold');
-          }
-          // Real-time listener for role/badge changes pushed by admin
-          db.collection('users').doc(user.uid).onSnapshot(d=>{
-            if(!d.exists) return;
-            const data = d.data();
-            if(data.role==='admin' && !S.isAdmin){S.isAdmin=true;showAdminNav();toast('🛡 Modo Admin ativado','gold');}
-            if(data.banned){auth.signOut();toast('🚫 Sua conta foi banida','error');return;}
-            if(data.xp!==undefined && data.xp!==S.xp){S.xp=data.xp;renderAll();}
-            if(Array.isArray(data.badges)){
-              const newBadges=data.badges.filter(b=>!S.badges.find(sb=>sb.id===b));
-              if(newBadges.length) toast('🏅 Nova insígnia recebida!','gold');
-            }
-          });
+// ═══════════════════════════════════════════
+//  AUTH — GOOGLE ONLY
+// ═══════════════════════════════════════════
+
+function showApp(){
+  document.getElementById('authScreen').style.display='none';
+  document.querySelector('.app-wrap').style.display='flex';
+}
+
+function showAuthScreen(){
+  document.getElementById('authScreen').style.display='flex';
+  document.querySelector('.app-wrap').style.display='none';
+}
+
+function showAuthSpinner(show){
+  const s=document.getElementById('authSpinner');
+  if(s) s.style.display=show?'flex':'none';
+}
+
+function showAuthError(msg){
+  const el=document.getElementById('authError');
+  if(!el)return;
+  el.textContent=msg;
+  el.style.display=msg?'block':'none';
+}
+
+async function doGoogleLogin(){
+  if(!FIREBASE_OK){showAuthError('Firebase não configurado.');return;}
+  showAuthSpinner(true);
+  showAuthError('');
+  document.getElementById('btnGoogleLogin').disabled=true;
+  try{
+    const provider=new firebase.auth.GoogleAuthProvider();
+    provider.setCustomParameters({prompt:'select_account'});
+    await auth.signInWithPopup(provider);
+    // onAuthStateChanged handles the rest
+  }catch(e){
+    showAuthSpinner(false);
+    document.getElementById('btnGoogleLogin').disabled=false;
+    const msgs={
+      'auth/popup-closed-by-user':'Login cancelado.',
+      'auth/popup-blocked':'Popup bloqueado. Permita popups para este site.',
+      'auth/network-request-failed':'Sem conexão. Verifique sua internet.',
+      'auth/cancelled-popup-request':''
+    };
+    const m=msgs[e.code]||'Erro ao entrar: '+e.message;
+    if(m) showAuthError(m);
+  }
+}
+
+async function doSignOut(){
+  if(!FIREBASE_OK||!currentUser)return;
+  try{
+    await auth.signOut();
+  }catch(e){ console.warn('SignOut error:',e); }
+}
+
+// App starts hidden — auth gate controls visibility
+document.querySelector('.app-wrap').style.display='none';
+
+// Auth state observer — the ONE place that decides show app or auth screen
+if(FIREBASE_OK){
+  auth.onAuthStateChanged(async user=>{
+    currentUser=user;
+    if(!user){
+      // Not logged in → show auth screen always
+      showAuthScreen();
+      return;
+    }
+    // Logged in with Google
+    showAuthSpinner(false);
+    showApp();
+
+    // Load or create user doc
+    const ref=db.collection('users').doc(user.uid);
+    try{
+      const snap=await ref.get();
+      if(!snap.exists){
+        // First time — create profile from Google account
+        const nome=(user.displayName||'').split(' ')[0].replace(/\s/g,'_')||'Operador';
+        await ref.set({
+          name: nome,
+          nomeGuerra: nome,
+          avatar:'🪖',
+          xp:0,
+          level:1,
+          streak:0,
+          role:'operador',
+          premium:false,
+          banned:false,
+          badges:[],
+          joinDate:new Date().toISOString().split('T')[0],
+          createdAt:firebase.firestore.FieldValue.serverTimestamp(),
+          updatedAt:firebase.firestore.FieldValue.serverTimestamp(),
+          photoURL:user.photoURL||'',
+          email:user.email||''
+        });
+        S.name=nome;
+        toast(`🛡 Bem-vindo ao Protocolo, ${nome}!`,'gold');
+      } else {
+        // Existing user — load data
+        const d=snap.data();
+        if(d.banned){
+          toast('🚫 Sua conta foi banida.','error');
+          setTimeout(()=>auth.signOut(),2000);
+          return;
         }
-      }catch(e){console.warn('Admin check error:',e);}
-      document.getElementById('topRank').textContent += ' · ☁️';
+        if(d.name||d.nomeGuerra) S.name=d.name||d.nomeGuerra;
+        if(d.avatar) S.avatar=d.avatar;
+        if(typeof d.xp==='number') S.xp=d.xp;
+        if(typeof d.streak==='number') S.streak=d.streak;
+        if(Array.isArray(d.tasks)) S.tasks=d.tasks;
+        if(Array.isArray(d.habits)) S.habits=d.habits;
+        if(d.role==='admin'){
+          S.isAdmin=true;
+          showAdminNav();
+          toast('🛡 Modo Admin ativado','gold');
+        }
+        toast(`⚡ Bem-vindo de volta, ${S.name}!`,'success');
+      }
+    }catch(e){ console.warn('User doc error:',e); }
+
+    renderAll();
+    loadFirebaseRanking();
+
+    // Real-time listener for pushed changes (role, ban, xp adjustment by admin)
+    ref.onSnapshot(snap=>{
+      if(!snap.exists||!currentUser) return;
+      const data=snap.data();
+      if(data.banned){ auth.signOut(); toast('🚫 Sua conta foi banida','error'); return; }
+      if(data.role==='admin'&&!S.isAdmin){ S.isAdmin=true; showAdminNav(); toast('🛡 Admin ativado remotamente','gold'); }
+      if(typeof data.xp==='number'&&data.xp!==S.xp){ S.xp=data.xp; renderAll(); }
+    },err=>console.warn('Snapshot error:',err));
+
+    // Update topbar with cloud sync indicator
+    const topRank=document.getElementById('topRank');
+    if(topRank&&!topRank.textContent.includes('☁️')){
+      topRank.textContent+=' · ☁️';
     }
   });
+} else {
+  // Firebase not available — show app anyway in local mode (for ?admin=1 testing)
+  showApp();
+  toast('⚠️ Modo offline — Firebase indisponível','info');
 }
 
 // Wrap state-mutating functions to auto-sync
