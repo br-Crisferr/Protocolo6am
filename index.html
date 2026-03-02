@@ -1467,6 +1467,15 @@ select.admin-inp option{background:var(--bg3)}
         </div>
       </div>
 
+      <!-- PANEL: DENÚNCIAS -->
+      <div id="apanel-reports" style="display:none">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">
+          <div class="admin-card-title" style="margin:0">⚑ Denúncias Pendentes</div>
+          <button class="admin-refresh-btn" onclick="loadAdminReports()">↻</button>
+        </div>
+        <div id="adminReportList"></div>
+      </div>
+
     </div><!-- /secAdmin -->
 
   </div><!-- /main-scroll -->
@@ -1925,19 +1934,19 @@ function renderHero(){
 //  WEEK DOTS
 // ═══════════════════════════════════════════
 function renderWeekDots(){
-  const dow=['Seg','Ter','Qua','Qui','Sex','Sáb','Dom'];
-  const scores=[28,15,35,0,22,31,todayScore()];
-  const max=40;
+  const dow=['Dom','Seg','Ter','Qua','Qui','Sex','Sáb'];
   let html='';
-  scores.forEach((s,i)=>{
-    let cls='';
-    const r=s/max;
-    if(i===6)cls='blue';
-    else if(r>0.7)cls='green';
-    else if(r>0.3)cls='orange';
-    else if(s>0)cls='red';
-    html+=`<div class="day-dot-item ${cls}" title="${dow[i]}: ${s}pts"></div>`;
-  });
+  for(let i=6;i>=0;i--){
+    const d=new Date(TODAY); d.setDate(d.getDate()-i);
+    const k=`${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+    const isToday=i===0;
+    let sc=S.habits.reduce((a,h)=>a+(h.checks&&h.checks[k]?h.score:0),0);
+    if(isToday) sc+=S.tasks.filter(t=>t.done).reduce((a,t)=>a+t.score,0);
+    const max=todayMax()||40;
+    const r=sc/max;
+    let cls=isToday?'blue':r>0.7?'green':r>0.3?'orange':sc>0?'red':'';
+    html+=`<div class="day-dot-item ${cls}" title="${dow[d.getDay()]}: ${sc}pts"></div>`;
+  }
   document.getElementById('weekDots').innerHTML=html;
 }
 
@@ -2880,40 +2889,9 @@ function nextSeasonStart(q){
 let _tasksUnsub = null, _habitsUnsub = null;
 
 function startRealtimeSync(uid){
-  // Cancelar listeners anteriores
-  if(_tasksUnsub){ _tasksUnsub(); _tasksUnsub=null; }
-  if(_habitsUnsub){ _habitsUnsub(); _habitsUnsub=null; }
-
+  // Listener unificado em ref.onSnapshot (auth observer) cobre tasks, habits, badges, role, ban
+  // Esta função mantida por compatibilidade mas não registra listener adicional
   if(!FIREBASE_OK || !uid) return;
-
-  // Ouvinte em tempo real do documento do usuário
-  // (tasks e habits são subcampos do doc, então 1 listener resolve tudo)
-  _tasksUnsub = db.collection('users').doc(uid).onSnapshot(snap=>{
-    if(!snap.exists) return;
-    const d = snap.data();
-    let changed = false;
-
-    if(Array.isArray(d.tasks)){
-      // Evitar sobrescrita se nosso saveToFirebase disparou e ainda está pendente
-      const remoteStr = JSON.stringify(d.tasks);
-      const localStr  = JSON.stringify(S.tasks);
-      if(remoteStr !== localStr){ S.tasks = d.tasks; changed=true; }
-    }
-    if(Array.isArray(d.habits)){
-      const remoteStr = JSON.stringify(d.habits);
-      const localStr  = JSON.stringify(S.habits);
-      if(remoteStr !== localStr){ S.habits = d.habits; changed=true; }
-    }
-
-    if(changed){
-      // Limpar containers antes de re-renderizar (evita fantasmas)
-      const tl = document.getElementById('taskList');
-      const hl = document.getElementById('habitList');
-      if(tl) tl.innerHTML='';
-      if(hl) hl.innerHTML='';
-      renderAll();
-    }
-  }, err=>console.warn('realtime sync:', err));
 }
 
 function stopRealtimeSync(){
@@ -3122,16 +3100,30 @@ function setPeriod(days, btn){
 function toggleTask(id){
   const t=S.tasks.find(x=>x.id===id);if(!t)return;
   t.done=!t.done;
-  if(t.done){S.xp+=t.score;toast(`⚡ "${t.name}" concluída! +${t.score} XP`,'success');}
-  else{S.xp=Math.max(0,S.xp-t.score);toast(`↩️ "${t.name}" reaberta`,'info');}
+  if(t.done){
+    S.xp+=t.score;
+    S.xpSeason=(S.xpSeason||0)+t.score;
+    toast(`⚡ "${t.name}" concluída! +${t.score} XP`,'success');
+  } else {
+    S.xp=Math.max(0,S.xp-t.score);
+    S.xpSeason=Math.max(0,(S.xpSeason||0)-t.score);
+    toast(`↩️ "${t.name}" reaberta`,'info');
+  }
   renderAll();
 }
 
 function toggleHabitToday(id){
   const h=S.habits.find(x=>x.id===id);if(!h)return;
   h.checks[TODAY_KEY]=!h.checks[TODAY_KEY];
-  if(h.checks[TODAY_KEY]){S.xp+=h.score;toast(`✅ "${h.name}" marcado! +${h.score} XP`,'gold');}
-  else{S.xp=Math.max(0,S.xp-h.score);toast(`↩️ "${h.name}" desmarcado`,'info');}
+  if(h.checks[TODAY_KEY]){
+    S.xp+=h.score;
+    S.xpSeason=(S.xpSeason||0)+h.score;
+    toast(`✅ "${h.name}" marcado! +${h.score} XP`,'gold');
+  } else {
+    S.xp=Math.max(0,S.xp-h.score);
+    S.xpSeason=Math.max(0,(S.xpSeason||0)-h.score);
+    toast(`↩️ "${h.name}" desmarcado`,'info');
+  }
   renderAll();
 }
 
@@ -3446,7 +3438,7 @@ function switchAdminTab(tab, btn){
   _adminCurrentTab=tab;
   document.querySelectorAll('.admin-tab').forEach(t=>t.classList.remove('active'));
   if(btn) btn.classList.add('active');
-  ['users','posts','badges','rewards','xp','broadcast'].forEach(p=>{
+  ['users','posts','badges','rewards','xp','broadcast','reports'].forEach(p=>{
     const el=document.getElementById('apanel-'+p);
     if(el) el.style.display = p===tab?'block':'none';
   });
@@ -3456,6 +3448,7 @@ function switchAdminTab(tab, btn){
   else if(tab==='rewards') loadAdminRewards();
   else if(tab==='xp') loadXpLog();
   else if(tab==='broadcast') loadBroadcasts();
+  else if(tab==='reports') loadAdminReports();
 }
 
 function adminSetFilter(filter, btn){
@@ -4600,8 +4593,9 @@ if(FIREBASE_OK){
 
     // Load or create user doc
     const ref=db.collection('users').doc(user.uid);
+    let snap=null;
     try{
-      const snap=await ref.get();
+      snap=await ref.get();
       if(!snap.exists){
         // First time — create profile from Google account
         const nome=(user.displayName||'').split(' ')[0].replace(/\s/g,'_')||'Operador';
@@ -4660,8 +4654,6 @@ if(FIREBASE_OK){
     if(snap.exists){ await checkSeasonReset(snap.data()); }
     renderAll();
     loadFirebaseRanking();
-    // Listener em tempo real para tasks/habits (evita aparece/some)
-    startRealtimeSync(user.uid);
     // FCM Push
     initMessaging();
     setupFCMForeground();
@@ -4676,37 +4668,49 @@ if(FIREBASE_OK){
       }, 1500);
     }
 
-    // Real-time listener — Firestore é a fonte da verdade para badges, role, xp, ban
+    // Real-time listener — unificado: tasks, habits, badges, role, ban, xp
     ref.onSnapshot(snap=>{
       if(!snap.exists||!currentUser) return;
       const data=snap.data();
-      if(data.banned){ auth.signOut(); toast('🚫 Sua conta foi banida','error'); return; }
+
+      // ── Ban ──
+      if(data.banned){ stopRealtimeSync(); auth.signOut(); toast('🚫 Sua conta foi banida','error'); return; }
+
+      // ── Admin role ──
       if(data.role==='admin'&&!S.isAdmin){ S.isAdmin=true; showAdminNav(); toast('🛡 Admin ativado remotamente','gold'); }
-      // XP atualizado pelo admin
-      if(typeof data.xp==='number'&&data.xp!==S.xp){ S.xp=data.xp; renderAll(); }
-      // BADGE SYNC — crítico: sobrescreve local com Firestore (captura dar e revogar)
+
+      // ── XP ajustado pelo painel admin ──
+      if(typeof data.xp==='number'&&data.xp!==S.xp){ S.xp=data.xp; renderTopbar(); }
+
+      // ── Badges (dar/revogar via admin) ──
       if(Array.isArray(data.badges)){
-        const fbIds = data.badges;
-        const localIds = badgeObjectsToIds(S.badges);
-        const same = fbIds.length===localIds.length && fbIds.every(id=>localIds.includes(id));
+        const fbIds=data.badges;
+        const localIds=badgeObjectsToIds(S.badges);
+        const same=fbIds.length===localIds.length&&fbIds.every(id=>localIds.includes(id));
         if(!same){
-          const added = fbIds.filter(id=>!localIds.includes(id));
-          S.badges = badgeIdsToObjects(fbIds);
+          const added=fbIds.filter(id=>!localIds.includes(id));
+          S.badges=badgeIdsToObjects(fbIds);
           renderBadges();
           if(added.length){
-            // Procura nos defs estáticos E no cache de customizadas
-            const b = [...BADGES_DEF, ..._customBadgesCache].find(x=>x.id===added[0]) || {name:'Nova insígnia'};
-            toast('🏅 Insígnia recebida: '+b.name,'gold');
-            // Recarregar cache se não encontrou (pode ser nova customizada)
-            if(!b._custom && !BADGES_DEF.find(x=>x.id===added[0])){
-              loadCustomBadgesCache().then(()=>{
-                S.badges = badgeIdsToObjects(fbIds);
-                renderBadges();
-              });
-            }
+            const def=[...BADGES_DEF,..._customBadgesCache].find(x=>x.id===added[0]);
+            toast('🏅 Insígnia recebida: '+(def?.name||'Nova insígnia'),'gold');
+            if(!def) loadCustomBadgesCache().then(()=>{ S.badges=badgeIdsToObjects(fbIds); renderBadges(); });
           }
         }
       }
+
+      // ── Tasks / habits (sincronização multi-dispositivo) ──
+      let changed=false;
+      if(Array.isArray(data.tasks)){
+        const r=JSON.stringify(data.tasks), l=JSON.stringify(S.tasks);
+        if(r!==l){ S.tasks=data.tasks; changed=true; }
+      }
+      if(Array.isArray(data.habits)){
+        const r=JSON.stringify(data.habits), l=JSON.stringify(S.habits);
+        if(r!==l){ S.habits=data.habits; changed=true; }
+      }
+      if(changed) renderAll();
+
     },err=>console.warn('Snapshot error:',err));
 
     // Update topbar with cloud sync indicator
