@@ -48,6 +48,9 @@
 <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-analytics-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-messaging-compat.js"></script>
+<!-- Chart.js -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
 <script>
   const FIREBASE_CONFIG = {
     apiKey: "AIzaSyBsPukCvvNFIzg8ytqmaeQTKNnix437gCQ",
@@ -1029,6 +1032,47 @@ select.admin-inp option{background:var(--bg3)}
 .agenda-save-btn:hover{background:#e03328}
 .cal-day-clickable.c-future:hover{background:rgba(10,132,255,.06)!important;border-color:rgba(10,132,255,.2)!important;cursor:pointer}
 
+
+/* ═══ LIXEIRA TAREFA ═══ */
+.task-delete-btn{
+  background:none;border:none;color:var(--txt3);font-size:15px;
+  cursor:pointer;padding:4px 7px;border-radius:8px;
+  transition:all .15s;flex-shrink:0;opacity:.5;
+}
+.task-delete-btn:hover{color:var(--red);background:rgba(255,59,48,.1);opacity:1}
+
+/* ═══ GRÁFICO EVOLUÇÃO TRACKER ═══ */
+.tracker-chart-wrap{
+  padding:16px 16px 0;
+  margin-bottom:4px;
+}
+.tracker-chart-header{
+  display:flex;justify-content:space-between;align-items:center;
+  margin-bottom:10px;
+}
+.tracker-chart-title{
+  font-family:var(--fm);font-size:10px;font-weight:700;
+  text-transform:uppercase;letter-spacing:1.5px;color:var(--txt3);
+}
+.tracker-chart-badge{
+  font-family:var(--fm);font-size:10px;font-weight:700;
+  color:var(--gold);
+}
+.tracker-chart-canvas-wrap{
+  background:var(--bg2);border:1px solid var(--bdr);
+  border-radius:14px;padding:14px 12px 10px;
+  position:relative;height:110px;
+}
+
+/* ═══ CICLO LIGA ═══ */
+.liga-cycle-badge{
+  display:inline-block;
+  background:rgba(255,214,10,.08);border:1px solid rgba(255,214,10,.2);
+  color:var(--gold);font-family:var(--fm);font-size:9px;font-weight:700;
+  padding:3px 8px;border-radius:20px;letter-spacing:.5px;
+  margin-top:5px;
+}
+
 </style>
 </head>
 <body>
@@ -1111,6 +1155,17 @@ select.admin-inp option{background:var(--bg3)}
 
       <!-- TRACKER VIEW -->
       <div id="habitos-tracker-view" style="display:none">
+        <!-- GRÁFICO EVOLUÇÃO 7 DIAS -->
+        <div class="tracker-chart-wrap">
+          <div class="tracker-chart-header">
+            <span class="tracker-chart-title">📈 Evolução do Mês</span>
+            <span class="tracker-chart-badge" id="trackerChartBadge">— pts/dia</span>
+          </div>
+          <div class="tracker-chart-canvas-wrap">
+            <canvas id="trackerChart"></canvas>
+          </div>
+        </div>
+
         <div class="tracker-hdr">
           <div class="month-nav">
             <button class="month-btn" onclick="changeMonth(-1)">‹</button>
@@ -1150,6 +1205,7 @@ select.admin-inp option{background:var(--bg3)}
       <div class="liga-banner">
         <div class="liga-name" id="ligaNome">RANKING GLOBAL</div>
         <div class="liga-desc" id="ligaDesc">Pontos da temporada atual · Reset trimestral</div>
+        <div id="ligaCycleBadge" class="liga-cycle-badge">Ciclo Atual: T1 (Janeiro – Março)</div>
         <div class="liga-prog-row">
           <span id="ligaPos">Posição: #3</span>
           <span id="ligaPromo">Promoção: 680 XP</span>
@@ -1902,6 +1958,7 @@ function renderTaskList(){
           <button class="task-notif-btn ${t.notif&&notifOn?'on':''}" title="${notifOn?(t.notif?'Notificação ativa':'Ativar notificação'):'Ative notificações primeiro'}"
             onclick="toggleTaskNotif(${t.id})" style="font-size:15px">🔔</button>
           <span class="task-xp-lbl">+${t.score} XP</span>
+          <button class="task-delete-btn" onclick="event.stopPropagation();deleteTask(${t.id})" title="Apagar tarefa">🗑</button>
         </div>
       </div>
       <div class="task-body-row">
@@ -2031,6 +2088,8 @@ function renderTracker(){
   });
   body+='</tbody>';
   document.querySelector('#tracker-table').innerHTML=head+body;
+  // Renderizar gráfico após a tabela (aguarda DOM)
+  setTimeout(renderTrackerChart, 50);
 }
 
 // ═══════════════════════════════════════════
@@ -2357,6 +2416,7 @@ function closeDayDetail(){
 //  RANKING
 // ═══════════════════════════════════════════
 function renderRanking(){
+  updateLigaCycle();
   const data=S.rankings[S.currentLiga]||[];
   const posColors=['gold','silver','bronze'];
   if(!data.length){
@@ -2688,6 +2748,229 @@ async function sendComment(postId){
   }
 }
 
+
+// ═══════════════════════════════════════════
+//  DELETAR TAREFA
+// ═══════════════════════════════════════════
+async function deleteTask(id){
+  // Duplo toque para confirmar
+  const btn = document.querySelector(`.task-delete-btn[onclick*="deleteTask(${id})"]`);
+  if(btn && btn.dataset.c !== '1'){
+    btn.dataset.c='1'; btn.textContent='❓'; btn.style.opacity='1';
+    btn.style.color='var(--orange)';
+    setTimeout(()=>{
+      if(btn.dataset.c==='1'){
+        btn.dataset.c=''; btn.textContent='🗑';
+        btn.style.color=''; btn.style.opacity='';
+      }
+    }, 2500);
+    return;
+  }
+  // Remover da lista local
+  const task = S.tasks.find(t=>t.id===id);
+  S.tasks = S.tasks.filter(t=>t.id!==id);
+  // Animar saída
+  const card = document.querySelector(`.task-item[data-id="${id}"]`);
+  if(card){ card.style.transition='all .25s'; card.style.opacity='0'; card.style.height='0'; card.style.overflow='hidden'; setTimeout(()=>card.remove(), 250); }
+  // Ajustar XP se estava concluída
+  if(task?.done){ S.xp=Math.max(0,S.xp-(task.score||0)); S.xpSeason=Math.max(0,(S.xpSeason||0)-(task.score||0)); renderTopbar(); }
+  toast('🗑 Tarefa removida','info');
+  scheduleSync(); // persiste via saveToFirebase (tasks array)
+}
+
+// ═══════════════════════════════════════════
+//  GRÁFICO EVOLUÇÃO — TRACKER
+// ═══════════════════════════════════════════
+let _trackerChart = null;
+
+function renderTrackerChart(){
+  const canvas = document.getElementById('trackerChart');
+  if(!canvas) return;
+
+  const m = S.trackerMonth, y = S.trackerYear;
+  const dip = new Date(y, m+1, 0).getDate();
+  const todayD = TODAY.getDate(), todayM = TODAY.getMonth(), todayY = TODAY.getFullYear();
+
+  // Calcular scores diários do mês inteiro
+  const labels = [], data = [], bgColors = [];
+  let totalPts = 0, daysWithData = 0;
+
+  for(let d=1; d<=dip; d++){
+    const isFuture = (y>todayY)||(y===todayY&&m>todayM)||(y===todayY&&m===todayM&&d>todayD);
+    const isToday  = (d===todayD && m===todayM && y===todayY);
+    if(isFuture){ labels.push(d); data.push(null); bgColors.push('transparent'); continue; }
+
+    const key = dateKey(y,m,d);
+    let sc = S.habits.reduce((a,h)=> a+(h.checks&&h.checks[key]?h.score:0), 0);
+    if(isToday) sc += S.tasks.filter(t=>t.done).reduce((a,t)=>a+t.score,0);
+    labels.push(d);
+    data.push(sc);
+    bgColors.push(isToday ? 'rgba(255,59,48,.9)' : sc>0 ? 'rgba(0,212,128,.7)' : 'rgba(255,255,255,.08)');
+    if(sc>0){ totalPts+=sc; daysWithData++; }
+  }
+
+  const avg = daysWithData ? Math.round(totalPts/daysWithData) : 0;
+  const badge = document.getElementById('trackerChartBadge');
+  if(badge) badge.textContent = avg + ' pts/dia (média)';
+
+  // Destruir instância anterior
+  if(_trackerChart){ _trackerChart.destroy(); _trackerChart=null; }
+
+  const ctx = canvas.getContext('2d');
+  _trackerChart = new Chart(ctx, {
+    type: 'bar',
+    data: {
+      labels,
+      datasets:[{
+        data,
+        backgroundColor: bgColors,
+        borderRadius: 3,
+        borderSkipped: false,
+      }]
+    },
+    options:{
+      responsive:true, maintainAspectRatio:false,
+      plugins:{ legend:{display:false}, tooltip:{
+        callbacks:{
+          label: ctx => ctx.raw===null ? 'Futuro' : ctx.raw + ' pts',
+          title: ctx => 'Dia ' + ctx[0].label
+        },
+        backgroundColor:'rgba(0,0,0,.9)',
+        titleColor:'#aaa', bodyColor:'#fff',
+        borderColor:'rgba(255,255,255,.1)', borderWidth:1,
+        padding:8
+      }},
+      scales:{
+        x:{
+          ticks:{ color:'rgba(255,255,255,.3)', font:{size:8}, maxRotation:0 },
+          grid:{ color:'rgba(255,255,255,.04)' },
+          border:{display:false}
+        },
+        y:{
+          display:false,
+          beginAtZero:true,
+          grid:{display:false}
+        }
+      },
+      animation:{ duration:400 }
+    }
+  });
+}
+
+// ═══════════════════════════════════════════
+//  CICLO ATUAL DA LIGA
+// ═══════════════════════════════════════════
+function updateLigaCycle(){
+  const s = getCurrentSeason();
+  const labels = {T1:'T1 (Janeiro – Março)', T2:'T2 (Abril – Junho)', T3:'T3 (Julho – Setembro)', T4:'T4 (Outubro – Dezembro)'};
+  const badge = document.getElementById('ligaCycleBadge');
+  if(badge) badge.textContent = 'Ciclo Atual: ' + (labels[`T${s.quarter}`]||s.label);
+  const desc = document.getElementById('ligaDesc');
+  if(desc) desc.textContent = `Pontos da temporada ${s.label} · Reset em ${nextSeasonStart(s.quarter)}`;
+}
+
+function nextSeasonStart(q){
+  const months = {1:'1º Abr',2:'1º Jul',3:'1º Out',4:'1º Jan'};
+  return months[q]||'próximo trimestre';
+}
+
+// ═══════════════════════════════════════════
+//  onSnapshot EM TEMPO REAL — tasks & habits
+// ═══════════════════════════════════════════
+let _tasksUnsub = null, _habitsUnsub = null;
+
+function startRealtimeSync(uid){
+  // Cancelar listeners anteriores
+  if(_tasksUnsub){ _tasksUnsub(); _tasksUnsub=null; }
+  if(_habitsUnsub){ _habitsUnsub(); _habitsUnsub=null; }
+
+  if(!FIREBASE_OK || !uid) return;
+
+  // Ouvinte em tempo real do documento do usuário
+  // (tasks e habits são subcampos do doc, então 1 listener resolve tudo)
+  _tasksUnsub = db.collection('users').doc(uid).onSnapshot(snap=>{
+    if(!snap.exists) return;
+    const d = snap.data();
+    let changed = false;
+
+    if(Array.isArray(d.tasks)){
+      // Evitar sobrescrita se nosso saveToFirebase disparou e ainda está pendente
+      const remoteStr = JSON.stringify(d.tasks);
+      const localStr  = JSON.stringify(S.tasks);
+      if(remoteStr !== localStr){ S.tasks = d.tasks; changed=true; }
+    }
+    if(Array.isArray(d.habits)){
+      const remoteStr = JSON.stringify(d.habits);
+      const localStr  = JSON.stringify(S.habits);
+      if(remoteStr !== localStr){ S.habits = d.habits; changed=true; }
+    }
+
+    if(changed){
+      // Limpar containers antes de re-renderizar (evita fantasmas)
+      const tl = document.getElementById('taskList');
+      const hl = document.getElementById('habitList');
+      if(tl) tl.innerHTML='';
+      if(hl) hl.innerHTML='';
+      renderAll();
+    }
+  }, err=>console.warn('realtime sync:', err));
+}
+
+function stopRealtimeSync(){
+  if(_tasksUnsub){ _tasksUnsub(); _tasksUnsub=null; }
+  if(_habitsUnsub){ _habitsUnsub(); _habitsUnsub=null; }
+}
+
+// ═══════════════════════════════════════════
+//  WEB PUSH — FCM
+// ═══════════════════════════════════════════
+let _messaging = null;
+let _fcmToken = null;
+
+// VAPID key do Firebase Console → Project settings → Cloud Messaging → Web push certificates
+const VAPID_KEY = 'SUBSTITUA_PELA_SUA_VAPID_KEY_DO_FIREBASE_CONSOLE';
+
+function initMessaging(){
+  if(!FIREBASE_OK) return;
+  try{
+    _messaging = firebase.messaging();
+  }catch(e){ console.warn('Messaging não suportado:', e); }
+}
+
+async function requestNotificationPermission(){
+  if(!_messaging){ toast('Push não suportado neste navegador','info'); return false; }
+  try{
+    const permission = await Notification.requestPermission();
+    if(permission !== 'granted'){ toast('Permissão negada','error'); return false; }
+
+    const token = await _messaging.getToken({ vapidKey: VAPID_KEY });
+    if(token && token !== _fcmToken){
+      _fcmToken = token;
+      if(FIREBASE_OK && currentUser){
+        await db.collection('users').doc(currentUser.uid).update({
+          fcmToken: token,
+          fcmUpdatedAt: firebase.firestore.FieldValue.serverTimestamp()
+        });
+      }
+      toast('🔔 Notificações ativadas!','success');
+    }
+    return true;
+  }catch(e){
+    console.warn('FCM token error:', e);
+    toast('Erro ao ativar notificações: '+e.message,'error');
+    return false;
+  }
+}
+
+// Listener de mensagens em foreground
+function setupFCMForeground(){
+  if(!_messaging) return;
+  _messaging.onMessage(payload=>{
+    const n = payload.notification || {};
+    toast(`🔔 ${n.title||'Protocolo 6AM'}: ${n.body||''}`, 'info');
+  });
+}
+
 function tipoLabel(t){return {relato:'Relato',conquista:'Conquista',pergunta:'Pergunta',auto:'Auto'}[t]||t}
 
 // ═══════════════════════════════════════════
@@ -2889,7 +3172,7 @@ function switchView(v){
     document.getElementById('habitos-'+x+'-view').style.display=x===v?'block':'none';
     document.getElementById('btn-'+x).classList.toggle('active',x===v);
   });
-  if(v==='tracker')renderTracker();
+  if(v==='tracker'){ renderTracker(); setTimeout(renderTrackerChart,80); }
   if(v==='cal')renderCalendario();
 }
 
@@ -4293,6 +4576,7 @@ async function doGoogleLogin(){
 
 async function doSignOut(){
   if(!FIREBASE_OK||!currentUser)return;
+  stopRealtimeSync();
   try{
     await auth.signOut();
   }catch(e){ console.warn('SignOut error:',e); }
@@ -4376,6 +4660,11 @@ if(FIREBASE_OK){
     if(snap.exists){ await checkSeasonReset(snap.data()); }
     renderAll();
     loadFirebaseRanking();
+    // Listener em tempo real para tasks/habits (evita aparece/some)
+    startRealtimeSync(user.uid);
+    // FCM Push
+    initMessaging();
+    setupFCMForeground();
 
     // Restore notification schedules if permission was previously granted
     if('Notification' in window && Notification.permission === 'granted'){
