@@ -995,6 +995,40 @@ select.admin-inp option{background:var(--bg3)}
 .report-cancel{width:100%;margin-top:8px;padding:12px;background:transparent;border:1px solid var(--bdr2);border-radius:12px;color:var(--txt2);font-size:13px;cursor:pointer;font-family:var(--f);transition:all .2s}
 .report-cancel:hover{border-color:var(--bdr3)}
 
+
+/* ═══ AGENDA / PLANEJAMENTO ═══ */
+.agenda-day-modal { }
+.plan-item{
+  display:flex;align-items:center;gap:10px;
+  background:var(--bg3);border:1px solid var(--bdr);
+  border-radius:12px;padding:11px 13px;margin-bottom:8px;
+}
+.plan-item-dot{width:10px;height:10px;border-radius:50%;flex-shrink:0}
+.plan-item-info{flex:1;min-width:0}
+.plan-item-name{font-size:13px;font-weight:700}
+.plan-item-meta{font-size:10px;color:var(--txt3);margin-top:2px}
+.plan-item-del{background:none;border:none;color:var(--txt3);font-size:14px;cursor:pointer;padding:3px 6px;border-radius:6px;transition:all .15s}
+.plan-item-del:hover{color:var(--red);background:rgba(255,59,48,.08)}
+.cal-day-future-plan{background:rgba(10,132,255,.08)!important;border-color:rgba(10,132,255,.25)!important}
+.cal-day-future-plan .cal-day-num{color:var(--blue)}
+.agenda-add-btn{
+  width:100%;padding:11px;margin-top:8px;
+  background:transparent;border:1px dashed var(--bdr3);
+  border-radius:12px;color:var(--txt2);font-size:12px;
+  font-weight:700;cursor:pointer;font-family:var(--f);
+  transition:all .2s;
+}
+.agenda-add-btn:hover{border-color:var(--red);color:var(--red);background:rgba(255,59,48,.04)}
+.plan-type-tabs{display:flex;gap:6px;margin-bottom:14px}
+.plan-type-tab{flex:1;padding:8px;border-radius:10px;border:1px solid var(--bdr2);background:transparent;color:var(--txt3);font-size:11px;font-weight:700;cursor:pointer;font-family:var(--f);transition:all .2s}
+.plan-type-tab.active{background:var(--red);border-color:var(--red);color:#fff}
+.agenda-form{background:var(--bg3);border:1px solid var(--bdr2);border-radius:14px;padding:14px;margin-top:10px}
+.agenda-inp{width:100%;background:var(--bg4);border:1px solid var(--bdr2);color:var(--txt);border-radius:10px;padding:10px 12px;font-size:13px;font-family:var(--f);outline:none;margin-bottom:8px;transition:border-color .2s}
+.agenda-inp:focus{border-color:rgba(255,59,48,.4)}
+.agenda-save-btn{width:100%;padding:11px;background:var(--red);border:none;color:#fff;border-radius:10px;font-size:13px;font-weight:700;cursor:pointer;font-family:var(--f);transition:all .2s}
+.agenda-save-btn:hover{background:#e03328}
+.cal-day-clickable.c-future:hover{background:rgba(10,132,255,.06)!important;border-color:rgba(10,132,255,.2)!important;cursor:pointer}
+
 </style>
 </head>
 <body>
@@ -1114,8 +1148,8 @@ select.admin-inp option{background:var(--bg3)}
 
       <!-- LIGA BANNER -->
       <div class="liga-banner">
-        <div class="liga-name" id="ligaNome">LIGA BRONZE</div>
-        <div class="liga-desc">Top 20% promovem para Liga Prata • Bottom 20% rebaixam</div>
+        <div class="liga-name" id="ligaNome">RANKING GLOBAL</div>
+        <div class="liga-desc" id="ligaDesc">Pontos da temporada atual · Reset trimestral</div>
         <div class="liga-prog-row">
           <span id="ligaPos">Posição: #3</span>
           <span id="ligaPromo">Promoção: 680 XP</span>
@@ -1222,6 +1256,10 @@ select.admin-inp option{background:var(--bg3)}
           <div class="mini-chart" id="chartTasks"></div>
         </div>
       </div>
+
+      <!-- HISTÓRICO DE TEMPORADAS -->
+      <div class="block-title"><span>📈</span> Histórico de Temporadas</div>
+      <div id="seasonHistory" style="margin-bottom:16px"></div>
 
       <div class="danger-zone">
         <div class="danger-lbl">Conta</div>
@@ -1607,10 +1645,98 @@ const BADGES_DEF = [
 ];
 
 // Converte array de IDs (Firestore) → array de objetos badge (local)
-function badgeIdsToObjects(ids=[], customBadges=[]){
-  const allDefs=[...BADGES_DEF,...customBadges];
+
+// ═══════════════════════════════════════════
+//  SISTEMA DE TEMPORADAS (TRIMESTRAL)
+// ═══════════════════════════════════════════
+
+function getCurrentSeason(){
+  const now = new Date();
+  const m = now.getMonth(); // 0-11
+  const y = now.getFullYear();
+  const q = Math.floor(m/3) + 1; // 1,2,3,4
+  return { key: `T${q}_${y}`, quarter: q, year: y, label: `T${q} ${y}` };
+}
+
+function getSeasonLabel(key){
+  // "T1_2026" → "Jan-Mar 2026"
+  const labels = {T1:'Jan–Mar', T2:'Abr–Jun', T3:'Jul–Set', T4:'Out–Dez'};
+  const [q,y] = key.split('_');
+  return `${labels[q]||q} ${y}`;
+}
+
+function getSeasonStart(key){
+  const [q,y] = key.split('_');
+  const months = {T1:0, T2:3, T3:6, T4:9};
+  return new Date(parseInt(y), months[q], 1);
+}
+
+// Verifica e executa reset de temporada se necessário
+async function checkSeasonReset(userData){
+  if(!FIREBASE_OK || !currentUser) return userData;
+  const season = getCurrentSeason();
+  const lastSeason = userData.currentSeason || '';
+  
+  if(lastSeason === season.key) return userData; // Mesma temporada, nada a fazer
+  
+  // VIROU TRIMESTRE — migrar xpSeason para histórico
+  if(lastSeason && userData.xpSeason > 0){
+    const histUpdate = {};
+    histUpdate[`xpHistory.${lastSeason}`] = userData.xpSeason || 0;
+    histUpdate['xpSeason'] = 0;
+    histUpdate['currentSeason'] = season.key;
+    histUpdate['updatedAt'] = firebase.firestore.FieldValue.serverTimestamp();
+    try{
+      await db.collection('users').doc(currentUser.uid).update(histUpdate);
+      toast(`🔄 Nova temporada ${season.label} iniciada! Pontos anteriores salvos no histórico.`, 'gold');
+      userData.xpSeason = 0;
+      userData.currentSeason = season.key;
+    }catch(e){ console.warn('Season reset:', e); }
+  } else if(!lastSeason){
+    // Primeira vez — inicializar
+    try{
+      await db.collection('users').doc(currentUser.uid).update({
+        xpSeason: userData.xp || 0,
+        currentSeason: season.key,
+        xpHistory: {},
+        updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+      });
+      userData.xpSeason = userData.xp || 0;
+      userData.currentSeason = season.key;
+    }catch(e){ console.warn('Season init:', e); }
+  }
+  return userData;
+}
+
+
+// Cache global de insígnias customizadas (carregado 1x do Firestore)
+let _customBadgesCache = [];
+let _customBadgesLoaded = false;
+
+async function loadCustomBadgesCache(){
+  if(_customBadgesLoaded || !FIREBASE_OK) return;
+  try{
+    const snap = await db.collection('badges').get();
+    _customBadgesCache = [];
+    snap.forEach(d => _customBadgesCache.push({id:d.id, _custom:true, ...d.data()}));
+    _customBadgesLoaded = true;
+  }catch(e){ console.warn('Custom badges cache:', e); }
+}
+
+function badgeIdsToObjects(ids=[], extraBadges=[]){
+  // Combina: estáticas (BADGES_DEF) + customizadas do cache + extras passados
+  const allDefs=[...BADGES_DEF, ..._customBadgesCache, ...extraBadges];
   const earned=new Set(ids);
-  return allDefs.map(b=>({...b, earned:earned.has(b.id), new:false}));
+  // Badges ganhas que não estão no defs (ex: exclusivas não em cache ainda)
+  const result = allDefs.map(b=>({...b, earned:earned.has(b.id), new:false}));
+  // Adicionar badges orphaned (ID no Firestore mas não encontrado nos defs)
+  const knownIds = new Set(allDefs.map(b=>b.id));
+  ids.forEach(id=>{
+    if(!knownIds.has(id)){
+      result.push({id, ico:'🏅', name:'Insígnia Especial', desc:'Conquista exclusiva', earned:true, new:false, _custom:true});
+    }
+  });
+  return result;
 }
 
 // Converte objetos badge (local) → array de IDs (Firestore)
@@ -1634,7 +1760,10 @@ let S = {
   trackerYear: new Date().getFullYear(),
   calMonth: new Date().getMonth(),
   calYear: new Date().getFullYear(),
-  currentLiga: 'bronze',
+  currentLiga: 'global',
+  xpSeason: 0,
+  xpHistory: {},
+  currentSeason: '',
   tasks: [],
   habits: [],
   posts: [],
@@ -1761,9 +1890,11 @@ function renderWeekDots(){
 // ═══════════════════════════════════════════
 function renderTaskList(){
   const el=document.getElementById('taskList');
-  if(!S.tasks.length){el.innerHTML=`<div class="empty-state"><span class="empty-ico">📋</span>Nenhuma tarefa ainda</div>`;return;}
+  // Filtrar: tarefas sem data específica OU agendadas exatamente para hoje
+  const tasks=S.tasks.filter(t=>!t.scheduledDate||t.scheduledDate===TODAY_KEY);
+  if(!tasks.length){el.innerHTML=`<div class="empty-state"><span class="empty-ico">📋</span>Nenhuma tarefa para hoje.<br><span style="font-size:11px;color:var(--txt3)">Planeje pelo Calendário 📅</span></div>`;return;}
   const notifOn=_notifPermission==='granted';
-  el.innerHTML=S.tasks.map(t=>`
+  el.innerHTML=tasks.map(t=>`
     <div class="task-item ${t.done?'done':''}" data-id="${t.id}" onclick="toggleTask(${t.id})">
       <div class="task-topbar-row">
         <span class="task-window">⏱ ${t.window||'Qualquer hora'}</span>
@@ -1873,7 +2004,7 @@ function renderTracker(){
   document.getElementById('tracker-month').textContent=`${names[m]} ${y}`;
 
   const days=Array.from({length:dip},(_, i)=>i+1);
-  const todayD=28,todayM=1,todayY=2026;
+  const todayD=TODAY.getDate(),todayM=TODAY.getMonth(),todayY=TODAY.getFullYear();
 
   let head='<thead><tr><th class="h-name">Hábito</th>';
   days.forEach(d=>{
@@ -1922,18 +2053,16 @@ function renderCalendario(){
     // Compute real score for this day from habits
     let sc=0;
     S.habits.forEach(h=>{ if(h.checks&&h.checks[key]) sc+=h.score; });
-    // For past days without data, use mock seed
-    if(!isFuture && sc===0 && !isToday){
-      const seed=(d*13+d*3)%50;
-      sc=seed;
-    }
+    // Sem dados = sem score (sem invenção)
     if(isFuture) sc=0;
     const max=todayMax()||40;
     let cls=isFuture?'c-future':isToday?'':sc>max*0.7?'c-perfect':sc>max*0.35?'c-partial':sc>0?'c-fail':'';
     if(isToday) cls+=' c-today';
-    const clickable=!isFuture;
-    html+=`<div class="cal-day ${cls} ${clickable?'cal-day-clickable':''}" ${clickable?`onclick="openDayDetail('${key}',${d},${m},${y})"`:''}>
+    const isFuturePlan=isFuture&&(S.tasks.some(t=>t.scheduledDate===key)||S.habits.some(h=>h.scheduledDates&&h.scheduledDates.includes(key)));
+    if(isFuturePlan) cls+=' cal-day-future-plan';
+    html+=`<div class="cal-day ${cls} cal-day-clickable" onclick="openDayDetail('${key}',${d},${m},${y})">
       ${!isFuture&&sc>0?`<span class="cal-day-score">${sc}</span>`:''}
+      ${isFuturePlan?`<span style="font-size:8px;color:var(--blue)">📅</span>`:''}
       <span class="cal-day-num">${d}</span>
     </div>`;
   }
@@ -1943,11 +2072,22 @@ function renderCalendario(){
 // ═══════════════════════════════════════════
 //  DAY DETAIL MODAL
 // ═══════════════════════════════════════════
+let _planKey='', _planType='tarefa';
+
 function openDayDetail(key, d, m, y){
   const months=['Janeiro','Fevereiro','Março','Abril','Maio','Junho','Julho','Agosto','Setembro','Outubro','Novembro','Dezembro'];
   const dow=['Domingo','Segunda','Terça','Quarta','Quinta','Sexta','Sábado'];
   const date=new Date(y,m,d);
   const dayName=dow[date.getDay()];
+  const isToday=(d===TODAY.getDate()&&m===TODAY.getMonth()&&y===TODAY.getFullYear());
+  const isFuture=date>TODAY&&!isToday;
+
+  _planKey=key;
+
+  if(isFuture){
+    openDayPlan(key, d, m, y, dayName, months);
+    return;
+  }
 
   // Compute what was done that day
   const habitsDone=S.habits.filter(h=>h.checks&&h.checks[key]);
@@ -1955,9 +2095,6 @@ function openDayDetail(key, d, m, y){
   const habitScore=habitsDone.reduce((a,h)=>a+h.score,0);
   const totalPossible=S.habits.reduce((a,h)=>a+h.score,0);
   const pct=totalPossible?Math.round((habitScore/totalPossible)*100):0;
-
-  // Tasks done that day (only reliable for today; show all completed for past as reference)
-  const isToday=(d===TODAY.getDate()&&m===TODAY.getMonth()&&y===TODAY.getFullYear());
   const tasksDone=isToday?S.tasks.filter(t=>t.done):[];
   const taskScore=tasksDone.reduce((a,t)=>a+t.score,0);
   const totalScore=habitScore+(isToday?taskScore:0);
@@ -2033,6 +2170,183 @@ function openDayDetail(key, d, m, y){
     </div>`:''}
   `;
   overlay.classList.add('open');
+}
+
+
+// ═══════════════════════════════════════════
+//  AGENDA — PLANEJAMENTO DE DIAS FUTUROS
+// ═══════════════════════════════════════════
+
+function openDayPlan(key, d, m, y, dayName, months){
+  const overlay=document.getElementById('dayDetailOverlay');
+  document.getElementById('dayDetailTitle').textContent=`📅 ${dayName}, ${d} de ${months[m]}`;
+  _planKey=key; _planType='tarefa';
+  renderDayPlan(key);
+  overlay.classList.add('open');
+}
+
+function renderDayPlan(key){
+  const plannedTasks=S.tasks.filter(t=>t.scheduledDate===key);
+  const plannedHabits=S.habits.filter(h=>h.scheduledDates&&h.scheduledDates.includes(key));
+  
+  const taskHtml = plannedTasks.length
+    ? plannedTasks.map(t=>`
+      <div class="plan-item">
+        <div class="plan-item-dot" style="background:var(--red)"></div>
+        <div class="plan-item-info">
+          <div class="plan-item-name">${escHtml(t.name)}</div>
+          <div class="plan-item-meta">⚡ ${t.score}pts · ${t.cat||'Geral'} · ${diffLabel(t.diff)}</div>
+        </div>
+        <button class="plan-item-del" onclick="removePlan('task',${t.id},'${key}')">✕</button>
+      </div>`).join('')
+    : `<div style="text-align:center;padding:16px;font-size:11px;color:var(--txt3)">Nenhuma tarefa planejada</div>`;
+
+  const habitHtml = plannedHabits.length
+    ? plannedHabits.map(h=>`
+      <div class="plan-item">
+        <div class="plan-item-dot" style="background:${h.catColor||'#666'}"></div>
+        <div class="plan-item-info">
+          <div class="plan-item-name">${escHtml(h.name)}</div>
+          <div class="plan-item-meta">🔁 ${h.score}pts/dia · ${h.cat||'Geral'}</div>
+        </div>
+        <button class="plan-item-del" onclick="removePlan('habit',${h.id},'${key}')">✕</button>
+      </div>`).join('')
+    : `<div style="text-align:center;padding:16px;font-size:11px;color:var(--txt3)">Nenhum hábito planejado</div>`;
+
+  document.getElementById('dayDetailContent').innerHTML=`
+    <!-- Tipo tabs -->
+    <div class="plan-type-tabs" style="margin-top:8px">
+      <button class="plan-type-tab ${_planType==='tarefa'?'active':''}" onclick="switchPlanType('tarefa',this)">⚡ Tarefas</button>
+      <button class="plan-type-tab ${_planType==='habito'?'active':''}" onclick="switchPlanType('habito',this)">🔁 Hábitos</button>
+    </div>
+
+    <!-- Conteúdo por tipo -->
+    <div id="planContent">
+      ${_planType==='tarefa' ? `
+        <div style="font-family:var(--fm);font-size:9px;color:var(--txt3);letter-spacing:1.5px;text-transform:uppercase;margin-bottom:8px">Tarefas planejadas</div>
+        ${taskHtml}
+        <button class="agenda-add-btn" onclick="showPlanForm('tarefa','${key}')">＋ Adicionar Tarefa</button>
+      ` : `
+        <div style="font-family:var(--fm);font-size:9px;color:var(--txt3);letter-spacing:1.5px;text-transform:uppercase;margin-bottom:8px">Hábitos planejados</div>
+        ${habitHtml}
+        <button class="agenda-add-btn" onclick="showPlanForm('habito','${key}')">＋ Adicionar / Associar Hábito</button>
+      `}
+    </div>
+
+    <!-- Dica -->
+    <div style="background:rgba(10,132,255,.06);border:1px solid rgba(10,132,255,.15);border-radius:10px;padding:10px 12px;margin-top:12px;font-size:11px;color:var(--blue)">
+      💡 Tarefas agendadas aparecem automaticamente no Dashboard quando chegar o dia.
+    </div>
+  `;
+}
+
+function switchPlanType(type, btn){
+  _planType=type;
+  document.querySelectorAll('.plan-type-tab').forEach(b=>b.classList.remove('active'));
+  if(btn) btn.classList.add('active');
+  renderDayPlan(_planKey);
+}
+
+function showPlanForm(type, key){
+  const el=document.getElementById('planContent');
+  if(!el) return;
+  
+  if(type==='tarefa'){
+    el.insertAdjacentHTML('beforeend',`
+      <div class="agenda-form" id="planForm">
+        <div style="font-size:12px;font-weight:700;margin-bottom:10px">Nova Tarefa para este dia</div>
+        <input class="agenda-inp" id="planName" placeholder="Nome da tarefa" />
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:8px">
+          <select class="agenda-inp" id="planCat" style="margin-bottom:0">
+            <option>Saúde</option><option>Estudos</option><option>Trabalho</option>
+            <option>Espiritual</option><option>Rotina</option><option>Finanças</option><option>Social</option>
+          </select>
+          <select class="agenda-inp" id="planDiff" style="margin-bottom:0">
+            <option value="facil">Fácil</option><option value="normal" selected>Normal</option>
+            <option value="hard">Difícil</option><option value="extremo">Extremo</option>
+          </select>
+        </div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:8px">
+          <input class="agenda-inp" id="planWindow" placeholder="Horário ex: 07:00–08:00" style="margin-bottom:0"/>
+          <input class="agenda-inp" id="planScore" type="number" min="1" max="20" value="5" placeholder="Pts" style="margin-bottom:0"/>
+        </div>
+        <button class="agenda-save-btn" onclick="savePlanTask('${key}')">✓ Agendar Tarefa</button>
+      </div>
+    `);
+  } else {
+    // Listar hábitos existentes para associar, ou criar novo
+    const existingHtml = S.habits.map(h=>`
+      <div class="plan-item" style="cursor:pointer" onclick="associateHabit(${h.id},'${key}',this)">
+        <div class="plan-item-dot" style="background:${h.catColor||'#888'}"></div>
+        <div class="plan-item-info">
+          <div class="plan-item-name">${escHtml(h.name)}</div>
+          <div class="plan-item-meta">${h.cat} · ${h.score}pts</div>
+        </div>
+        <span style="font-size:11px;color:var(--red);font-weight:700">${h.scheduledDates&&h.scheduledDates.includes(key)?'✓ Incluído':'+ Incluir'}</span>
+      </div>`).join('');
+    
+    el.insertAdjacentHTML('beforeend',`
+      <div class="agenda-form" id="planForm">
+        <div style="font-size:12px;font-weight:700;margin-bottom:10px">Associar hábito a este dia</div>
+        ${existingHtml||'<div style="text-align:center;font-size:11px;color:var(--txt3);padding:12px">Crie hábitos na seção Hábitos primeiro</div>'}
+      </div>
+    `);
+  }
+  document.querySelector('.agenda-add-btn')?.remove();
+}
+
+function savePlanTask(key){
+  const name=document.getElementById('planName')?.value.trim();
+  if(!name){toast('Informe o nome da tarefa','error');return;}
+  const task={
+    id: S.nextId++,
+    name,
+    cat: document.getElementById('planCat')?.value||'Geral',
+    diff: document.getElementById('planDiff')?.value||'normal',
+    score: parseInt(document.getElementById('planScore')?.value)||5,
+    window: document.getElementById('planWindow')?.value||'',
+    scheduledDate: key,  // DATA ESPECÍFICA
+    done: false, notif: false
+  };
+  S.tasks.push(task);
+  scheduleSync();
+  toast('✅ Tarefa agendada para '+key,'success');
+  document.getElementById('planForm')?.remove();
+  renderDayPlan(key);
+  renderCalendario();
+}
+
+function associateHabit(habitId, key, el){
+  const h=S.habits.find(x=>x.id===habitId);
+  if(!h) return;
+  if(!h.scheduledDates) h.scheduledDates=[];
+  if(h.scheduledDates.includes(key)){
+    h.scheduledDates=h.scheduledDates.filter(d=>d!==key);
+    el.querySelector('span').textContent='+ Incluir';
+    toast('Hábito removido do dia','info');
+  } else {
+    h.scheduledDates.push(key);
+    el.querySelector('span').textContent='✓ Incluído';
+    toast('🔁 Hábito associado ao dia','success');
+  }
+  scheduleSync();
+  renderCalendario();
+}
+
+function removePlan(type, id, key){
+  if(type==='task'){
+    const t=S.tasks.find(x=>x.id===id);
+    if(t) delete t.scheduledDate;
+    // Ou remover completamente se for exclusiva do agendamento:
+    // S.tasks=S.tasks.filter(x=>x.id!==id);
+  } else {
+    const h=S.habits.find(x=>x.id===id);
+    if(h&&h.scheduledDates) h.scheduledDates=h.scheduledDates.filter(d=>d!==key);
+  }
+  scheduleSync();
+  renderDayPlan(key);
+  renderCalendario();
+  toast('Removido do planejamento','info');
 }
 
 function closeDayDetail(){
@@ -2398,6 +2712,45 @@ function renderProfile(){
   document.getElementById('profRank').textContent=_myPos>=0?'#'+(_myPos+1):'—';
   renderBadges();
   renderMiniCharts();
+  renderSeasonHistory();
+}
+
+function renderSeasonHistory(){
+  const el=document.getElementById('seasonHistory');if(!el)return;
+  const season=getCurrentSeason();
+  const history=S.xpHistory||{};
+  const histKeys=Object.keys(history).sort().reverse();
+  
+  // Card da temporada atual
+  let html=`
+    <div style="background:rgba(255,59,48,.06);border:1px solid rgba(255,59,48,.2);border-radius:14px;padding:14px;margin-bottom:8px;display:flex;align-items:center;justify-content:space-between">
+      <div>
+        <div style="font-size:10px;font-family:var(--fm);color:var(--red);text-transform:uppercase;letter-spacing:1px;margin-bottom:4px">Temporada Atual · ${season.label}</div>
+        <div style="font-family:var(--fb);font-size:24px">${(S.xpSeason||0).toLocaleString('pt-BR')} XP</div>
+        <div style="font-size:10px;color:var(--txt3);margin-top:2px">XP Total: ${S.xp.toLocaleString('pt-BR')}</div>
+      </div>
+      <div style="font-size:32px">🏆</div>
+    </div>`;
+  
+  if(!histKeys.length){
+    html+=`<div style="text-align:center;font-size:11px;color:var(--txt3);padding:12px">Histórico disponível após virar a temporada</div>`;
+  } else {
+    histKeys.forEach(k=>{
+      const prev = histKeys[histKeys.indexOf(k)+1];
+      const diff = prev ? (history[k]-(history[prev]||0)) : null;
+      const diffStr = diff!==null ? (diff>=0?`+${diff}`:`${diff}`) : '';
+      const diffColor = diff>=0?'var(--green)':'var(--red)';
+      html+=`
+        <div style="background:var(--bg3);border:1px solid var(--bdr);border-radius:12px;padding:12px;margin-bottom:7px;display:flex;align-items:center;justify-content:space-between">
+          <div>
+            <div style="font-size:10px;color:var(--txt3);font-family:var(--fm);margin-bottom:3px">${getSeasonLabel(k)}</div>
+            <div style="font-size:18px;font-weight:700">${(history[k]||0).toLocaleString('pt-BR')} XP</div>
+          </div>
+          ${diff!==null?`<div style="font-size:12px;font-weight:700;font-family:var(--fm);color:${diffColor}">${diffStr}</div>`:''}
+        </div>`;
+    });
+  }
+  el.innerHTML=html;
 }
 
 // ═══════════════════════════════════════════
@@ -2499,10 +2852,26 @@ function toggleHabitToday(id){
   renderAll();
 }
 
-function toggleCheck(id, key){
+async function toggleCheck(id, key){
   const h=S.habits.find(x=>x.id===id);if(!h)return;
   h.checks[key]=!h.checks[key];
   renderTracker();
+  // Recalcular XP total baseado em todos os checks reais
+  const habitXP=S.habits.reduce((sum,hab)=>sum+Object.values(hab.checks||{}).filter(Boolean).length*hab.score,0);
+  const taskXP=S.tasks.filter(t=>t.done).reduce((a,t)=>a+t.score,0);
+  S.xp=taskXP+habitXP;
+  S.xpSeason=Math.max(0,(S.xpSeason||0)+(h.checks[key]?h.score:-h.score));
+  renderTopbar();
+  // Persistir imediatamente no Firestore
+  if(FIREBASE_OK&&currentUser){
+    try{
+      await db.collection('users').doc(currentUser.uid).update({
+        habits:S.habits, xp:S.xp, xpSeason:S.xpSeason,
+        level:getLevelInfo(S.xp).lvl,
+        updatedAt:firebase.firestore.FieldValue.serverTimestamp()
+      });
+    }catch(e){ console.warn('toggleCheck sync:',e); scheduleSync(); }
+  }
 }
 
 function deleteHabit(id){
@@ -3788,6 +4157,8 @@ async function saveToFirebase() {
       nomeGuerra: S.name,
       avatar: S.avatar,
       xp: S.xp,
+      xpSeason: S.xpSeason||0,
+      currentSeason: S.currentSeason||getCurrentSeason().key,
       level: getLevelInfo(S.xp).lvl,
       streak: S.streak,
       tasks: S.tasks,
@@ -3831,7 +4202,10 @@ function scheduleSync() {
 async function loadFirebaseRanking() {
   if (!FIREBASE_OK) return;
   try {
-    const snap = await db.collection('users').orderBy('xp','desc').limit(50).get();
+    const snap = await db.collection('users').orderBy('xpSeason','desc').limit(50).get().catch(()=>
+      // fallback se índice não existir ainda
+      db.collection('users').orderBy('xp','desc').limit(50).get()
+    );
     const users = [];
     snap.forEach(d => {
       const u = d.data();
@@ -3840,7 +4214,8 @@ async function loadFirebaseRanking() {
         name:   u.name || u.nomeGuerra || 'Operador',
         avatar: u.avatar || '🪖',
         role:   u.role || 'operador',
-        xp:     u.xp || 0,
+        xp:     u.xpSeason ?? u.xp ?? 0, // XP da temporada para o ranking
+        xpTotal: u.xp || 0,              // XP total acumulado
         level:  u.level || 1,
         streak: u.streak || 0,
         badges: u.badges || [],
@@ -3976,6 +4351,9 @@ if(FIREBASE_OK){
         if(d.name||d.nomeGuerra) S.name=d.name||d.nomeGuerra;
         if(d.avatar) S.avatar=d.avatar;
         if(typeof d.xp==='number') S.xp=d.xp;
+        if(typeof d.xpSeason==='number') S.xpSeason=d.xpSeason; else S.xpSeason=d.xp||0;
+        if(d.xpHistory) S.xpHistory=d.xpHistory||{};
+        if(d.currentSeason) S.currentSeason=d.currentSeason||'';
         if(typeof d.streak==='number') S.streak=d.streak;
         if(Array.isArray(d.tasks)) S.tasks=d.tasks;
         if(Array.isArray(d.habits)) S.habits=d.habits;
@@ -3990,6 +4368,12 @@ if(FIREBASE_OK){
       }
     }catch(e){ console.warn('User doc error:',e); }
 
+    // Carregar cache de insígnias customizadas antes de renderizar
+    await loadCustomBadgesCache();
+    // Re-resolver badges do usuário com cache atualizado
+    if(snap.exists && Array.isArray(snap.data().badges)) S.badges = badgeIdsToObjects(snap.data().badges);
+    // Verificar reset de temporada
+    if(snap.exists){ await checkSeasonReset(snap.data()); }
     renderAll();
     loadFirebaseRanking();
 
@@ -4021,8 +4405,16 @@ if(FIREBASE_OK){
           S.badges = badgeIdsToObjects(fbIds);
           renderBadges();
           if(added.length){
-            const b = [...BADGES_DEF].find(x=>x.id===added[0]) || {name:'Nova insígnia'};
+            // Procura nos defs estáticos E no cache de customizadas
+            const b = [...BADGES_DEF, ..._customBadgesCache].find(x=>x.id===added[0]) || {name:'Nova insígnia'};
             toast('🏅 Insígnia recebida: '+b.name,'gold');
+            // Recarregar cache se não encontrou (pode ser nova customizada)
+            if(!b._custom && !BADGES_DEF.find(x=>x.id===added[0])){
+              loadCustomBadgesCache().then(()=>{
+                S.badges = badgeIdsToObjects(fbIds);
+                renderBadges();
+              });
+            }
           }
         }
       }
