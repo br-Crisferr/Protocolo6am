@@ -1042,27 +1042,71 @@ select.admin-inp option{background:var(--bg3)}
 .task-delete-btn:hover{color:var(--red);background:rgba(255,59,48,.1);opacity:1}
 
 /* ═══ GRÁFICO EVOLUÇÃO TRACKER ═══ */
-.tracker-chart-wrap{
-  padding:16px 16px 0;
-  margin-bottom:4px;
-}
+/* ═══ TRACKER CHART — SYNC SCROLL (chart + tabela rolam juntos) ═══ */
 .tracker-chart-header{
   display:flex;justify-content:space-between;align-items:center;
-  margin-bottom:10px;
+  padding:10px 4px 6px;
 }
 .tracker-chart-title{
   font-family:var(--fm);font-size:10px;font-weight:700;
   text-transform:uppercase;letter-spacing:1.5px;color:var(--txt3);
 }
 .tracker-chart-badge{
-  font-family:var(--fm);font-size:10px;font-weight:700;
-  color:var(--gold);
+  font-family:var(--fm);font-size:10px;font-weight:700;color:var(--gold);
 }
+/* Contentor único que faz scroll horizontal — chart e tabela ficam dentro */
+.tracker-sync-wrap{
+  overflow-x:auto;
+  border:1px solid var(--bdr);border-radius:12px;
+  background:var(--bg2);
+}
+.tracker-sync-wrap::-webkit-scrollbar{height:3px}
+.tracker-sync-wrap::-webkit-scrollbar-thumb{background:var(--bdr3)}
+/* Canvas do gráfico — largura definida via JS igual à tabela */
 .tracker-chart-canvas-wrap{
-  background:var(--bg2);border:1px solid var(--bdr);
-  border-radius:14px;padding:14px 12px 10px;
-  position:relative;height:110px;
+  height:120px;border-bottom:1px solid var(--bdr);
+  position:relative;overflow:hidden;
 }
+#trackerChart{ display:block; }
+
+/* Coluna de % por hábito — sticky à direita */
+.tracker-table th.h-pct,.tracker-table td.h-pct{
+  width:42px;min-width:42px;text-align:right;padding-right:8px;
+  font-family:var(--fm);font-size:9px;
+  position:sticky;right:0;z-index:2;
+  background:var(--bg4);border-left:1px solid var(--bdr);
+}
+.h-pct-val{ color:var(--amber);font-weight:700;font-size:9px; }
+/* Coluna nome — sticky à esquerda */
+.tracker-table th.h-name,.tracker-table td.h-name{
+  position:sticky;left:0;z-index:2;background:var(--bg4);
+}
+.tracker-table th.h-name{ z-index:3; }
+/* Linha de total */
+.tracker-table tr.t-total td{ border-top:1px solid var(--bdr2);padding-top:5px }
+.tracker-table tr.t-total .h-name-txt{ font-weight:800;color:var(--gold); }
+
+/* ═══ BADGE DRAG-REORDER ═══ */
+.badges-grid{ user-select:none }
+.badge-drag-handle{
+  position:absolute;top:5px;left:6px;font-size:10px;color:var(--txt3);
+  cursor:grab;opacity:0;transition:opacity .15s;line-height:1;
+}
+.badge-card:hover .badge-drag-handle{ opacity:.6 }
+.badge-card.earned.drag-over{
+  border-color:rgba(255,59,48,.7) !important;
+  background:rgba(255,59,48,.1) !important;
+  transform:scale(1.06);
+}
+.badge-card.dragging{ opacity:.3;transform:scale(.94) }
+.badge-reorder-hint{
+  font-family:var(--fm);font-size:9px;color:var(--txt3);
+  text-align:center;padding:2px 0 10px;letter-spacing:.5px;
+}
+
+/* ═══ ALARM / TIME INPUTS ═══ */
+.form-time-row{ display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:14px }
+input[type=time].form-input{ color-scheme:dark;cursor:pointer }
 
 /* ═══ CICLO LIGA ═══ */
 .liga-cycle-badge{
@@ -1155,17 +1199,6 @@ select.admin-inp option{background:var(--bg3)}
 
       <!-- TRACKER VIEW -->
       <div id="habitos-tracker-view" style="display:none">
-        <!-- GRÁFICO EVOLUÇÃO 7 DIAS -->
-        <div class="tracker-chart-wrap">
-          <div class="tracker-chart-header">
-            <span class="tracker-chart-title">📈 Evolução do Mês</span>
-            <span class="tracker-chart-badge" id="trackerChartBadge">— pts/dia</span>
-          </div>
-          <div class="tracker-chart-canvas-wrap">
-            <canvas id="trackerChart"></canvas>
-          </div>
-        </div>
-
         <div class="tracker-hdr">
           <div class="month-nav">
             <button class="month-btn" onclick="changeMonth(-1)">‹</button>
@@ -1174,7 +1207,18 @@ select.admin-inp option{background:var(--bg3)}
           </div>
           <input class="tracker-search" placeholder="Buscar hábito..." oninput="filterHabits(this.value)" style="max-width:140px"/>
         </div>
-        <div class="tracker-wrap">
+
+        <!-- Título (fora do scroll) -->
+        <div class="tracker-chart-header">
+          <span class="tracker-chart-title">📈 Evolução do Mês</span>
+          <span class="tracker-chart-badge" id="trackerChartBadge">— pts/dia</span>
+        </div>
+
+        <!-- SCROLL SYNC: chart canvas + tabela ficam dentro do mesmo overflow-x -->
+        <div class="tracker-sync-wrap" id="trackerSyncWrap">
+          <div class="tracker-chart-canvas-wrap" id="trackerChartWrap">
+            <canvas id="trackerChart"></canvas>
+          </div>
           <table class="tracker-table" id="tracker-table"><tbody></tbody></table>
         </div>
       </div>
@@ -1277,6 +1321,7 @@ select.admin-inp option{background:var(--bg3)}
       </div>
 
       <div class="block-title"><span>🏅</span> Insígnias Conquistadas</div>
+      <div class="badge-reorder-hint" id="badgeReorderHint" style="display:none">✦ Arraste para reordenar</div>
       <div class="badges-grid" id="badgesGrid"></div>
 
       <!-- STATS -->
@@ -1788,11 +1833,10 @@ async function loadCustomBadgesCache(){
   }catch(e){ console.warn('Custom badges cache:', e); }
 }
 
-function badgeIdsToObjects(ids=[], extraBadges=[]){
+function badgeIdsToObjects(ids=[], extraBadges=[], badgeOrder=[]){
   // Combina: estáticas (BADGES_DEF) + customizadas do cache + extras passados
   const allDefs=[...BADGES_DEF, ..._customBadgesCache, ...extraBadges];
   const earned=new Set(ids);
-  // Badges ganhas que não estão no defs (ex: exclusivas não em cache ainda)
   const result = allDefs.map(b=>({...b, earned:earned.has(b.id), new:false}));
   // Adicionar badges orphaned (ID no Firestore mas não encontrado nos defs)
   const knownIds = new Set(allDefs.map(b=>b.id));
@@ -1801,6 +1845,18 @@ function badgeIdsToObjects(ids=[], extraBadges=[]){
       result.push({id, ico:'🏅', name:'Insígnia Especial', desc:'Conquista exclusiva', earned:true, new:false, _custom:true});
     }
   });
+  // Respeitar a ordem salva pelo usuário (badgeOrder = array de IDs earned na ordem drag)
+  if(badgeOrder.length){
+    const earnedArr=result.filter(b=>b.earned);
+    const locked=result.filter(b=>!b.earned);
+    const ordered=[], seen=new Set();
+    badgeOrder.forEach(id=>{
+      const b=earnedArr.find(x=>x.id===id);
+      if(b){ ordered.push(b); seen.add(id); }
+    });
+    earnedArr.forEach(b=>{ if(!seen.has(b.id)) ordered.push(b); });
+    return [...ordered,...locked];
+  }
   return result;
 }
 
@@ -1955,16 +2011,23 @@ function renderWeekDots(){
 // ═══════════════════════════════════════════
 function renderTaskList(){
   const el=document.getElementById('taskList');
-  // Filtrar: tarefas sem data específica OU agendadas exatamente para hoje
   const tasks=S.tasks.filter(t=>!t.scheduledDate||t.scheduledDate===TODAY_KEY);
   if(!tasks.length){el.innerHTML=`<div class="empty-state"><span class="empty-ico">📋</span>Nenhuma tarefa para hoje.<br><span style="font-size:11px;color:var(--txt3)">Planeje pelo Calendário 📅</span></div>`;return;}
   const notifOn=_notifPermission==='granted';
-  el.innerHTML=tasks.map(t=>`
-    <div class="task-item ${t.done?'done':''}" data-id="${t.id}" onclick="toggleTask(${t.id})">
+  el.innerHTML=tasks.map(t=>{
+    // Exibir horário: prioriza alarmTime, senão window, senão nada
+    const timeDisplay=t.alarmTime
+      ? `🔔 ${t.alarmTime}`
+      : (t.window&&t.window!=='Qualquer hora'?`⏱ ${t.window}`:`⏱ Qualquer hora`);
+    const alarmBadge=t.alarmTime&&notifOn&&t.notif
+      ? `<span style="font-size:9px;color:var(--gold);font-family:var(--fm);margin-left:4px">🔔 ${t.alarmTime}</span>`
+      : '';
+    return`<div class="task-item ${t.done?'done':''}" data-id="${t.id}" onclick="toggleTask(${t.id})">
       <div class="task-topbar-row">
-        <span class="task-window">⏱ ${t.window||'Qualquer hora'}</span>
+        <span class="task-window">${timeDisplay}</span>
         <div style="display:flex;align-items:center;gap:6px" onclick="event.stopPropagation()">
-          <button class="task-notif-btn ${t.notif&&notifOn?'on':''}" title="${notifOn?(t.notif?'Notificação ativa':'Ativar notificação'):'Ative notificações primeiro'}"
+          <button class="task-notif-btn ${t.notif&&notifOn?'on':''}"
+            title="${notifOn?(t.notif?'Alarme ativo — clique para desativar':'Ativar alarme'):'Ative notificações primeiro'}"
             onclick="toggleTaskNotif(${t.id})" style="font-size:15px">🔔</button>
           <span class="task-xp-lbl">+${t.score} XP</span>
           <button class="task-delete-btn" onclick="event.stopPropagation();deleteTask(${t.id})" title="Apagar tarefa">🗑</button>
@@ -1977,13 +2040,13 @@ function renderTaskList(){
           <div class="task-cat">
             ${t.cat}
             <span class="diff-badge diff-${t.diff||'normal'}">${diffLabel(t.diff)}</span>
-            ${t.notif&&notifOn?'<span style="font-size:9px;color:var(--green);font-family:var(--fm)">🔔 ALERTA ATIVO</span>':''}
+            ${alarmBadge}
           </div>
         </div>
         <div class="task-score-badge ${t.done?'green':''}">${t.score}</div>
       </div>
-    </div>
-  `).join('');
+    </div>`;
+  }).join('');
 }
 
 async function toggleTaskNotif(taskId){
@@ -2065,22 +2128,38 @@ function renderHabitFull(){
 function renderTracker(){
   const m=S.trackerMonth,y=S.trackerYear;
   const dip=new Date(y,m+1,0).getDate();
-  const tod=new Date();
   const names=['Janeiro','Fevereiro','Março','Abril','Maio','Junho','Julho','Agosto','Setembro','Outubro','Novembro','Dezembro'];
   document.getElementById('tracker-month').textContent=`${names[m]} ${y}`;
 
-  const days=Array.from({length:dip},(_, i)=>i+1);
+  const days=Array.from({length:dip},(_,i)=>i+1);
   const todayD=TODAY.getDate(),todayM=TODAY.getMonth(),todayY=TODAY.getFullYear();
 
+  // HEAD: nome | dias… | %
   let head='<thead><tr><th class="h-name">Hábito</th>';
   days.forEach(d=>{
     const isTod=(d===todayD&&m===todayM&&y===todayY);
-    head+=`<th style="${isTod?'color:var(--amber)':''}${d===1?';padding-left:8px':''}">${d}</th>`;
+    head+=`<th style="${isTod?'color:var(--amber)':''}">${d}</th>`;
   });
-  head+='</tr></thead>';
+  head+='<th class="h-pct">%</th></tr></thead>';
 
+  // BODY: linha por hábito
   let body='<tbody>';
+  // Totais diários (para linha de soma)
+  const dailyTotals=new Array(dip).fill(0);
+  const dailyMax=new Array(dip).fill(0);
+
   S.habits.forEach(h=>{
+    // Calcular % do mês para este hábito
+    let checks=0, totalDays=0;
+    days.forEach((d,i)=>{
+      const k=dateKey(y,m,d);
+      const isFuture=(y>todayY)||(y===todayY&&m>todayM)||(y===todayY&&m===todayM&&d>todayD);
+      if(!isFuture){ totalDays++; dailyMax[i]+=h.score; }
+      if(h.checks[k]){ checks++; dailyTotals[i]+=h.score; }
+    });
+    const pct=totalDays?Math.round((checks/totalDays)*100):0;
+    const pctColor=pct>=80?'var(--green)':pct>=50?'var(--amber)':pct>0?'var(--orange)':'var(--txt3)';
+
     body+=`<tr><td class="h-name"><div class="h-name-txt">${escHtml(h.name)}<span class="cat-dot" style="background:${h.catColor}"></span></div></td>`;
     days.forEach(d=>{
       const k=dateKey(y,m,d);
@@ -2088,17 +2167,44 @@ function renderTracker(){
       const isTod=(d===todayD&&m===todayM&&y===todayY);
       const checked=h.checks[k];
       if(isFuture){
-        body+=`<td><div class="day-chk" style="opacity:.3;cursor:default"></div></td>`;
+        body+=`<td><div class="day-chk" style="opacity:.25;cursor:default"></div></td>`;
       } else {
         body+=`<td><div class="day-chk ${checked?'checked':''} ${isTod?'today-col':''}" onclick="toggleCheck(${h.id},'${k}')">${checked?'✓':''}</div></td>`;
       }
     });
-    body+='</tr>';
+    body+=`<td class="h-pct"><span class="h-pct-val" style="color:${pctColor}">${pct}%</span></td></tr>`;
   });
+
+  // LINHA DE TOTAL (pontos por dia)
+  if(S.habits.length){
+    body+='<tr class="t-total"><td class="h-name"><div class="h-name-txt">Total do dia</div></td>';
+    days.forEach((d,i)=>{
+      const isFuture=(y>todayY)||(y===todayY&&m>todayM)||(y===todayY&&m===todayM&&d>todayD);
+      const val=isFuture?null:dailyTotals[i];
+      const max=dailyMax[i]||1;
+      const pct=val!=null?val/max:0;
+      const col=pct>0.7?'rgba(48,209,88,.7)':pct>0.35?'rgba(255,159,10,.7)':pct>0?'rgba(255,59,48,.6)':'rgba(255,255,255,.08)';
+      const txt=val!=null&&val>0?`<span style="font-family:var(--fm);font-size:8px;color:var(--txt2)">${val}</span>`:'';
+      body+=`<td><div class="day-chk" style="background:${val!=null?col:'transparent'};border-color:transparent;cursor:default;width:22px;height:22px;display:inline-flex;align-items:center;justify-content:center">${txt}</div></td>`;
+    });
+    body+='<td class="h-pct"></td></tr>';
+  }
+
   body+='</tbody>';
   document.querySelector('#tracker-table').innerHTML=head+body;
-  // Renderizar gráfico após a tabela (aguarda DOM)
-  setTimeout(renderTrackerChart, 50);
+
+  // Sincronizar largura do canvas com a tabela (alinhamento vertical)
+  setTimeout(()=>{
+    const table=document.getElementById('tracker-table');
+    const wrap=document.getElementById('trackerChartWrap');
+    if(table&&wrap){
+      const tw=table.scrollWidth;
+      wrap.style.width=tw+'px';
+      const canvas=document.getElementById('trackerChart');
+      if(canvas){ canvas.style.width=tw+'px'; canvas.width=tw; }
+    }
+    renderTrackerChart();
+  }, 30);
 }
 
 // ═══════════════════════════════════════════
@@ -2788,7 +2894,7 @@ async function deleteTask(id){
 }
 
 // ═══════════════════════════════════════════
-//  GRÁFICO EVOLUÇÃO — TRACKER
+//  GRÁFICO DE LINHA — ALINHADO COM TRACKER
 // ═══════════════════════════════════════════
 let _trackerChart = null;
 
@@ -2797,68 +2903,102 @@ function renderTrackerChart(){
   if(!canvas) return;
 
   const m = S.trackerMonth, y = S.trackerYear;
-  const dip = new Date(y, m+1, 0).getDate();
-  const todayD = TODAY.getDate(), todayM = TODAY.getMonth(), todayY = TODAY.getFullYear();
+  const dip = new Date(y,m+1,0).getDate();
+  const todayD=TODAY.getDate(), todayM=TODAY.getMonth(), todayY=TODAY.getFullYear();
 
-  // Calcular scores diários do mês inteiro
-  const labels = [], data = [], bgColors = [];
-  let totalPts = 0, daysWithData = 0;
+  // Calcular score total por dia (% de hábitos completados no dia)
+  const labels=[], pctData=[], pointColors=[];
+  let totalPts=0, daysWithData=0;
 
-  for(let d=1; d<=dip; d++){
-    const isFuture = (y>todayY)||(y===todayY&&m>todayM)||(y===todayY&&m===todayM&&d>todayD);
-    const isToday  = (d===todayD && m===todayM && y===todayY);
-    if(isFuture){ labels.push(d); data.push(null); bgColors.push('transparent'); continue; }
-
-    const key = dateKey(y,m,d);
-    let sc = S.habits.reduce((a,h)=> a+(h.checks&&h.checks[key]?h.score:0), 0);
-    if(isToday) sc += S.tasks.filter(t=>t.done).reduce((a,t)=>a+t.score,0);
+  for(let d=1;d<=dip;d++){
+    const isFuture=(y>todayY)||(y===todayY&&m>todayM)||(y===todayY&&m===todayM&&d>todayD);
+    const isToday=(d===todayD&&m===todayM&&y===todayY);
     labels.push(d);
-    data.push(sc);
-    bgColors.push(isToday ? 'rgba(255,59,48,.9)' : sc>0 ? 'rgba(0,212,128,.7)' : 'rgba(255,255,255,.08)');
-    if(sc>0){ totalPts+=sc; daysWithData++; }
+
+    if(isFuture){
+      pctData.push(null);
+      pointColors.push('transparent');
+      continue;
+    }
+
+    const key=dateKey(y,m,d);
+    let pts=S.habits.reduce((a,h)=>a+(h.checks&&h.checks[key]?h.score:0),0);
+    if(isToday) pts+=S.tasks.filter(t=>t.done).reduce((a,t)=>a+t.score,0);
+    const maxPts=S.habits.reduce((a,h)=>a+h.score,0)||1;
+    const pct=Math.round((pts/maxPts)*100);
+
+    pctData.push(pct);
+    pointColors.push(isToday?'rgba(255,59,48,1)':pct>=80?'rgba(48,209,88,1)':pct>=40?'rgba(255,159,10,1)':'rgba(255,59,48,.7)');
+    if(pts>0){ totalPts+=pts; daysWithData++; }
   }
 
-  const avg = daysWithData ? Math.round(totalPts/daysWithData) : 0;
-  const badge = document.getElementById('trackerChartBadge');
-  if(badge) badge.textContent = avg + ' pts/dia (média)';
+  const avgPts=daysWithData?Math.round(totalPts/daysWithData):0;
+  const badge=document.getElementById('trackerChartBadge');
+  if(badge) badge.textContent=avgPts+' pts/dia (média)';
 
-  // Destruir instância anterior
   if(_trackerChart){ _trackerChart.destroy(); _trackerChart=null; }
 
-  const ctx = canvas.getContext('2d');
-  _trackerChart = new Chart(ctx, {
-    type: 'bar',
-    data: {
+  // Largura da coluna: precisa bater com td do tracker (28px por dia + 130px nome + 42px %)
+  const COL_NAME=130, COL_DAY=28, COL_PCT=42;
+  const totalW=COL_NAME+dip*COL_DAY+COL_PCT;
+  // Atualizar canvas e wrap para mesma largura da tabela
+  const wrap=document.getElementById('trackerChartWrap');
+  if(wrap){ wrap.style.width=totalW+'px'; canvas.style.width=totalW+'px'; }
+  canvas.width=totalW; canvas.height=120;
+
+  // Plugin para área de fundo preenchida
+  const ctx=canvas.getContext('2d');
+  const grad=ctx.createLinearGradient(0,0,0,120);
+  grad.addColorStop(0,'rgba(255,59,48,.35)');
+  grad.addColorStop(1,'rgba(255,59,48,0)');
+
+  _trackerChart=new Chart(ctx,{
+    type:'line',
+    data:{
       labels,
       datasets:[{
-        data,
-        backgroundColor: bgColors,
-        borderRadius: 3,
-        borderSkipped: false,
+        data:pctData,
+        borderColor:'rgba(255,59,48,.9)',
+        borderWidth:2,
+        backgroundColor:grad,
+        fill:true,
+        tension:.35,
+        pointRadius:pctData.map((v,i)=>v!==null?3:0),
+        pointBackgroundColor:pointColors,
+        pointBorderColor:'transparent',
+        pointHoverRadius:5,
+        spanGaps:false,
       }]
     },
     options:{
-      responsive:true, maintainAspectRatio:false,
-      plugins:{ legend:{display:false}, tooltip:{
-        callbacks:{
-          label: ctx => ctx.raw===null ? 'Futuro' : ctx.raw + ' pts',
-          title: ctx => 'Dia ' + ctx[0].label
-        },
-        backgroundColor:'rgba(0,0,0,.9)',
-        titleColor:'#aaa', bodyColor:'#fff',
-        borderColor:'rgba(255,255,255,.1)', borderWidth:1,
-        padding:8
-      }},
+      responsive:false,
+      maintainAspectRatio:false,
+      layout:{ padding:{ left:COL_NAME, right:COL_PCT, top:6, bottom:0 } },
+      plugins:{
+        legend:{display:false},
+        tooltip:{
+          callbacks:{
+            label:c=>c.raw===null?'Futuro':c.raw+'%',
+            title:c=>'Dia '+c[0].label
+          },
+          backgroundColor:'rgba(0,0,0,.9)',
+          titleColor:'#aaa',bodyColor:'#fff',
+          borderColor:'rgba(255,255,255,.1)',borderWidth:1,padding:8
+        }
+      },
       scales:{
         x:{
-          ticks:{ color:'rgba(255,255,255,.3)', font:{size:8}, maxRotation:0 },
+          // Tick por coluna do dia — mesmo espaçamento da tabela (COL_DAY px)
+          ticks:{ display:false },
           grid:{ color:'rgba(255,255,255,.04)' },
-          border:{display:false}
+          border:{ display:false },
+          // Forçar número de ticks = número de dias → alinhamento 1:1
+          min:0, max:dip-1,
         },
         y:{
           display:false,
+          min:0, max:100,
           beginAtZero:true,
-          grid:{display:false}
         }
       },
       animation:{ duration:400 }
@@ -3015,17 +3155,69 @@ function renderSeasonHistory(){
 }
 
 // ═══════════════════════════════════════════
-//  BADGES
+//  BADGES — com reordenação drag & drop
 // ═══════════════════════════════════════════
+let _badgeDragSrc = null;
+
 function renderBadges(){
-  document.getElementById('badgesGrid').innerHTML=S.badges.map(b=>`
-    <div class="badge-card ${b.earned?'earned':'locked'}">
-      ${b.earned&&b.new?'<span class="badge-new">NOVO</span>':''}
-      <span class="badge-ico">${b.ico}</span>
-      <div class="badge-name">${b.name}</div>
-      <div class="badge-desc">${b.desc}</div>
-    </div>
-  `).join('');
+  const grid=document.getElementById('badgesGrid');
+  const hint=document.getElementById('badgeReorderHint');
+  const earned=S.badges.filter(b=>b.earned);
+  const locked=S.badges.filter(b=>!b.earned);
+  if(hint) hint.style.display=earned.length>1?'block':'none';
+
+  const makeCard=(b,draggable)=>{
+    const div=document.createElement('div');
+    div.className=`badge-card ${b.earned?'earned':'locked'}`;
+    div.dataset.bid=b.id;
+    if(draggable){
+      div.draggable=true;
+      div.innerHTML=`
+        <span class="badge-drag-handle" title="Arraste para reordenar">⠿</span>
+        ${b.earned&&b.new?'<span class="badge-new">NOVO</span>':''}
+        <span class="badge-ico">${b.ico}</span>
+        <div class="badge-name">${b.name}</div>
+        <div class="badge-desc">${b.desc}</div>`;
+      div.addEventListener('dragstart',e=>{
+        _badgeDragSrc=b.id;
+        div.classList.add('dragging');
+        e.dataTransfer.effectAllowed='move';
+      });
+      div.addEventListener('dragend',()=>{ div.classList.remove('dragging'); });
+      div.addEventListener('dragover',e=>{ e.preventDefault(); div.classList.add('drag-over'); });
+      div.addEventListener('dragleave',()=>{ div.classList.remove('drag-over'); });
+      div.addEventListener('drop',e=>{
+        e.preventDefault(); div.classList.remove('drag-over');
+        if(!_badgeDragSrc||_badgeDragSrc===b.id) return;
+        // Reordenar array S.badges
+        const fromIdx=S.badges.findIndex(x=>x.id===_badgeDragSrc);
+        const toIdx=S.badges.findIndex(x=>x.id===b.id);
+        if(fromIdx<0||toIdx<0) return;
+        const [moved]=S.badges.splice(fromIdx,1);
+        S.badges.splice(toIdx,0,moved);
+        // Persistir ordem no Firestore
+        if(FIREBASE_OK&&currentUser){
+          db.collection('users').doc(currentUser.uid).update({
+            badgeOrder:badgeObjectsToIds(S.badges.filter(x=>x.earned)),
+            updatedAt:firebase.firestore.FieldValue.serverTimestamp()
+          }).catch(()=>{});
+        }
+        renderBadges();
+        _badgeDragSrc=null;
+      });
+    } else {
+      div.innerHTML=`
+        ${b.earned&&b.new?'<span class="badge-new">NOVO</span>':''}
+        <span class="badge-ico">${b.ico}</span>
+        <div class="badge-name">${b.name}</div>
+        <div class="badge-desc">${b.desc}</div>`;
+    }
+    return div;
+  };
+
+  grid.innerHTML='';
+  earned.forEach(b=>grid.appendChild(makeCard(b,true)));
+  locked.forEach(b=>grid.appendChild(makeCard(b,false)));
 }
 
 // ═══════════════════════════════════════════
@@ -3164,8 +3356,8 @@ function switchView(v){
     document.getElementById('habitos-'+x+'-view').style.display=x===v?'block':'none';
     document.getElementById('btn-'+x).classList.toggle('active',x===v);
   });
-  if(v==='tracker'){ renderTracker(); setTimeout(renderTrackerChart,80); }
-  if(v==='cal')renderCalendario();
+  if(v==='tracker') renderTracker(); // renderTracker já chama renderTrackerChart internamente
+  if(v==='cal') renderCalendario();
 }
 
 function changeMonth(d){
@@ -3222,9 +3414,18 @@ function taskForm(){return `
       </select>
     </div>
   </div>
-  <div class="form-field">
-    <label class="form-label">Janela de Tempo</label>
-    <input class="form-input" id="inp-window" placeholder="Ex: 06:00–08:00"/>
+  <div class="form-time-row">
+    <div class="form-field" style="margin-bottom:0">
+      <label class="form-label">⏱ Horário da Tarefa</label>
+      <input class="form-input" type="time" id="inp-taskTime" placeholder="06:00"/>
+    </div>
+    <div class="form-field" style="margin-bottom:0">
+      <label class="form-label">🔔 Alarme</label>
+      <input class="form-input" type="time" id="inp-alarmTime" placeholder="05:50"/>
+    </div>
+  </div>
+  <div style="font-size:10px;color:var(--txt3);margin-bottom:12px;font-family:var(--fm)">
+    Alarme: notificação disparada no horário exato escolhido
   </div>
   <div class="form-field">
     <label class="form-label">Pontos XP: <span id="scoreDisp">5</span></label>
@@ -3275,9 +3476,19 @@ function saveModal(){
   if(S.modalType==='tarefa'){
     const cat=document.getElementById('inp-cat')?.value||'Geral';
     const diff=document.getElementById('inp-diff')?.value||'normal';
-    const window=document.getElementById('inp-window')?.value||'Qualquer hora';
-    S.tasks.unshift({id:S.nextId++,name,score,cat,diff,window:window||'Qualquer hora',done:false});
-    toast(`📋 Tarefa "${name}" criada!`,'success');
+    const taskTime=document.getElementById('inp-taskTime')?.value||'';
+    const alarmTime=document.getElementById('inp-alarmTime')?.value||'';
+    // Monta a janela de exibição a partir do horário (ou placeholder)
+    const window=taskTime?taskTime+':00':'Qualquer hora';
+    const task={id:S.nextId++,name,score,cat,diff,window,alarmTime,done:false,notif:!!alarmTime};
+    S.tasks.unshift(task);
+    // Agendar alarme se horário preenchido
+    if(alarmTime && _notifPermission==='granted'){
+      scheduleAlarmNotif(task);
+      toast(`📋 Tarefa "${name}" criada com alarme às ${alarmTime}!`,'success');
+    } else {
+      toast(`📋 Tarefa "${name}" criada!`,'success');
+    }
   } else {
     const cat=document.getElementById('inp-cat')?.value||'Saúde';
     const catColors={Saúde:'#30d158',Alimentar:'#f59e0b',Rotina:'#0a84ff',Estudos:'#bf5af2',Espiritual:'#ffd60a',Trabalho:'#ff9f0a'};
@@ -4336,37 +4547,52 @@ function parseTaskTime(window){
   return { h: parseInt(match[1]), m: parseInt(match[2]) };
 }
 
+// Agenda notificação no horário exato do campo "Alarme"
+function scheduleAlarmNotif(task){
+  cancelTaskNotif(task.id); // limpar timer anterior
+  if(!task.alarmTime||task.done) return;
+  const [h,m]=task.alarmTime.split(':').map(Number);
+  const now=new Date();
+  const target=new Date();
+  target.setHours(h,m,0,0);
+  const ms=target-now;
+  if(ms<=0) return; // horário já passou hoje
+  const tid=setTimeout(()=>{
+    if(!task.done) fireNotif(`🔔 Alarme: ${task.name}`,`Hora de executar! +${task.score} XP`,task);
+  },ms);
+  _notifTimers.push({taskId:task.id,timerId:tid});
+}
+
 function scheduleTaskNotif(task){
-  // Cancel existing timer for this task
+  // Cancela timer anterior
   cancelTaskNotif(task.id);
-  if(!task.window || task.done) return;
-  const time = parseTaskTime(task.window);
-  if(!time) return;
-  const now = new Date();
-  const target = new Date();
-  target.setHours(time.h, time.m, 0, 0);
+  if(task.done) return;
 
-  // Notify 10 min before start
-  const notifTime = new Date(target.getTime() - 10 * 60000);
-
-  // Also notify exactly at start time
-  const notifStart = new Date(target.getTime());
-
-  const msUntilWarning = notifTime - now;
-  const msUntilStart = notifStart - now;
-
-  if(msUntilWarning > 0){
-    const t1 = setTimeout(()=>{
-      if(!task.done) fireNotif(`⏰ Em 10 minutos: ${task.name}`, `Prepare-se! Janela começa às ${time.h}:${String(time.m).padStart(2,'0')}`, task);
-    }, msUntilWarning);
-    _notifTimers.push({taskId:task.id, timerId:t1});
+  // Prioridade 1: campo alarmTime dedicado
+  if(task.alarmTime){
+    scheduleAlarmNotif(task);
+    return;
   }
 
-  if(msUntilStart > 0){
-    const t2 = setTimeout(()=>{
-      if(!task.done) fireNotif(`🚀 AGORA: ${task.name}`, `Janela aberta! Execute agora. +${task.score} XP`, task);
-    }, msUntilStart);
-    _notifTimers.push({taskId:task.id, timerId:t2});
+  // Prioridade 2: campo window legado ("HH:MM–HH:MM")
+  if(!task.window || task.window==='Qualquer hora') return;
+  const time=parseTaskTime(task.window);
+  if(!time) return;
+  const now=new Date();
+  const target=new Date(); target.setHours(time.h,time.m,0,0);
+  const warn10=new Date(target.getTime()-10*60000);
+  const msW=warn10-now, msS=target-now;
+  if(msW>0){
+    const t1=setTimeout(()=>{
+      if(!task.done) fireNotif(`⏰ Em 10 min: ${task.name}`,`Prepare-se! Começa às ${time.h}:${String(time.m).padStart(2,'0')}`,task);
+    },msW);
+    _notifTimers.push({taskId:task.id,timerId:t1});
+  }
+  if(msS>0){
+    const t2=setTimeout(()=>{
+      if(!task.done) fireNotif(`🚀 AGORA: ${task.name}`,`Janela aberta! Execute agora. +${task.score} XP`,task);
+    },msS);
+    _notifTimers.push({taskId:task.id,timerId:t2});
   }
 }
 
@@ -4394,10 +4620,16 @@ function fireNotif(title, body, task){
 
 function scheduleAllNotifs(){
   if(_notifPermission !== 'granted') return;
-  // Cancel all existing
+  // Cancelar todos os timers ativos
   _notifTimers.forEach(t=>clearTimeout(t.timerId));
   _notifTimers = [];
-  S.tasks.forEach(t=>scheduleTaskNotif(t));
+  S.tasks.forEach(t=>{
+    if(t.notif){
+      // alarmTime tem prioridade sobre window legado
+      if(t.alarmTime) scheduleAlarmNotif(t);
+      else scheduleTaskNotif(t);
+    }
+  });
 }
 
 async function enableNotifications(){
@@ -4635,8 +4867,8 @@ if(FIREBASE_OK){
         if(typeof d.streak==='number') S.streak=d.streak;
         if(Array.isArray(d.tasks)) S.tasks=d.tasks;
         if(Array.isArray(d.habits)) S.habits=d.habits;
-        // Badges: Firestore stores as ID array → convert to full objects
-        if(Array.isArray(d.badges)) S.badges=badgeIdsToObjects(d.badges);
+        // Badges: Firestore stores as ID array → convert to full objects, respecting order
+        if(Array.isArray(d.badges)) S.badges=badgeIdsToObjects(d.badges,[],d.badgeOrder||[]);
         if(d.role==='admin'){
           S.isAdmin=true;
           showAdminNav();
@@ -4648,8 +4880,11 @@ if(FIREBASE_OK){
 
     // Carregar cache de insígnias customizadas antes de renderizar
     await loadCustomBadgesCache();
-    // Re-resolver badges do usuário com cache atualizado
-    if(snap.exists && Array.isArray(snap.data().badges)) S.badges = badgeIdsToObjects(snap.data().badges);
+    // Re-resolver badges do usuário com cache atualizado (inclui badgeOrder)
+    if(snap.exists && Array.isArray(snap.data().badges)){
+      const d=snap.data();
+      S.badges=badgeIdsToObjects(d.badges,[],d.badgeOrder||[]);
+    }
     // Verificar reset de temporada
     if(snap.exists){ await checkSeasonReset(snap.data()); }
     renderAll();
@@ -4689,12 +4924,12 @@ if(FIREBASE_OK){
         const same=fbIds.length===localIds.length&&fbIds.every(id=>localIds.includes(id));
         if(!same){
           const added=fbIds.filter(id=>!localIds.includes(id));
-          S.badges=badgeIdsToObjects(fbIds);
+          S.badges=badgeIdsToObjects(fbIds,[],data.badgeOrder||[]);
           renderBadges();
           if(added.length){
             const def=[...BADGES_DEF,..._customBadgesCache].find(x=>x.id===added[0]);
             toast('🏅 Insígnia recebida: '+(def?.name||'Nova insígnia'),'gold');
-            if(!def) loadCustomBadgesCache().then(()=>{ S.badges=badgeIdsToObjects(fbIds); renderBadges(); });
+            if(!def) loadCustomBadgesCache().then(()=>{ S.badges=badgeIdsToObjects(fbIds,[],data.badgeOrder||[]); renderBadges(); });
           }
         }
       }
@@ -4758,22 +4993,69 @@ if('Notification' in window){
 }
 
 
-// ═══ SERVICE WORKER ═══
+// ═══ SERVICE WORKER (inline blob — compatível com single-file deploy) ═══
 if('serviceWorker' in navigator){
-  // Registra SW inline (blob) para funcionar sem servidor separado
   const swCode=`
-const CACHE='p6am-v1';
-const STATIC=['/'];
-self.addEventListener('install',e=>e.waitUntil(caches.open(CACHE).then(c=>c.addAll(STATIC))));
-self.addEventListener('activate',e=>e.waitUntil(caches.keys().then(ks=>Promise.all(ks.filter(k=>k!==CACHE).map(k=>caches.delete(k))))));
+const CACHE='p6am-v3';
+const OFFLINE=['/'];
+
+self.addEventListener('install',e=>{
+  e.waitUntil(caches.open(CACHE).then(c=>c.addAll(OFFLINE)));
+  self.skipWaiting();
+});
+
+self.addEventListener('activate',e=>{
+  e.waitUntil(
+    caches.keys().then(ks=>Promise.all(ks.filter(k=>k!==CACHE).map(k=>caches.delete(k))))
+  );
+  self.clients.claim();
+});
+
 self.addEventListener('fetch',e=>{
-  if(e.request.method!=='GET')return;
-  e.respondWith(fetch(e.request).catch(()=>caches.match(e.request)||caches.match('/')));
+  if(e.request.method!=='GET') return;
+  e.respondWith(
+    fetch(e.request)
+      .then(res=>{ const clone=res.clone(); caches.open(CACHE).then(c=>c.put(e.request,clone)); return res; })
+      .catch(()=>caches.match(e.request)||caches.match('/'))
+  );
+});
+
+// ── FCM Background Push ──
+self.addEventListener('push',e=>{
+  if(!e.data) return;
+  let payload={};
+  try{ payload=e.data.json(); }catch(_){ payload={notification:{title:'Protocolo 6AM',body:e.data.text()}}; }
+  const n=payload.notification||{};
+  const title=n.title||'Protocolo 6AM';
+  const opts={
+    body: n.body||'',
+    icon: n.icon||'/icon-192.png',
+    badge: '/icon-192.png',
+    tag: payload.data?.taskId||'p6am-push',
+    data: payload.data||{},
+    requireInteraction: false,
+    vibrate: [200,100,200],
+  };
+  e.waitUntil(self.registration.showNotification(title,opts));
+});
+
+self.addEventListener('notificationclick',e=>{
+  e.notification.close();
+  const url=e.notification.data?.url||'/';
+  e.waitUntil(
+    clients.matchAll({type:'window',includeUncontrolled:true}).then(cs=>{
+      const existing=cs.find(c=>c.url.includes(location.origin));
+      if(existing){ existing.focus(); return; }
+      return clients.openWindow(url);
+    })
+  );
 });
 `;
   const blob=new Blob([swCode],{type:'application/javascript'});
   const swUrl=URL.createObjectURL(blob);
-  navigator.serviceWorker.register(swUrl).catch(()=>{});
+  navigator.serviceWorker.register(swUrl,{scope:'/'})
+    .then(reg=>{ console.log('[SW] Registrado'); })
+    .catch(e=>console.warn('[SW] Falha:',e));
 }
 
 renderAll();
@@ -4880,6 +5162,60 @@ service cloud.firestore {
 
 ══════════════════════════════════════════════════════════════════════════
 */
+-->
+
+<!-- ═══════════════════════════════════════════════════════════════════
+  ARQUIVO SEPARADO NECESSÁRIO: firebase-messaging-sw.js
+  ─────────────────────────────────────────────────────────────────────
+  Crie na RAIZ do Firebase Hosting (/public/firebase-messaging-sw.js).
+  Necessário para push em background (app fechado/minimizado).
+
+  PASSOS:
+  1. Crie o arquivo abaixo em /public/firebase-messaging-sw.js
+  2. Firebase Console → Project Settings → Cloud Messaging → Web Push
+     → Gere/copie a VAPID Key
+     → Substitua 'SUBSTITUA_PELA_SUA_VAPID_KEY_DO_FIREBASE_CONSOLE' no index.html
+  3. firebase deploy
+
+  ─── CONTEÚDO COMPLETO de firebase-messaging-sw.js ──────────────────
+
+  importScripts('https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js');
+  importScripts('https://www.gstatic.com/firebasejs/10.7.1/firebase-messaging-compat.js');
+
+  firebase.initializeApp({
+    apiKey: "AIzaSyBsPukCvvNFIzg8ytqmaeQTKNnix437gCQ",
+    authDomain: "protocolo-6am.firebaseapp.com",
+    projectId: "protocolo-6am",
+    storageBucket: "protocolo-6am.firebasestorage.app",
+    messagingSenderId: "652312227391",
+    appId: "1:652312227391:web:2e53e2be0eb6487b16d28a"
+  });
+
+  const messaging = firebase.messaging();
+
+  messaging.onBackgroundMessage(payload => {
+    const n = payload.notification || {};
+    return self.registration.showNotification(n.title || 'Protocolo 6AM', {
+      body: n.body || '',
+      icon: '/icon-192.png',
+      badge: '/icon-192.png',
+      tag: payload.data?.taskId || 'p6am',
+      data: payload.data || {},
+      vibrate: [200, 100, 200],
+    });
+  });
+
+  self.addEventListener('notificationclick', e => {
+    e.notification.close();
+    e.waitUntil(
+      clients.matchAll({ type: 'window', includeUncontrolled: true }).then(cs => {
+        const w = cs.find(c => c.url.includes(self.location.origin));
+        if (w) { w.focus(); return; }
+        return clients.openWindow('/');
+      })
+    );
+  });
+
 -->
 
 </body>
