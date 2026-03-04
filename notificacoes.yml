@@ -1,0 +1,131 @@
+name: Alarmes Protocolo 6AM
+
+on:
+  schedule:
+    # Roda a cada minuto (mínimo suportado pelo GitHub Actions)
+    - cron: '* * * * *'
+  workflow_dispatch: # permite rodar manualmente para testar
+
+jobs:
+  enviar-notificacoes:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Verificar e enviar alarmes
+        uses: actions/github-script@v7
+        env:
+          FIREBASE_API_KEY: ${{ secrets.FIREBASE_API_KEY }}
+          FIREBASE_PROJECT_ID: ${{ secrets.FIREBASE_PROJECT_ID }}
+          FCM_SERVER_KEY: ${{ secrets.FCM_SERVER_KEY }}
+        with:
+          script: |
+            const https = require('https');
+
+            const API_KEY      = process.env.FIREBASE_API_KEY;
+            const PROJECT_ID   = process.env.FIREBASE_PROJECT_ID;
+            const SERVER_KEY   = process.env.FCM_SERVER_KEY;
+
+            // Hora atual no fuso de Brasília
+            const now = new Date();
+            const brt = new Date(now.toLocaleString('en-US', { timeZone: 'America/Sao_Paulo' }));
+            const HH  = String(brt.getHours()).padStart(2, '0');
+            const MM  = String(brt.getMinutes()).padStart(2, '0');
+            const horaAgora = `${HH}:${MM}`;
+
+            console.log(`⏰ Verificando alarmes para ${horaAgora} (Brasília)`);
+
+            // Função auxiliar para requisições HTTPS
+            function httpsRequest(options, body) {
+              return new Promise((resolve, reject) => {
+                const req = https.request(options, res => {
+                  let data = '';
+                  res.on('data', chunk => data += chunk);
+                  res.on('end', () => {
+                    try { resolve(JSON.parse(data)); }
+                    catch(e) { resolve(data); }
+                  });
+                });
+                req.on('error', reject);
+                if (body) req.write(JSON.stringify(body));
+                req.end();
+              });
+            }
+
+            // Buscar todos os usuários no Firestore
+            const firestoreUrl = `firestore.googleapis.com`;
+            const usersPath = `/v1/projects/${PROJECT_ID}/databases/(default)/documents/users`;
+
+            const usersResp = await httpsRequest({
+              hostname: firestoreUrl,
+              path: `${usersPath}?key=${API_KEY}&pageSize=100`,
+              method: 'GET',
+              headers: { 'Content-Type': 'application/json' }
+            });
+
+            if (!usersResp.documents) {
+              console.log('Nenhum usuário encontrado ou erro na busca.');
+              console.log(JSON.stringify(usersResp).slice(0, 200));
+              return;
+            }
+
+            let enviados = 0;
+
+            for (const userDoc of usersResp.documents) {
+              const fields = userDoc.fields || {};
+
+              // Pular usuários sem FCM token
+              const fcmToken = fields.fcmToken?.stringValue;
+              if (!fcmToken) continue;
+
+              // Pular usuários banidos
+              if (fields.banned?.booleanValue) continue;
+
+              // Buscar tarefas do usuário
+              const tasksArray = fields.tasks?.arrayValue?.values || [];
+              const userName   = fields.name?.stringValue || fields.nomeGuerra?.stringValue || 'Operador';
+
+              for (const taskValue of tasksArray) {
+                const task = taskValue.mapValue?.fields || {};
+
+                const alarmTime = task.alarmTime?.stringValue || '';
+                const notif     = task.notif?.booleanValue || false;
+                const done      = task.done?.booleanValue || false;
+                const taskName  = task.name?.stringValue || 'Tarefa';
+                const score     = task.score?.integerValue || task.score?.doubleValue || 5;
+
+                // Verificar: tem alarme, está ativo, não está concluída e bate com a hora atual
+                if (!alarmTime || !notif || done) continue;
+                if (alarmTime !== horaAgora) continue;
+
+                console.log(`🔔 Enviando para ${userName}: "${taskName}" às ${alarmTime}`);
+
+                // Enviar push via FCM (API v1 legada — compatível com token salvo)
+                await httpsRequest({
+                  hostname: 'fcm.googleapis.com',
+                  path: '/fcm/send',
+                  method: 'POST',
+                  headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `key=${SERVER_KEY}`
+                  }
+                }, {
+                  to: fcmToken,
+                  notification: {
+                    title: `🔔 ${taskName}`,
+                    body:  `Hora de executar! +${score} XP`,
+                    icon:  'https://br-crisferr.github.io/Protocolo6am/icon-192.png',
+                  },
+                  data: {
+                    taskName,
+                    score: String(score),
+                    url:   'https://br-crisferr.github.io/Protocolo6am/'
+                  },
+                  android: {
+                    priority: 'high'
+                  }
+                });
+
+                enviados++;
+              }
+            }
+
+            console.log(`✅ Concluído: ${enviados} notificação(ões) enviada(s).`);
