@@ -4592,17 +4592,33 @@ function cancelTaskNotif(taskId){
 
 function fireNotif(title, body, task){
   if(_notifPermission !== 'granted') return;
-  try{
-    const n = new Notification(title, {
-      body,
-      icon: 'data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64"><rect width="64" height="64" rx="16" fill="%23000"/><text x="32" y="44" text-anchor="middle" font-size="36">🛡</text></svg>',
-      badge: 'data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64"><text x="32" y="44" text-anchor="middle" font-size="36">⚡</text></svg>',
-      tag: `task-${task.id}`,
-      requireInteraction: false,
-      silent: false,
-    });
-    n.onclick = ()=>{ window.focus(); n.close(); goSec('hoje'); };
-  }catch(e){ console.warn('Notif error:', e); }
+  // PWA instalado no Android requer Service Worker showNotification
+  // new Notification() não funciona em PWA standalone
+  if('serviceWorker' in navigator && navigator.serviceWorker.controller){
+    navigator.serviceWorker.ready.then(reg=>{
+      reg.showNotification(title, {
+        body,
+        icon: '/Protocolo6am/icon-192.png',
+        badge: '/Protocolo6am/icon-192.png',
+        tag: `task-${task.id}`,
+        requireInteraction: false,
+        silent: false,
+        vibrate: [200, 100, 200],
+        data: { taskId: task.id, url: '/Protocolo6am/' }
+      });
+    }).catch(e=>console.warn('SW notif error:',e));
+  } else {
+    // Fallback para browser normal (não PWA)
+    try{
+      const n = new Notification(title, {
+        body,
+        icon: '/Protocolo6am/icon-192.png',
+        tag: `task-${task.id}`,
+        requireInteraction: false,
+      });
+      n.onclick = ()=>{ window.focus(); n.close(); goSec('hoje'); };
+    }catch(e){ console.warn('Notif error:', e); }
+  }
 }
 
 function scheduleAllNotifs(){
@@ -4621,17 +4637,22 @@ function scheduleAllNotifs(){
 
 async function enableNotifications(){
   if(_notifPermission==='granted'){
-    toast('🔔 Notificações já estão ativas! Clique no 🔔 de cada tarefa.', 'info');
+    // Já tem permissão — reagendar todos os alarmes ativos
+    scheduleAllNotifs();
+    const count = S.tasks.filter(t=>t.notif&&!t.done).length;
+    toast(`🔔 ${count} alarme(s) ativo(s)! Sininho iluminado = agendado.`, 'success');
     return;
   }
   const granted = await requestNotifPermission();
   if(granted){
     _notifPermission='granted';
-    toast('🔔 Notificações ativadas! Clique no 🔔 de cada tarefa.', 'success');
+    toast('🔔 Notificações ativadas! Toque no 🔔 de cada tarefa.', 'success');
     scheduleAllNotifs();
     renderTaskList();
     const btn=document.getElementById('notifToggleBtn');
     if(btn) btn.classList.add('active');
+  } else {
+    toast('❌ Permissão negada. Ative nas configurações do app.', 'error');
   }
 }
 
@@ -5028,10 +5049,10 @@ self.addEventListener('push',e=>{
 
 self.addEventListener('notificationclick',e=>{
   e.notification.close();
-  const url=e.notification.data?.url||'/';
+  const url=e.notification.data?.url||'/Protocolo6am/';
   e.waitUntil(
     clients.matchAll({type:'window',includeUncontrolled:true}).then(cs=>{
-      const existing=cs.find(c=>c.url.includes(location.origin));
+      const existing=cs.find(c=>c.url.includes('Protocolo6am'));
       if(existing){ existing.focus(); return; }
       return clients.openWindow(url);
     })
