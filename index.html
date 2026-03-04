@@ -4592,33 +4592,29 @@ function cancelTaskNotif(taskId){
 
 function fireNotif(title, body, task){
   if(_notifPermission !== 'granted') return;
-  // PWA instalado no Android requer Service Worker showNotification
-  // new Notification() não funciona em PWA standalone
-  if('serviceWorker' in navigator && navigator.serviceWorker.controller){
-    navigator.serviceWorker.ready.then(reg=>{
+  // Envia mensagem ao SW para ele mostrar a notificação
+  // Funciona com app em segundo plano, tela travada, etc.
+  navigator.serviceWorker.ready.then(reg => {
+    // Tenta via postMessage (SW recebe e mostra — funciona em background)
+    if(reg.active){
+      reg.active.postMessage({
+        type: 'SHOW_NOTIF',
+        title,
+        body,
+        taskId: task.id
+      });
+    } else {
+      // Fallback direto pelo SW registration
       reg.showNotification(title, {
         body,
-        icon: '/Protocolo6am/icon-192.png',
-        badge: '/Protocolo6am/icon-192.png',
-        tag: `task-${task.id}`,
-        requireInteraction: false,
-        silent: false,
+        icon:    '/Protocolo6am/icon-192.png',
+        badge:   '/Protocolo6am/icon-192.png',
+        tag:     `task-${task.id}`,
         vibrate: [200, 100, 200],
-        data: { taskId: task.id, url: '/Protocolo6am/' }
+        data:    { taskId: task.id, url: 'https://br-crisferr.github.io/Protocolo6am/' }
       });
-    }).catch(e=>console.warn('SW notif error:',e));
-  } else {
-    // Fallback para browser normal (não PWA)
-    try{
-      const n = new Notification(title, {
-        body,
-        icon: '/Protocolo6am/icon-192.png',
-        tag: `task-${task.id}`,
-        requireInteraction: false,
-      });
-      n.onclick = ()=>{ window.focus(); n.close(); goSec('hoje'); };
-    }catch(e){ console.warn('Notif error:', e); }
-  }
+    }
+  }).catch(e => console.warn('[Notif] SW não disponível:', e));
 }
 
 function scheduleAllNotifs(){
@@ -5001,69 +4997,14 @@ if('Notification' in window){
 }
 
 
-// ═══ SERVICE WORKER (inline blob — compatível com single-file deploy) ═══
+// ═══ SERVICE WORKER — usa firebase-messaging-sw.js diretamente ═══
+// (evita blob SW com scope errado e conflito com FCM)
 if('serviceWorker' in navigator){
-  const swCode=`
-const CACHE='p6am-v3';
-const OFFLINE=['/'];
-
-self.addEventListener('install',e=>{
-  e.waitUntil(caches.open(CACHE).then(c=>c.addAll(OFFLINE)));
-  self.skipWaiting();
-});
-
-self.addEventListener('activate',e=>{
-  e.waitUntil(
-    caches.keys().then(ks=>Promise.all(ks.filter(k=>k!==CACHE).map(k=>caches.delete(k))))
-  );
-  self.clients.claim();
-});
-
-self.addEventListener('fetch',e=>{
-  if(e.request.method!=='GET') return;
-  e.respondWith(
-    fetch(e.request)
-      .then(res=>{ const clone=res.clone(); caches.open(CACHE).then(c=>c.put(e.request,clone)); return res; })
-      .catch(()=>caches.match(e.request)||caches.match('/'))
-  );
-});
-
-// ── FCM Background Push ──
-self.addEventListener('push',e=>{
-  if(!e.data) return;
-  let payload={};
-  try{ payload=e.data.json(); }catch(_){ payload={notification:{title:'Protocolo 6AM',body:e.data.text()}}; }
-  const n=payload.notification||{};
-  const title=n.title||'Protocolo 6AM';
-  const opts={
-    body: n.body||'',
-    icon: n.icon||'/icon-192.png',
-    badge: '/icon-192.png',
-    tag: payload.data?.taskId||'p6am-push',
-    data: payload.data||{},
-    requireInteraction: false,
-    vibrate: [200,100,200],
-  };
-  e.waitUntil(self.registration.showNotification(title,opts));
-});
-
-self.addEventListener('notificationclick',e=>{
-  e.notification.close();
-  const url=e.notification.data?.url||'/Protocolo6am/';
-  e.waitUntil(
-    clients.matchAll({type:'window',includeUncontrolled:true}).then(cs=>{
-      const existing=cs.find(c=>c.url.includes('Protocolo6am'));
-      if(existing){ existing.focus(); return; }
-      return clients.openWindow(url);
-    })
-  );
-});
-`;
-  const blob=new Blob([swCode],{type:'application/javascript'});
-  const swUrl=URL.createObjectURL(blob);
-  navigator.serviceWorker.register(swUrl,{scope:'/'})
-    .then(reg=>{ console.log('[SW] Registrado'); })
-    .catch(e=>console.warn('[SW] Falha:',e));
+  navigator.serviceWorker.register('/Protocolo6am/firebase-messaging-sw.js', {
+    scope: '/Protocolo6am/'
+  }).then(reg=>{
+    console.log('[SW] Registrado, scope:', reg.scope);
+  }).catch(e=>console.warn('[SW] Falha:', e));
 }
 
 renderAll();

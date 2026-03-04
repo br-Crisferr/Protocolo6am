@@ -1,11 +1,38 @@
 // ═══════════════════════════════════════════════════════════
 //  firebase-messaging-sw.js — Protocolo 6AM
-//  Coloque na RAIZ do Firebase Hosting: /public/firebase-messaging-sw.js
-//  Necessário para push notifications em background (FCM)
+//  GitHub Pages: /Protocolo6am/firebase-messaging-sw.js
 // ═══════════════════════════════════════════════════════════
 
 importScripts('https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js');
 importScripts('https://www.gstatic.com/firebasejs/10.7.1/firebase-messaging-compat.js');
+
+const CACHE = 'p6am-v4';
+const CACHE_URLS = [
+  '/Protocolo6am/',
+  '/Protocolo6am/index.html',
+  '/Protocolo6am/icon-192.png',
+  '/Protocolo6am/icon-512.png',
+  '/Protocolo6am/manifest.json',
+];
+
+self.addEventListener('install', e => {
+  e.waitUntil(caches.open(CACHE).then(c => c.addAll(CACHE_URLS).catch(() => {})));
+  self.skipWaiting();
+});
+
+self.addEventListener('activate', e => {
+  e.waitUntil(caches.keys().then(ks => Promise.all(ks.filter(k => k !== CACHE).map(k => caches.delete(k)))));
+  self.clients.claim();
+});
+
+self.addEventListener('fetch', e => {
+  if (e.request.method !== 'GET') return;
+  e.respondWith(
+    fetch(e.request)
+      .then(res => { const clone = res.clone(); caches.open(CACHE).then(c => c.put(e.request, clone)); return res; })
+      .catch(() => caches.match(e.request) || caches.match('/Protocolo6am/'))
+  );
+});
 
 firebase.initializeApp({
   apiKey: "AIzaSyBsPukCvvNFIzg8ytqmaeQTKNnix437gCQ",
@@ -18,58 +45,44 @@ firebase.initializeApp({
 
 const messaging = firebase.messaging();
 
-// ── Receber push quando o app está em BACKGROUND ou FECHADO ──
+// Push em background via FCM
 messaging.onBackgroundMessage(payload => {
-  console.log('[FCM SW] Background message:', payload);
-
   const n = payload.notification || {};
-  const data = payload.data || {};
-
-  const title = n.title || 'Protocolo 6AM';
-  const options = {
-    body:    n.body || 'Nova notificação do Protocolo.',
-    icon:    n.icon || '/icon-192.png',
-    badge:   '/icon-192.png',
-    tag:     data.taskId || 'p6am-notif',
-    data:    data,
+  return self.registration.showNotification(n.title || 'Protocolo 6AM', {
+    body:    n.body || '',
+    icon:    '/Protocolo6am/icon-192.png',
+    badge:   '/Protocolo6am/icon-192.png',
+    tag:     payload.data?.taskId || 'p6am',
+    data:    { ...payload.data, url: 'https://br-crisferr.github.io/Protocolo6am/' },
     vibrate: [200, 100, 200],
-    requireInteraction: false,
-    actions: [
-      { action: 'open', title: '✅ Ver Tarefa' },
-      { action: 'dismiss', title: '✕ Fechar' }
-    ]
-  };
-
-  return self.registration.showNotification(title, options);
+  });
 });
 
-// ── Clique na notificação → abre o app ──
+// Alarme local — o app envia mensagem para o SW mostrar a notificação
+// Isso funciona mesmo com o app em segundo plano
+self.addEventListener('message', e => {
+  if (e.data && e.data.type === 'SHOW_NOTIF') {
+    const { title, body, taskId } = e.data;
+    self.registration.showNotification(title, {
+      body,
+      icon:    '/Protocolo6am/icon-192.png',
+      badge:   '/Protocolo6am/icon-192.png',
+      tag:     `task-${taskId}`,
+      vibrate: [200, 100, 200],
+      data:    { taskId, url: 'https://br-crisferr.github.io/Protocolo6am/' }
+    });
+  }
+});
+
+// Clique na notificacao
 self.addEventListener('notificationclick', e => {
   e.notification.close();
-
-  if (e.action === 'dismiss') return;
-
-  const targetUrl = e.notification.data?.url || '/';
-
+  const url = e.notification.data?.url || 'https://br-crisferr.github.io/Protocolo6am/';
   e.waitUntil(
     clients.matchAll({ type: 'window', includeUncontrolled: true }).then(cs => {
-      // Se já existe uma janela aberta → focar
-      const existing = cs.find(c => c.url.includes(self.location.origin));
-      if (existing) {
-        existing.focus();
-        // Enviar mensagem para o app focar na tarefa correta
-        if (e.notification.data?.taskId) {
-          existing.postMessage({ type: 'NOTIF_CLICK', taskId: e.notification.data.taskId });
-        }
-        return;
-      }
-      // Senão → abrir nova janela
-      return clients.openWindow(targetUrl);
+      const w = cs.find(c => c.url.includes('Protocolo6am'));
+      if (w) { w.focus(); return; }
+      return clients.openWindow(url);
     })
   );
-});
-
-// ── Fechar notificações antigas ao ativar novo SW ──
-self.addEventListener('activate', e => {
-  e.waitUntil(self.clients.claim());
 });
