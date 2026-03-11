@@ -3618,6 +3618,16 @@ async function runFCMDiagnostic(){
     }catch(e){ add('❌',`Erro messaging: ${e.message}`); return; }
   }
 
+  add('🔄','Limpando assinatura push antiga...');
+  try{
+    const swReg2 = await navigator.serviceWorker.getRegistration('/Protocolo6am/');
+    if(swReg2){
+      const sub = await swReg2.pushManager.getSubscription();
+      if(sub){ await sub.unsubscribe(); add('✅','Assinatura antiga removida'); }
+      else { add('📋','Nenhuma assinatura anterior'); }
+    }
+  }catch(e){ add('⚠️',`Erro ao limpar: ${e.message}`); }
+
   add('🔄','Tentando gerar token FCM...');
   try{
     let swReg;
