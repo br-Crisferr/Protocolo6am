@@ -105,11 +105,13 @@ jobs:
             for (const userDoc of fsResp.body.documents) {
               const f = userDoc.fields || {};
               const fcmToken = f.fcmToken?.stringValue;
-              if (!fcmToken) continue;
-              if (f.banned?.booleanValue) continue;
-
               const userName = f.name?.stringValue || f.nomeGuerra?.stringValue || 'Operador';
+              
+              if (!fcmToken) { console.log(`⏭ ${userName}: sem fcmToken`); continue; }
+              if (f.banned?.booleanValue) { console.log(`⏭ ${userName}: banido`); continue; }
+
               const tasks = f.tasks?.arrayValue?.values || [];
+              console.log(`👤 ${userName}: ${tasks.length} tarefa(s)`);
 
               for (const tv of tasks) {
                 const t = tv.mapValue?.fields || {};
@@ -119,8 +121,12 @@ jobs:
                 const taskName  = t.name?.stringValue || 'Tarefa';
                 const score     = parseInt(t.score?.integerValue || t.score?.doubleValue || 5);
 
-                if (!alarmTime || !notif || done) continue;
-                if (alarmTime !== horaAgora) continue;
+                console.log(`  📋 "${taskName}" alarmTime="${alarmTime}" notif=${notif} done=${done}`);
+
+                if (!alarmTime) { console.log(`  ⏭ sem alarmTime`); continue; }
+                if (!notif) { console.log(`  ⏭ notif desativado`); continue; }
+                if (done) { console.log(`  ⏭ já concluída`); continue; }
+                if (alarmTime !== horaAgora) { console.log(`  ⏭ horário não bate: ${alarmTime} ≠ ${horaAgora}`); continue; }
 
                 console.log(`🔔 Enviando: "${taskName}" → ${userName} (${alarmTime})`);
 
