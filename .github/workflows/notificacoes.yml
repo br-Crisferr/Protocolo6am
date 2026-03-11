@@ -155,22 +155,14 @@ jobs:
                 }, {
                   message: {
                     token: fcmToken,
-                    notification: {
-                      title: `🔔 ${taskName}`,
-                      body: `Hora de executar! +${score} XP`
-                    },
-                    android: {
-                      priority: 'high',
-                      notification: {
-                        icon: 'icon_192',
-                        sound: 'default',
-                        channel_id: 'alarmes'
-                      }
-                    },
                     webpush: {
                       notification: {
+                        title: `🔔 ${taskName}`,
+                        body: `Hora de executar! +${score} XP`,
                         icon: 'https://br-crisferr.github.io/Protocolo6am/icon-192.png',
-                        badge: 'https://br-crisferr.github.io/Protocolo6am/icon-192.png'
+                        badge: 'https://br-crisferr.github.io/Protocolo6am/icon-192.png',
+                        vibrate: [200, 100, 200],
+                        requireInteraction: true
                       },
                       fcm_options: {
                         link: 'https://br-crisferr.github.io/Protocolo6am/'
