@@ -1355,6 +1355,13 @@ input[type=time].form-input{ color-scheme:dark;cursor:pointer }
           <button class="btn-outline" onclick="editProfile()">✏️ Editar Perfil</button>
           <button class="btn-outline" style="border-color:rgba(10,132,255,.3);color:var(--blue)" onclick="doSignOut()">↩ Sair da Conta</button>
           <button class="btn-outline" style="border-color:rgba(255,59,48,.3);color:var(--red)" onclick="resetData()">🗑 Limpar Dados</button>
+          <button class="btn-outline" style="border-color:rgba(255,159,10,.3);color:var(--amber)" onclick="showDebugPanel()">🔧 Diagnóstico FCM</button>
+        </div>
+        <!-- Painel de diagnóstico -->
+        <div id="debugPanel" style="display:none;margin-top:16px;background:rgba(0,0,0,.6);border:1px solid var(--bdr);border-radius:12px;padding:14px">
+          <div style="font-family:var(--fm);font-size:10px;color:var(--amber);text-transform:uppercase;letter-spacing:1px;margin-bottom:10px">🔧 Diagnóstico FCM</div>
+          <div id="debugLog" style="font-family:monospace;font-size:11px;color:var(--txt2);line-height:1.8"></div>
+          <button class="btn-save" style="margin-top:12px;font-size:11px;padding:8px" onclick="runFCMDiagnostic()">▶ Rodar diagnóstico</button>
         </div>
       </div>
     </div>
@@ -3562,6 +3569,85 @@ function resetData(){
   S.xp=0;S.streak=0;S.tasks=[];S.habits=[];
   renderAll();
   toast('🗑 Dados limpos','info');
+}
+
+// ═══════════════════════════════════════════
+//  DIAGNÓSTICO FCM
+// ═══════════════════════════════════════════
+function showDebugPanel(){
+  const p=document.getElementById('debugPanel');
+  if(p) p.style.display=p.style.display==='none'?'block':'none';
+}
+
+async function runFCMDiagnostic(){
+  const log=document.getElementById('debugLog');
+  if(!log) return;
+  const lines=[];
+  const add=(emoji,msg)=>{ lines.push(`${emoji} ${msg}`); log.innerHTML=lines.map(l=>`<div>${l}</div>`).join(''); };
+
+  add('🔍','Iniciando diagnóstico...');
+  add('📋',`Notification API: ${'Notification' in window ? '✅' : '❌ não suportada'}`);
+  if('Notification' in window) add('📋',`Permissão: ${Notification.permission}`);
+  add('📋',`ServiceWorker API: ${'serviceWorker' in navigator ? '✅' : '❌'}`);
+
+  if('serviceWorker' in navigator){
+    try{
+      const regs = await navigator.serviceWorker.getRegistrations();
+      add('📋',`SWs registrados: ${regs.length}`);
+      regs.forEach((r,i)=>add('→',`SW${i+1}: ${r.scope}`));
+    }catch(e){ add('❌',`Erro SWs: ${e.message}`); }
+  }
+
+  add('📋',`Firebase OK: ${FIREBASE_OK ? '✅' : '❌'}`);
+  add('📋',`_messaging: ${_messaging ? '✅' : '❌ null'}`);
+  add('📋',`_fcmToken: ${_fcmToken ? '✅ '+_fcmToken.slice(0,15)+'...' : '❌ não gerado'}`);
+  add('📋',`User logado: ${currentUser ? '✅' : '❌'}`);
+
+  if(Notification.permission !== 'granted'){
+    add('⚠️','Permissão não concedida — solicitando...');
+    const perm = await Notification.requestPermission();
+    add('📋',`Permissão agora: ${perm}`);
+    if(perm !== 'granted'){ add('❌','Permissão negada — bloqueada pelo Android.'); return; }
+  }
+
+  add('🔄','Tentando inicializar messaging...');
+  if(!_messaging){
+    try{
+      _messaging = firebase.messaging();
+      add('✅','Messaging inicializado');
+    }catch(e){ add('❌',`Erro messaging: ${e.message}`); return; }
+  }
+
+  add('🔄','Tentando gerar token FCM...');
+  try{
+    let swReg;
+    try{ swReg = await navigator.serviceWorker.getRegistration('/Protocolo6am/'); }catch(_){}
+    if(!swReg){ try{ swReg = await navigator.serviceWorker.getRegistration('/'); }catch(_){} }
+    add('📋',`SW para token: ${swReg ? swReg.scope : 'nenhum — usando padrão'}`);
+
+    const opts = { vapidKey: VAPID_KEY };
+    if(swReg) opts.serviceWorkerRegistration = swReg;
+
+    const token = await _messaging.getToken(opts);
+    if(token){
+      _fcmToken = token;
+      add('✅',`Token: ${token.slice(0,20)}...`);
+      if(currentUser){
+        await db.collection('users').doc(currentUser.uid).update({
+          fcmToken: token,
+          fcmUpdatedAt: firebase.firestore.FieldValue.serverTimestamp()
+        });
+        add('✅','Token salvo no Firestore!');
+        toast('✅ Notificações configuradas!','success');
+      } else { add('❌','User não logado — token não salvo'); }
+    } else {
+      add('❌','Token retornou vazio');
+    }
+  }catch(e){
+    add('❌',`Erro token: ${e.message}`);
+    add('💡',`Código: ${e.code||'—'}`);
+  }
+  add('🏁','Diagnóstico concluído.');
 }
 
 // ═══════════════════════════════════════════
