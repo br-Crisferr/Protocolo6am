@@ -3038,8 +3038,36 @@ const VAPID_KEY = 'lXVVTrLULW698KDSRhNeyg0gN25GOxayNwHlSEgIIQE';
 function initMessaging(){
   if(!FIREBASE_OK) return;
   try{
-    _messaging = firebase.messaging();
-  }catch(e){ console.warn('Messaging não suportado:', e); }
+    // Registrar o SW manualmente e passar para o Firebase Messaging
+    // Necessário porque o app está em subpasta /Protocolo6am/
+    // e o Firebase exige o SW registrado explicitamente
+    navigator.serviceWorker.register('/Protocolo6am/firebase-messaging-sw.js', {
+      scope: '/Protocolo6am/'
+    }).then(swReg => {
+      try{
+        _messaging = firebase.messaging();
+        // Vincular o SW ao Firebase Messaging explicitamente
+        _messaging.useServiceWorker(swReg);
+        console.log('[FCM] Messaging inicializado com SW:', swReg.scope);
+        // Gerar token automaticamente se permissão já foi concedida
+        if(Notification.permission === 'granted'){
+          _messaging.getToken({ vapidKey: VAPID_KEY, serviceWorkerRegistration: swReg })
+            .then(token => {
+              if(token && token !== _fcmToken){
+                _fcmToken = token;
+                console.log('[FCM] Token gerado automaticamente');
+                if(FIREBASE_OK && currentUser){
+                  db.collection('users').doc(currentUser.uid).update({
+                    fcmToken: token,
+                    fcmUpdatedAt: firebase.firestore.FieldValue.serverTimestamp()
+                  }).catch(()=>{});
+                }
+              }
+            }).catch(e => console.warn('[FCM] Erro ao gerar token:', e));
+        }
+      }catch(e){ console.warn('[FCM] Messaging não suportado:', e); }
+    }).catch(e => console.warn('[SW] Erro ao registrar:', e));
+  }catch(e){ console.warn('[FCM] Erro initMessaging:', e); }
 }
 
 async function requestNotificationPermission(){
@@ -3048,20 +3076,26 @@ async function requestNotificationPermission(){
     const permission = await Notification.requestPermission();
     if(permission !== 'granted'){ toast('Permissão negada','error'); return false; }
 
-    const token = await _messaging.getToken({ vapidKey: VAPID_KEY });
+    // Buscar o SW já registrado
+    const swReg = await navigator.serviceWorker.getRegistration('/Protocolo6am/');
+    const tokenOpts = { vapidKey: VAPID_KEY };
+    if(swReg) tokenOpts.serviceWorkerRegistration = swReg;
+
+    const token = await _messaging.getToken(tokenOpts);
     if(token && token !== _fcmToken){
       _fcmToken = token;
+      console.log('[FCM] Token salvo:', token.slice(0,20)+'...');
       if(FIREBASE_OK && currentUser){
         await db.collection('users').doc(currentUser.uid).update({
           fcmToken: token,
           fcmUpdatedAt: firebase.firestore.FieldValue.serverTimestamp()
         });
+        toast('🔔 Notificações ativadas!','success');
       }
-      toast('🔔 Notificações ativadas!','success');
     }
     return true;
   }catch(e){
-    console.warn('FCM token error:', e);
+    console.warn('[FCM] token error:', e);
     toast('Erro ao ativar notificações: '+e.message,'error');
     return false;
   }
@@ -4997,15 +5031,7 @@ if('Notification' in window){
 }
 
 
-// ═══ SERVICE WORKER — usa firebase-messaging-sw.js diretamente ═══
-// (evita blob SW com scope errado e conflito com FCM)
-if('serviceWorker' in navigator){
-  navigator.serviceWorker.register('/Protocolo6am/firebase-messaging-sw.js', {
-    scope: '/Protocolo6am/'
-  }).then(reg=>{
-    console.log('[SW] Registrado, scope:', reg.scope);
-  }).catch(e=>console.warn('[SW] Falha:', e));
-}
+// SW registrado dentro do initMessaging() com scope correto
 
 renderAll();
 // Hide ranking dot after viewing
