@@ -143,7 +143,7 @@ jobs:
 
                 console.log(`🔔 Enviando: "${taskName}" → ${userName} (${alarmTime})`);
 
-                // ── Enviar push via FCM v1 ──
+                // ── Enviar push via FCM v1 — data-only para forçar onBackgroundMessage no SW ──
                 const fcmResp = await req({
                   hostname: 'fcm.googleapis.com',
                   path: `/v1/projects/${PROJECT_ID}/messages:send`,
@@ -155,15 +155,15 @@ jobs:
                 }, {
                   message: {
                     token: fcmToken,
+                    data: {
+                      title: `🔔 ${taskName}`,
+                      body: `Hora de executar! +${score} XP`,
+                      taskId: String(taskId || ''),
+                      icon: 'https://br-crisferr.github.io/Protocolo6am/icon-192.png',
+                      url: 'https://br-crisferr.github.io/Protocolo6am/'
+                    },
                     webpush: {
-                      notification: {
-                        title: `🔔 ${taskName}`,
-                        body: `Hora de executar! +${score} XP`,
-                        icon: 'https://br-crisferr.github.io/Protocolo6am/icon-192.png',
-                        badge: 'https://br-crisferr.github.io/Protocolo6am/icon-192.png',
-                        vibrate: [200, 100, 200],
-                        requireInteraction: true
-                      },
+                      headers: { Urgency: 'high' },
                       fcm_options: {
                         link: 'https://br-crisferr.github.io/Protocolo6am/'
                       }
