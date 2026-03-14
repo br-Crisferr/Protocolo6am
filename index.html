@@ -5026,27 +5026,29 @@ if(FIREBASE_OK){
     // FCM Push — inicializa e salva token automaticamente se permissão já concedida
     initMessaging();
     setupFCMForeground();
-    // Auto-registrar token FCM silenciosamente se permissão já foi concedida
-    if(Notification.permission === 'granted'){
-      setTimeout(async ()=>{
-        try{
-          if(!_messaging) return;
-          const swReg = await navigator.serviceWorker.getRegistration('/Protocolo6am/').catch(()=>null)
-                     || await navigator.serviceWorker.getRegistration('/').catch(()=>null);
-          const opts = { vapidKey: VAPID_KEY };
-          if(swReg) opts.serviceWorkerRegistration = swReg;
-          const token = await _messaging.getToken(opts);
-          if(token && token !== _fcmToken){
-            _fcmToken = token;
-            await db.collection('users').doc(user.uid).update({
-              fcmToken: token,
-              fcmUpdatedAt: firebase.firestore.FieldValue.serverTimestamp()
-            });
-            console.log('[FCM] Token auto-salvo no login');
-          }
-        }catch(e){ console.warn('[FCM] Auto-token falhou:', e.message); }
-      }, 3000);
-    }
+    // Auto-registrar/renovar token FCM sempre que o usuário abre o app
+    // Necessário pois token muda após reinstalar app ou instalar APK
+    setTimeout(async ()=>{
+      try{
+        if(!('Notification' in window)) return;
+        if(Notification.permission !== 'granted') return;
+        // Aguardar SW estar pronto
+        const swReg = await navigator.serviceWorker.ready;
+        if(!swReg) return;
+        if(!_messaging){
+          try{ _messaging = firebase.messaging(); }catch(e){ return; }
+        }
+        const token = await _messaging.getToken({ vapidKey: VAPID_KEY, serviceWorkerRegistration: swReg });
+        if(token){
+          _fcmToken = token;
+          await db.collection('users').doc(user.uid).update({
+            fcmToken: token,
+            fcmUpdatedAt: firebase.firestore.FieldValue.serverTimestamp()
+          });
+          console.log('[FCM] Token renovado no login:', token.slice(0,20)+'...');
+        }
+      }catch(e){ console.warn('[FCM] Auto-token falhou:', e.message); }
+    }, 3000);
 
     // Restore notification schedules if permission was previously granted
     if('Notification' in window && Notification.permission === 'granted'){

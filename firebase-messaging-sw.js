@@ -45,16 +45,23 @@ firebase.initializeApp({
 
 const messaging = firebase.messaging();
 
-// Push em background via FCM
+// Push em background via FCM — data-only message
 messaging.onBackgroundMessage(payload => {
+  console.log('[SW] Push recebido:', JSON.stringify(payload));
+  const d = payload.data || {};
   const n = payload.notification || {};
-  return self.registration.showNotification(n.title || 'Protocolo 6AM', {
-    body:    n.body || '',
-    icon:    '/Protocolo6am/icon-192.png',
+  const title = d.title || n.title || '🔔 Protocolo 6AM';
+  const body  = d.body  || n.body  || 'Hora de executar!';
+  const icon  = d.icon  || '/Protocolo6am/icon-192.png';
+  const url   = d.url   || 'https://br-crisferr.github.io/Protocolo6am/';
+  return self.registration.showNotification(title, {
+    body,
+    icon,
     badge:   '/Protocolo6am/icon-192.png',
-    tag:     payload.data?.taskId || 'p6am',
-    data:    { ...payload.data, url: 'https://br-crisferr.github.io/Protocolo6am/' },
+    tag:     d.taskId || 'p6am',
+    data:    { taskId: d.taskId, url },
     vibrate: [200, 100, 200],
+    requireInteraction: true
   });
 });
 
