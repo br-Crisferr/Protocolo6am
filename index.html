@@ -40,13 +40,27 @@
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
 <script>
   const FIREBASE_CONFIG = {
-    apiKey: "AIzaSyBsPukCvvNFIzg8ytqmaeQTKNnix437gCQ",
-    authDomain: "protocolo-6am.firebaseapp.com",
-    projectId: "protocolo-6am",
-    storageBucket: "protocolo-6am.firebasestorage.app",
-    messagingSenderId: "652312227391",
-    appId: "1:652312227391:web:2e53e2be0eb6487b16d28a",
-    measurementId: "G-TBGPXYBV2Z"
+   // Import the functions you need from the SDKs you need
+import { initializeApp } from "firebase/app";
+import { getAnalytics } from "firebase/analytics";
+// TODO: Add SDKs for Firebase products that you want to use
+// https://firebase.google.com/docs/web/setup#available-libraries
+
+// Your web app's Firebase configuration
+// For Firebase JS SDK v7.20.0 and later, measurementId is optional
+const firebaseConfig = {
+  apiKey: "AIzaSyD0qDB_4ifFF6P5sKXuga7_MMp-eIF61gE",
+  authDomain: "protocolo6am.firebaseapp.com",
+  projectId: "protocolo6am",
+  storageBucket: "protocolo6am.firebasestorage.app",
+  messagingSenderId: "79746437285",
+  appId: "1:79746437285:web:44743fd8f3999392c2bd4c",
+  measurementId: "G-EVG5ES0GZN"
+};
+
+// Initialize Firebase
+const app = initializeApp(firebaseConfig);
+const analytics = getAnalytics(app);
   };
   let firebaseApp, auth, db, FIREBASE_OK = false, currentUser = null;
   try {
